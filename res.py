@@ -18,7 +18,7 @@ class ResDE:
     create_ticket_emoji: str = "✉️"
 
     ticket_msg_desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
-    ticket_channel_created: str = "Ticket-Kanal erstellt!"
+    ticket_channel_created: str = "Ticket-Kanal erstellt! %s"
     ticket: str = "ticket"
 
     ping_desc: str = "Testet ob der Bot online ist."

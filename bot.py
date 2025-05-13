@@ -17,6 +17,19 @@ C = res.Constants()
 bot = discord.Bot()
 
 
+class TicketCreaterView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label=R.create_ticket_button, style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=R.create_ticket_emoji), custom_id="create_ticket")
+    async def callback(self, button: discord.ui.Button, interaction: discord.Interaction):
+        channel = await create_ticket_channel(interaction.guild, interaction.user)
+        await init_ticket_channel(interaction.guild, interaction.user, channel)
+
+        msg = R.ticket_channel_created % channel.mention
+        await interaction.response.send_message(msg, ephemeral=True)
+
+
 async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel: discord.TextChannel):
     await channel.send(
         f"Hallo {user.mention}, willkommen in deinem Ticket-Kanal!"
@@ -54,33 +67,22 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.User):
     )
 
     logger.info(f"Ticket channel created for {user.name} (ID: {user.id})")
-    await init_ticket_channel(guild, user, channel)
+    return channel
 
 
 @bot.event
 async def on_ready():
     logger.info(f"Logged in as {bot.user.name} (ID: {bot.user.id})")
     logger.info("------")
+    # Register view as persistent
+    # This is required to make the button work after a restart
+    bot.add_view(TicketCreaterView())
 
 
 @bot.slash_command(name="ticketmessage", description=R.ticket_msg_desc)
 @discord.default_permissions(administrator=True)
 async def ticket_message(ctx: discord.ApplicationContext):
-
-    button = discord.ui.Button(
-        emoji=discord.PartialEmoji(name=R.create_ticket_emoji),
-        label=R.create_ticket_button, style=discord.ButtonStyle.primary)
-
-    async def button_callback(interaction: discord.Interaction):
-        await create_ticket_channel(ctx.guild, interaction.user)
-        await interaction.response.send_message(R.ticket_channel_created, ephemeral=True)
-
-    button.callback = button_callback
-
-    view = discord.ui.View()
-    view.add_item(button)
-
-    await ctx.send(R.create_ticket_msg, view=view)
+    await ctx.send(R.create_ticket_msg, view=TicketCreaterView())
     await ctx.respond(R.ticket_msg_created, ephemeral=True)
     logger.info(f"Ticket message sent by {ctx.user.name} (ID: {ctx.user.id})")
 
