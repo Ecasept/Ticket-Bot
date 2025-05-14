@@ -41,12 +41,25 @@ class ResDE:
     assign_ticket: str = "Annehmen"
     unassign_ticket: str = "Freigeben"
 
+    mod_options: str = "Moderator-Optionen"
+    mod_options_no_permission: str = "Du hast keine Berechtigung um diese Optionen zu sehen."
+    mod_options_assigned_msg: str = "Dieses Ticket ist an %s zugewiesen."
+    mod_options_unassigned_msg: str = "Dieses Ticket ist nicht zugewiesen."
+
+    approve_application: str = "Annehmen"
+    reject_application: str = "Ablehnen"
+
+    ticket_options_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
+    ticket_options_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
+
 
 @dataclass
 class Constants:
     support_category_name: str = "Support"
     support_role_name: str = "Support"
     transcript_category_name: str = "Archiv"
+    db_file: str = "db/tickets.db"
+    db_schema_file: str = "db/schema.sql"
 
     cat_application: str = "application"
     cat_report: str = "report"

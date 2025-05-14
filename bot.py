@@ -1,12 +1,12 @@
-# Installation: pip install discord.py dotenv
-
 import discord
 from category_selection import TicketCategorySelection
-from ticket import TicketOptionsView
+from ticket import TicketOptionsMessage
 from utils import C, R, TOKEN, get_support_role, logger
 import dynamic
+import database
 
 bot = discord.Bot()
+db = database.Database(C.db_file)
 
 
 class PanelView(discord.ui.View):
@@ -27,7 +27,7 @@ async def on_ready():
     # Register views as persistent
     # This is required to make them work after a restart
     bot.add_view(PanelView())
-    dynamic.add_dynamic_view(TicketOptionsView)
+    dynamic.add_dynamic_view(TicketOptionsMessage)
 
 
 @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
@@ -53,11 +53,14 @@ try:
         raise ValueError(
             "DISCORD_TOKEN is not set in the environment variables.")
     logger.info("Starting bot...")
+
+    db.connect()
     bot.run(TOKEN)
 except KeyboardInterrupt:
     logger.info("Bot has been stopped by user.")
 except Exception as e:
     logger.error(f"Failed to run the bot: {e}")
 finally:
+    db.close()
     logger.info("Bot has been shut down.")
     logger.info("------")

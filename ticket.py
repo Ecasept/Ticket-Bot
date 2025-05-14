@@ -1,6 +1,7 @@
 import discord
 
 import dynamic
+from mod_options import ModOptionsMessage
 from utils import C, logger, R, get_support_category, get_support_role, get_transcript_category
 
 
@@ -41,31 +42,37 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.User, catego
 
 
 async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel: discord.TextChannel, category: str):
-    view = TicketOptionsView(category, "1")
-
-    await channel.send(
-        f"Hallo {user.mention}, willkommen in deinem Ticket-Kanal!", view=view
+    msg, view = TicketOptionsMessage.create(
+        user,
+        category,
     )
+    await channel.send(content=msg, view=view)
+
     logger.info(
         f"Ticket channel initialized for {user.name} (ID: {user.id})")
 
 
-class TicketOptionsView(dynamic.DynamicPersistentView):
+class TicketOptionsMessage(dynamic.DynamicPersistentView):
     """
     A view that contains buttons for ticket options.
     """
     view_id: str = "ticket_options"
 
-    def __init__(self, category: str, assigned_id: str = "", archived: str = ""):
-        super().__init__(self.view_id, category, assigned_id)
+    def __init__(self, category: str, assigned_id: str, archived: str):
+        super().__init__(self.view_id, category, assigned_id, archived)
         self.category = category
-        self.assigned_id = None if assigned_id == "" else int(assigned_id)
-        self.archived = False if archived == "" else bool(archived)
+        self.assigned_id = assigned_id
+        self.archived = archived
 
         close_button = discord.ui.Button(
             label=R.close_ticket, style=discord.ButtonStyle.danger, custom_id="close_ticket")
         close_button.callback = self.close_ticket
         self.add_item(close_button)
+
+        mod_options = discord.ui.Button(
+            label=R.mod_options, style=discord.ButtonStyle.secondary, custom_id="mod_options")
+        mod_options.callback = self.open_mod_options
+        self.add_item(mod_options)
 
         # if assigned_id is None:
         #     assign_button = discord.ui.Button(
@@ -87,3 +94,29 @@ class TicketOptionsView(dynamic.DynamicPersistentView):
             content=R.ticket_closed_msg,
             view=None
         )
+
+    async def open_mod_options(self, interaction: discord.Interaction):
+        msg, view = ModOptionsMessage.create(
+            interaction,
+            self.category,
+            self.assigned_id,
+            str(interaction.message.id),
+            self.archived
+        )
+
+        await interaction.response.send_message(
+            content=msg,
+            view=view,
+            ephemeral=True
+        )
+
+    @staticmethod
+    def create(user: discord.User, category: str, assigned_id: str = "", archived: str = ""):
+        msg = R.ticket_options_msg_application if category == C.cat_application else R.ticket_options_msg_report
+        msg = msg % user.mention
+        view = TicketOptionsMessage(
+            category,
+            assigned_id,
+            archived
+        )
+        return msg, view
