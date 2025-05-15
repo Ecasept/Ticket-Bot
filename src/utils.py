@@ -1,3 +1,6 @@
+"""
+Utility functions and constants for the Discord bot, including role/category helpers and environment loading.
+"""
 import discord
 import dotenv
 import src.res as res
@@ -11,13 +14,24 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 
 
 def get_support_role(guild: discord.Guild) -> discord.Role:
-    """Return the role that manages tickets in the server."""
+    """
+    Return the role that manages tickets in the server.
+    Args:
+        guild (discord.Guild): The Discord guild.
+    Returns:
+        discord.Role: The support role.
+    """
     return discord.utils.get(guild.roles, name=C.support_role_name)
 
 
 async def get_support_category(guild: discord.Guild):
-    """Return the category that contains the ticket channels.
-    If it doesn't exist, create it."""
+    """
+    Return the category that contains the ticket channels. If it doesn't exist, create it.
+    Args:
+        guild (discord.Guild): The Discord guild.
+    Returns:
+        discord.CategoryChannel: The support category.
+    """
     category = discord.utils.get(
         guild.categories, name=C.support_category_name)
 
@@ -33,6 +47,13 @@ async def get_support_category(guild: discord.Guild):
 
 
 async def get_transcript_category(guild: discord.Guild):
+    """
+    Return the transcript category for closed tickets. If it doesn't exist, create it.
+    Args:
+        guild (discord.Guild): The Discord guild.
+    Returns:
+        discord.CategoryChannel: The transcript category.
+    """
     category = discord.utils.get(
         guild.categories, name=C.transcript_category_name)
     if category is None:

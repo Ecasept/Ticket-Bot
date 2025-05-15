@@ -1,3 +1,6 @@
+"""
+Implements the PanelView and ticket creation logic for the Discord bot, including UI for ticket category selection and channel creation.
+"""
 import discord
 
 from src.header import HeaderView
@@ -6,18 +9,26 @@ from src.database import db
 
 
 class PanelView(discord.ui.View):
+    """
+    A Discord UI view for the main ticket panel, allowing users to create new tickets.
+    """
     def __init__(self):
         super().__init__(timeout=None)
 
     @discord.ui.button(label=R.create_ticket_button, style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=R.create_ticket_emoji), custom_id="create_ticket")
     async def callback(self, button: discord.ui.Button, interaction: discord.Interaction):
+        """
+        Handles the creation of a new ticket when the panel button is clicked.
+        """
         await interaction.response.send_message(R.choose_category, view=TicketCategorySelection(), ephemeral=True)
         logger.info("panel",
             f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
 
 
 class TicketCategorySelection(discord.ui.View):
-
+    """
+    A Discord UI view for selecting the ticket category (application or report).
+    """
     @discord.ui.select(
         placeholder=R.ticket_category_placeholder,
         min_values=1,
@@ -30,6 +41,9 @@ class TicketCategorySelection(discord.ui.View):
         ]
     )
     async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+        """
+        Handles the selection of a ticket category and initiates ticket creation.
+        """
         category = select.values[0]
         await interaction.response.defer(ephemeral=True)
 
@@ -42,6 +56,14 @@ class TicketCategorySelection(discord.ui.View):
 
 
 def generate_channel_name(user: discord.User, category: str):
+    """
+    Generate a unique channel name for a ticket based on the user and category.
+    Args:
+        user (discord.User): The user creating the ticket.
+        category (str): The ticket category.
+    Returns:
+        str: The generated channel name.
+    """
     prefix = R.application_prefix if category == C.cat_application else R.report_prefix
 
     channel_name = f"{prefix}-{user.name}"
@@ -57,6 +79,15 @@ def generate_channel_name(user: discord.User, category: str):
 
 
 async def create_ticket_channel(guild: discord.Guild, user: discord.User, category: str):
+    """
+    Create a new text channel for the ticket in the support category.
+    Args:
+        guild (discord.Guild): The Discord guild.
+        user (discord.User): The user creating the ticket.
+        category (str): The ticket category.
+    Returns:
+        discord.TextChannel: The created channel.
+    """
     support_category = await get_support_category(guild)
 
     channel_name = generate_channel_name(user, category)
@@ -78,6 +109,14 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.User, catego
 
 
 async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel: discord.TextChannel, category: str):
+    """
+    Initialize the ticket channel with a header message and view.
+    Args:
+        guild (discord.Guild): The Discord guild.
+        user (discord.User): The user who created the ticket.
+        channel (discord.TextChannel): The ticket channel.
+        category (str): The ticket category.
+    """
     view = HeaderView()
     msg = R.header_msg_application if category == C.cat_application else R.header_msg_report
     await channel.send(
@@ -90,6 +129,15 @@ async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel:
 
 
 async def create_new_ticket(guild: discord.Guild, user: discord.User, category: str):
+    """
+    Create a new ticket: channel, database entry, and header message.
+    Args:
+        guild (discord.Guild): The Discord guild.
+        user (discord.User): The user creating the ticket.
+        category (str): The ticket category.
+    Returns:
+        discord.TextChannel: The created ticket channel.
+    """
     channel = await create_ticket_channel(guild, user, category)
     db.create_ticket(
         str(channel.id),

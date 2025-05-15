@@ -1,9 +1,21 @@
+"""
+String resources and constants for the Discord bot, supporting localization and configuration.
+"""
 # String resources
 
 from dataclasses import dataclass
 
 
 def get_resources(lang: str):
+    """
+    Return the resource class for the specified language.
+    Args:
+        lang (str): Language code (e.g., 'de').
+    Returns:
+        ResDE: The resource class for German.
+    Raises:
+        ValueError: If the language is not supported.
+    """
     if lang == "de":
         return ResDE()
     else:
@@ -12,6 +24,9 @@ def get_resources(lang: str):
 
 @dataclass
 class ResDE:
+    """
+    German string resources for the bot's UI and messages.
+    """
     panel_msg: str = "Drücke den Button um ein Ticket zu erstellen."
     create_ticket_button: str = "Ticket erstellen"
     ticket_msg_created: str = "Benutzer können den Knopf unten benutzten um Tickets zu erstellen!"
@@ -61,6 +76,9 @@ class ResDE:
 
 @dataclass
 class Constants:
+    """
+    Configuration constants for categories, roles, and database paths.
+    """
     support_category_name: str = "Support"
     support_role_name: str = "Support"
     transcript_category_name: str = "Archiv"

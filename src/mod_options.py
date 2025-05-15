@@ -1,3 +1,6 @@
+"""
+Implements the ModOptionsMessage view for moderator actions on tickets, such as assigning, unassigning, approving, or rejecting applications.
+"""
 import discord
 from src.utils import C, R, get_support_role
 from src.database import db
@@ -6,11 +9,19 @@ from src.utils import logger
 
 class ModOptionsMessage(discord.ui.View):
     """
-    A view that contains buttons for mod options.
+    A Discord UI view that provides moderator options for ticket management, including assignment and application review.
     """
     view_id: str = "mod_options"
 
     def __init__(self, category: str, assigned_id: str,  assigned_to_self: bool, user_id: str):
+        """
+        Initialize the ModOptionsMessage view.
+        Args:
+            category (str): The ticket category.
+            assigned_id (str): The user ID of the assignee.
+            assigned_to_self (bool): Whether the current user is the assignee.
+            user_id (str): The user ID of the ticket creator.
+        """
         super().__init__()
 
         self.category = category
@@ -48,6 +59,11 @@ class ModOptionsMessage(discord.ui.View):
             self.add_item(reject_button)
 
     async def assign_ticket(self, interaction: discord.Interaction):
+        """
+        Assign the ticket to the current user and update permissions and database.
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the assignment.
+        """
         await interaction.response.defer(ephemeral=True)
 
         new_assigned_id = str(interaction.user.id)
@@ -77,6 +93,11 @@ class ModOptionsMessage(discord.ui.View):
                     )
 
     async def unassign_ticket(self, interaction: discord.Interaction):
+        """
+        Unassign the ticket and update permissions and database.
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the unassignment.
+        """
         await interaction.response.defer(ephemeral=True)
 
         # Update ticket in database
@@ -107,6 +128,11 @@ class ModOptionsMessage(discord.ui.View):
                     )
 
     async def approve_application(self, interaction: discord.Interaction):
+        """
+        Approve a user's application and assign them the support role.
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the approval.
+        """
         await interaction.response.defer(ephemeral=True)
 
         # Get the user who submitted the application
@@ -127,10 +153,15 @@ class ModOptionsMessage(discord.ui.View):
         )
 
         logger.info("mod_options",
-            f"Application approved for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
-        )
+                    f"Application approved for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
+                    )
 
     async def reject_application(self, interaction: discord.Interaction):
+        """
+        Reject a user's application.
+        Args:
+            interaction (discord.Interaction): The interaction that triggered the rejection.
+        """
         await interaction.response.defer(ephemeral=True)
 
         # Get the user who submitted the application
@@ -148,21 +179,18 @@ class ModOptionsMessage(discord.ui.View):
         )
 
         logger.info("mod_options",
-            f"Application rejected for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
-        )
+                    f"Application rejected for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
+                    )
 
     @staticmethod
     def create(interaction: discord.Interaction) -> tuple[str, discord.ui.View]:
         """
-        Create a mod options message and view.
-        :param interaction: The interaction object from which the mod options message is created.
-        :param category: The category of the ticket.
-        :param assigned_id: The ID of the user to whom the ticket is assigned.
-        :param parent_msg_id: The ID of the parent ticket options message.
-        :param archived: Whether the ticket is archived or not.
-        :return: A tuple containing the mod options message and view.
+        Factory method to create the mod options message and view for a given interaction.
+        Args:
+            interaction (discord.Interaction): The interaction context.
+        Returns:
+            tuple[str, discord.ui.View]: The message and the view to display.
         """
-
         support_role = get_support_role(interaction.guild)
         if support_role not in interaction.user.roles:
             return R.mod_options_no_permission, None

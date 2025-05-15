@@ -1,3 +1,6 @@
+"""
+Main entry point for the Discord bot. Handles bot events, command registration, and startup/shutdown logic.
+"""
 import discord
 from src.panel import PanelView
 from src.header import HeaderView
