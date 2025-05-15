@@ -1,8 +1,8 @@
 import discord
 
-from mod_options import ModOptionsMessage
-from utils import R, get_transcript_category
-from database import db
+from src.mod_options import ModOptionsMessage
+from src.utils import R, get_transcript_category
+from src.database import db
 
 
 class HeaderView(discord.ui.View):

@@ -1,7 +1,7 @@
 import discord
 import dotenv
-import res
-import log
+import src.res as res
+import src.log as log
 import os
 
 dotenv.load_dotenv()

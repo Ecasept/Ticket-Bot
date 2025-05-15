@@ -1,6 +1,6 @@
 import discord
-from utils import C, R, get_support_role
-from database import db
+from src.utils import C, R, get_support_role
+from src.database import db
 
 
 class ModOptionsMessage(discord.ui.View):

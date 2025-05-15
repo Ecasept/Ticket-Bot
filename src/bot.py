@@ -1,8 +1,8 @@
 import discord
-from panel import PanelView
-from header import HeaderView
-from utils import R, TOKEN, logger
-from database import db
+from src.panel import PanelView
+from src.header import HeaderView
+from src.utils import R, TOKEN, logger
+from src.database import db
 
 bot = discord.Bot()
 

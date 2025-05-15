@@ -1,8 +1,8 @@
 import discord
 
-from header import HeaderView
-from utils import C, R, get_support_category, get_support_role, logger
-from database import db
+from src.header import HeaderView
+from src.utils import C, R, get_support_category, get_support_role, logger
+from src.database import db
 
 
 class PanelView(discord.ui.View):
