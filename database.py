@@ -36,37 +36,49 @@ class Database:
         self.connection.close()
         logger.info("Database connection closed.")
 
-    def get_ticket(self, ticket_id: int):
-        """Get a ticket by its ID."""
+    def create_ticket(self, channel_id: str, category: str, user_id: str, assignee_id: str):
+        """Create a new ticket."""
         self.cursor.execute(
-            "SELECT * FROM tickets WHERE id = ?", (ticket_id,))
+            "INSERT INTO tickets (channel_id, category, user_id, assignee_id) VALUES (?, ?, ?, ?)",
+            (channel_id, category, user_id, assignee_id)
+        )
+        self.connection.commit()
+        logger.info(
+            f"Ticket {channel_id} created with category {category}, user {user_id}, and assignee {assignee_id}.")
+        return channel_id
+
+    def get_ticket(self, channel_id: str):
+        """Get a ticket by its channel_id."""
+        self.cursor.execute(
+            "SELECT channel_id, category, user_id, assignee_id, created_at FROM tickets WHERE channel_id = ?", (channel_id,))
         ticket = self.cursor.fetchone()
         if ticket:
             return {
-                "id": ticket[0],
+                "channel_id": ticket[0],
                 "category": ticket[1],
-                "assigned_id": ticket[2],
-                "archived": ticket[3]
+                "user_id": ticket[2],
+                "assignee_id": ticket[3],
+                "created_at": ticket[4]
             }
         else:
             return None
 
-    def create_ticket(self, category: str, assigned_id: str, archived: str):
-        """Create a new ticket."""
+    def update_ticket_assignee(self, channel_id: str, assignee_id: str):
+        """Update the assignee of a ticket."""
         self.cursor.execute(
-            "INSERT INTO tickets (category, assigned_id, archived) VALUES (?, ?, ?)",
-            (category, assigned_id, archived)
+            "UPDATE tickets SET assignee_id = ? WHERE channel_id = ?",
+            (assignee_id, channel_id)
         )
         self.connection.commit()
-        ticket_id = self.cursor.lastrowid
-        logger.info(f"Ticket {ticket_id} created.")
-        return ticket_id
+        logger.info(f"Ticket {channel_id} assignee updated to {assignee_id}.")
 
-    def update_ticket(self, ticket_id: int, category: str, assigned_id: str, archived: str):
-        """Update a ticket."""
+    def delete_ticket(self, channel_id: str):
+        """Delete a ticket by its channel_id."""
         self.cursor.execute(
-            "UPDATE tickets SET category = ?, assigned_id = ?, archived = ? WHERE id = ?",
-            (category, assigned_id, archived, ticket_id)
+            "DELETE FROM tickets WHERE channel_id = ?", (channel_id,)
         )
         self.connection.commit()
-        logger.info(f"Ticket {ticket_id} updated.")
+        logger.info(f"Ticket {channel_id} deleted.")
+
+
+db = Database(C.db_file)

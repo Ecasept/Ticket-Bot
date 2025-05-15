@@ -1,27 +1,23 @@
 import discord
-import dynamic
 from utils import C, R, get_support_role
+from database import db
 
 
-class ModOptionsMessage(dynamic.DynamicPersistentView):
+class ModOptionsMessage(discord.ui.View):
     """
     A view that contains buttons for mod options.
     """
     view_id: str = "mod_options"
 
-    def __init__(self, category: str, assigned_id: str, interaction_user_id: str, parent_msg_id: str, archived: str):
-        super().__init__(self.view_id, category, assigned_id,
-                         interaction_user_id, parent_msg_id, archived)
+    def __init__(self, category: str, assigned_id: str,  assigned_to_self: bool, user_id: str):
+        super().__init__()
+
         self.category = category
-        self.assigned_id = assigned_id
-        self.interaction_user_id = interaction_user_id
-        self.parent_msg_id = parent_msg_id
-        self.assigned_to_self = assigned_id == interaction_user_id
-        self.archived = archived
+        self.assignee_id = assigned_id
+        self.assigned_to_self = assigned_to_self
+        self.user_id = user_id
 
-        print(f"Assigned ID: {self.assigned_id}")
-
-        if self.assigned_id == "":
+        if self.assignee_id is None:
             assign_button = discord.ui.Button(
                 label=R.assign_ticket, style=discord.ButtonStyle.primary, custom_id="assign_ticket")
             assign_button.callback = self.assign_ticket
@@ -39,80 +35,107 @@ class ModOptionsMessage(dynamic.DynamicPersistentView):
 
         if category == C.cat_application and self.assigned_to_self:
             approve_button = discord.ui.Button(
+                row=1,
                 label=R.approve_application, style=discord.ButtonStyle.success, custom_id="approve_ticket")
             approve_button.callback = self.approve_application
             self.add_item(approve_button)
 
             reject_button = discord.ui.Button(
+                row=1,
                 label=R.reject_application, style=discord.ButtonStyle.danger, custom_id="reject_ticket")
             reject_button.callback = self.reject_application
             self.add_item(reject_button)
 
     async def assign_ticket(self, interaction: discord.Interaction):
-        from ticket import TicketOptionsMessage
+        await interaction.response.defer(ephemeral=True)
+
         new_assigned_id = str(interaction.user.id)
-        # Get ticket options message
-        ticket_options_msg = await interaction.channel.fetch_message(self.parent_msg_id)
-        # Get ticket options view
-        new_msg = TicketOptionsMessage(
-            self.category,
-            new_assigned_id,
-            self.archived
+
+        # Update ticket in database
+        db.update_ticket_assignee(str(interaction.channel.id), new_assigned_id)
+
+        # Edit channel permissions
+        await interaction.channel.set_permissions(
+            interaction.guild.get_member(int(new_assigned_id)),
+            send_messages=True
         )
-        # Edit ticket options message
-        await ticket_options_msg.edit(
-            content=new_msg.msg,
-            view=new_msg
+        support_role = get_support_role(interaction.guild)
+        await interaction.channel.set_permissions(
+            support_role,
+            send_messages=False
         )
         # Edit mod options message
-        new_msg, new_view = ModOptionsMessage.create(
-            interaction,
-            self.category,
-            new_assigned_id,
-            self.parent_msg_id,
-            self.archived
-        )
+        new_msg, new_view = ModOptionsMessage.create(interaction)
         await interaction.edit(
             content=new_msg,
             view=new_view
         )
 
     async def unassign_ticket(self, interaction: discord.Interaction):
-        from ticket import TicketOptionsMessage
-        # Get ticket options message
-        ticket_options_msg = await interaction.channel.fetch_message(self.parent_msg_id)
-        # Get ticket options view
-        new_msg = TicketOptionsMessage(
-            self.category,
-            "",
-            self.archived
+        await interaction.response.defer(ephemeral=True)
+
+        # Update ticket in database
+        db.update_ticket_assignee(str(interaction.channel.id), None)
+
+        # Edit channel permissions
+        assignee_member = interaction.guild.get_member(int(self.assignee_id))
+        await interaction.channel.set_permissions(
+            assignee_member,
+            send_messages=None
         )
-        # Edit ticket options message
-        await ticket_options_msg.edit(
-            content=new_msg.msg,
-            view=new_msg
+
+        support_role = get_support_role(interaction.guild)
+        await interaction.channel.set_permissions(
+            support_role,
+            send_messages=None
         )
+
         # Edit mod options message
-        new_msg, new_view = ModOptionsMessage.create(
-            interaction,
-            self.category,
-            "",
-            self.parent_msg_id,
-            self.archived
-        )
+        new_msg, new_view = ModOptionsMessage.create(interaction)
         await interaction.edit(
             content=new_msg,
             view=new_view
         )
 
     async def approve_application(self, interaction: discord.Interaction):
-        pass
+        await interaction.response.defer(ephemeral=True)
+
+        # Get the user who submitted the application
+        user = interaction.guild.get_member(int(self.user_id))
+        if user is None:
+            await interaction.followup.send(
+                content=R.user_not_found_msg,
+                ephemeral=True
+            )
+            return
+
+        # Add the user to the role
+        support_role = get_support_role(interaction.guild)
+        await user.add_roles(support_role)
+        # Optionally, you can also send a message in the ticket channel
+        await interaction.channel.send(
+            content=R.application_approved_msg % user.mention,
+        )
 
     async def reject_application(self, interaction: discord.Interaction):
-        pass
+        await interaction.response.defer(ephemeral=True)
+
+        # Get the user who submitted the application
+        user = interaction.guild.get_member(int(self.user_id))
+        if user is None:
+            await interaction.followup.send(
+                content=R.user_not_found_msg,
+                ephemeral=True
+            )
+            return
+
+        # Optionally, you can also send a message in the ticket channel
+        await interaction.channel.send(
+            content=R.application_rejected_msg % user.mention,
+        )
 
     @staticmethod
-    def create(interaction: discord.Interaction, category: str, assigned_id: str, parent_msg_id: str, archived: str) -> tuple[str, discord.ui.View]:
+    def create(interaction: discord.Interaction) -> tuple[str, discord.ui.View]:
         """
         Create a mod options message and view.
         :param interaction: The interaction object from which the mod options message is created.
@@ -122,15 +145,36 @@ class ModOptionsMessage(dynamic.DynamicPersistentView):
         :param archived: Whether the ticket is archived or not.
         :return: A tuple containing the mod options message and view.
         """
+
         support_role = get_support_role(interaction.guild)
         if support_role not in interaction.user.roles:
-
             return R.mod_options_no_permission, None
         else:
-            view = ModOptionsMessage(category, assigned_id,
-                                     str(interaction.user.id), parent_msg_id, archived)
-            assigned_user = interaction.guild.get_member(
-                int(assigned_id)) if assigned_id else None
+            ticket = db.get_ticket(str(interaction.channel.id))
+            if ticket is None:
+                return R.ticket_not_found_msg, None
+            assignee_id = ticket["assignee_id"]
+
+            view = ModOptionsMessage(
+                category=ticket["category"],
+                assigned_id=assignee_id,
+                assigned_to_self=interaction.user.id == int(
+                    assignee_id) if assignee_id else False,
+                user_id=str(interaction.user.id)
+            )
+
+            if assignee_id is None:
+                mention = None
+            else:
+                try:
+                    assignee = interaction.guild.get_member(
+                        int(assignee_id))
+                except ValueError:
+                    assignee = None
+                mention = assignee.mention if assignee else f"<@{assignee_id}>"
+
+            assignee = interaction.guild.get_member(
+                int(assignee_id)) if assignee_id else None
             msg = (R.mod_options_assigned_msg %
-                   assigned_user.mention) if assigned_user else R.mod_options_unassigned_msg
+                   mention) if mention else R.mod_options_unassigned_msg
             return msg, view

@@ -49,8 +49,14 @@ class ResDE:
     approve_application: str = "Annehmen"
     reject_application: str = "Ablehnen"
 
-    ticket_options_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
-    ticket_options_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
+    header_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
+    header_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
+
+    ticket_not_found_msg: str = "Ticket nicht gefunden. Bitte erstelle ein neues Ticket."
+
+    user_not_found_msg: str = "Benutzer nicht gefunden. Bitte erstelle ein neues Ticket."
+    application_approved_msg: str = "Herzlichen Glückwunsch, %s! Du bist jetzt ein Mitglied des Support-Teams."
+    application_rejected_msg: str = "Leider wurde deine Bewerbung abgelehnt, %s."
 
 
 @dataclass
