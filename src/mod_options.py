@@ -74,11 +74,13 @@ class ModOptionsMessage(discord.ui.View):
         # Edit channel permissions
         await interaction.channel.set_permissions(
             interaction.guild.get_member(int(new_assigned_id)),
+            read_messages=True,
             send_messages=True
         )
         support_role = get_support_role(interaction.guild)
         await interaction.channel.set_permissions(
             support_role,
+            read_messages=True,
             send_messages=False
         )
         # Edit mod options message
