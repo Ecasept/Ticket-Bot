@@ -14,7 +14,7 @@ class Database:
             self.create_database(self.filename)
         self.connection = sqlite3.connect(self.filename)
         self.cursor = self.connection.cursor()
-        logger.info(f"Database {self.filename} opened.")
+        logger.info("db", f"Database {self.filename} opened.")
 
     def create_database(self, filename: str):
         """Create the database file and tables"""
@@ -29,12 +29,12 @@ class Database:
         self.cursor.executescript(schema)
         self.connection.commit()
         self.connection.close()
-        logger.info(f"Database {filename} created.")
+        logger.info("db", f"Database {filename} created.")
 
     def close(self):
         """Close the database connection."""
         self.connection.close()
-        logger.info("Database connection closed.")
+        logger.info("db", "Database connection closed.")
 
     def create_ticket(self, channel_id: str, category: str, user_id: str, assignee_id: str):
         """Create a new ticket."""
@@ -43,8 +43,8 @@ class Database:
             (channel_id, category, user_id, assignee_id)
         )
         self.connection.commit()
-        logger.info(
-            f"Ticket {channel_id} created with category {category}, user {user_id}, and assignee {assignee_id}.")
+        logger.info("db",
+                    f"Ticket {channel_id} created with category {category}, user {user_id}, and assignee {assignee_id}.")
         return channel_id
 
     def get_ticket(self, channel_id: str):
@@ -70,7 +70,8 @@ class Database:
             (assignee_id, channel_id)
         )
         self.connection.commit()
-        logger.info(f"Ticket {channel_id} assignee updated to {assignee_id}.")
+        logger.info(
+            "db", f"Ticket {channel_id} assignee updated to {assignee_id}.")
 
     def delete_ticket(self, channel_id: str):
         """Delete a ticket by its channel_id."""
@@ -78,7 +79,7 @@ class Database:
             "DELETE FROM tickets WHERE channel_id = ?", (channel_id,)
         )
         self.connection.commit()
-        logger.info(f"Ticket {channel_id} deleted.")
+        logger.info("db", f"Ticket {channel_id} deleted.")
 
 
 db = Database(C.db_file)

@@ -1,6 +1,7 @@
 import discord
 from src.utils import C, R, get_support_role
 from src.database import db
+from src.utils import logger
 
 
 class ModOptionsMessage(discord.ui.View):
@@ -71,6 +72,10 @@ class ModOptionsMessage(discord.ui.View):
             view=new_view
         )
 
+        logger.info("mod_options",
+                    f"Ticket {str(interaction.channel.id)} assigned to {interaction.user.name} (ID: {interaction.user.id})"
+                    )
+
     async def unassign_ticket(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
@@ -97,6 +102,10 @@ class ModOptionsMessage(discord.ui.View):
             view=new_view
         )
 
+        logger.info("mod_options",
+                    f"Ticket {str(interaction.channel.id)} unassigned by {interaction.user.name} (ID: {interaction.user.id})"
+                    )
+
     async def approve_application(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
@@ -117,6 +126,10 @@ class ModOptionsMessage(discord.ui.View):
             content=R.application_approved_msg % user.mention,
         )
 
+        logger.info("mod_options",
+            f"Application approved for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
+        )
+
     async def reject_application(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
@@ -132,6 +145,10 @@ class ModOptionsMessage(discord.ui.View):
         # Optionally, you can also send a message in the ticket channel
         await interaction.channel.send(
             content=R.application_rejected_msg % user.mention,
+        )
+
+        logger.info("mod_options",
+            f"Application rejected for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
         )
 
     @staticmethod

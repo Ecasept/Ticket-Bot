@@ -22,7 +22,8 @@ async def get_support_category(guild: discord.Guild):
         guild.categories, name=C.support_category_name)
 
     if category is None:
-        logger.info("Creating support category for server %s", guild.name)
+        logger.info(
+            "utils", "Creating support category for server %s", guild.name)
         category = await guild.create_category(C.support_category_name)
         category.set_permissions(
             guild.default_role, read_messages=False)
@@ -35,6 +36,8 @@ async def get_transcript_category(guild: discord.Guild):
     category = discord.utils.get(
         guild.categories, name=C.transcript_category_name)
     if category is None:
+        logger.info(
+            "utils", "Creating transcript category for server %s", guild.name)
         category = await guild.create_category(C.transcript_category_name)
         category.set_permissions(
             guild.default_role, read_messages=False)

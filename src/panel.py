@@ -12,7 +12,7 @@ class PanelView(discord.ui.View):
     @discord.ui.button(label=R.create_ticket_button, style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=R.create_ticket_emoji), custom_id="create_ticket")
     async def callback(self, button: discord.ui.Button, interaction: discord.Interaction):
         await interaction.response.send_message(R.choose_category, view=TicketCategorySelection(), ephemeral=True)
-        logger.info(
+        logger.info("panel",
             f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
 
 
@@ -73,7 +73,7 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.User, catego
         }
     )
 
-    logger.info(f"Ticket channel created for {user.name} (ID: {user.id})")
+    logger.info("panel", f"Ticket channel created for {user.name} (ID: {user.id})")
     return channel
 
 
@@ -85,7 +85,7 @@ async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel:
         view=view
     )
 
-    logger.info(
+    logger.info("panel",
         f"Ticket channel initialized for {user.name} (ID: {user.id})")
 
 

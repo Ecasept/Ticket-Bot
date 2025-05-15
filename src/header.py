@@ -3,6 +3,7 @@ import discord
 from src.mod_options import ModOptionsMessage
 from src.utils import R, get_transcript_category
 from src.database import db
+from src.utils import logger
 
 
 class HeaderView(discord.ui.View):
@@ -35,6 +36,8 @@ class HeaderView(discord.ui.View):
             content=R.ticket_closed_msg,
             view=None
         )
+        logger.info("header",
+                    f"Ticket {str(interaction.channel.id)} closed by {interaction.user.name} (ID: {interaction.user.id})")
 
     async def open_mod_options(self, interaction: discord.Interaction):
         msg, view = ModOptionsMessage.create(
@@ -46,3 +49,6 @@ class HeaderView(discord.ui.View):
             view=view,
             ephemeral=True
         )
+
+        logger.info("header",
+                    f"Mod options opened for ticket {str(interaction.channel.id)} by {interaction.user.name} (ID: {interaction.user.id})")
