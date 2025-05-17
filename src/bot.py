@@ -2,6 +2,8 @@
 Main entry point for the Discord bot. Handles bot events, command registration, and startup/shutdown logic.
 """
 import discord
+from src.close_request import TicketCloseRequestView
+from src.closed import ClosedView
 from src.panel import PanelView
 from src.header import HeaderView
 from src.utils import R, TOKEN, logger
@@ -18,6 +20,8 @@ async def on_ready():
     # This is required to make them work after a restart
     bot.add_view(PanelView())
     bot.add_view(HeaderView())
+    bot.add_view(TicketCloseRequestView())
+    bot.add_view(ClosedView())
 
 
 @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
@@ -31,7 +35,8 @@ async def create_panel(ctx: discord.ApplicationContext):
 @bot.slash_command(name="ping", description=R.ping_desc)
 async def ping(ctx: discord.ApplicationContext):
     await ctx.respond("Pong!")
-    logger.info("cmd", f"Ping command used by {ctx.user.name} (ID: {ctx.user.id})")
+    logger.info(
+        "cmd", f"Ping command used by {ctx.user.name} (ID: {ctx.user.id})")
 
 try:
     if TOKEN is None:

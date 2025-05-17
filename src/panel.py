@@ -12,6 +12,7 @@ class PanelView(discord.ui.View):
     """
     A Discord UI view for the main ticket panel, allowing users to create new tickets.
     """
+
     def __init__(self):
         super().__init__(timeout=None)
 
@@ -22,7 +23,7 @@ class PanelView(discord.ui.View):
         """
         await interaction.response.send_message(R.choose_category, view=TicketCategorySelection(), ephemeral=True)
         logger.info("panel",
-            f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
+                    f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
 
 
 class TicketCategorySelection(discord.ui.View):
@@ -38,7 +39,7 @@ class TicketCategorySelection(discord.ui.View):
                 label=R.application, value=C.cat_application, description=R.application_desc),
             discord.SelectOption(
                 label=R.report, value=C.cat_report, description=R.report_desc),
-        ]
+        ],
     )
     async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
         """
@@ -104,7 +105,8 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.User, catego
         }
     )
 
-    logger.info("panel", f"Ticket channel created for {user.name} (ID: {user.id})")
+    logger.info(
+        "panel", f"Ticket channel created for {user.name} (ID: {user.id})")
     return channel
 
 
@@ -125,7 +127,7 @@ async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel:
     )
 
     logger.info("panel",
-        f"Ticket channel initialized for {user.name} (ID: {user.id})")
+                f"Ticket channel initialized for {user.name} (ID: {user.id})")
 
 
 async def create_new_ticket(guild: discord.Guild, user: discord.User, category: str):

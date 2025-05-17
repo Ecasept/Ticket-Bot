@@ -39,7 +39,7 @@ class ResDE:
     ping_desc: str = "Testet ob der Bot antwortet."
 
     close_ticket: str = "Ticket schließen"
-    ticket_closed_msg: str = "Dieses Ticket wurde geschlossen. Du kannst es nicht mehr benutzen."
+    ticket_closed_msg: str = "Dein Ticket wurde geschlossen, %s!"
 
     ticket_category_title: str = "Erstelle ein Ticket"
     ticket_category_placeholder: str = "Wähle eine Kategorie"
@@ -72,6 +72,25 @@ class ResDE:
     user_not_found_msg: str = "Benutzer nicht gefunden. Bitte erstelle ein neues Ticket."
     application_approved_msg: str = "Herzlichen Glückwunsch, %s! Du bist jetzt ein Mitglied des Support-Teams."
     application_rejected_msg: str = "Leider wurde deine Bewerbung abgelehnt, %s."
+
+    continue_button: str = "Weiter"
+
+    ticket_not_found: str = "Dieses Ticket konnte nicht in der Datenbank gefunden werden."
+    ticket_already_closed: str = "Dieses Ticket ist bereits geschlossen."
+    ticket_close_no_permission: str = "Du hast keine Berechtigung um dieses Ticket zu schließen."
+
+    ticket_close_request_msg: str = "%s möchte dieses Ticket schließen."
+    ticket_close_request_accept: str = "Annehmen"
+    ticket_close_request_decline: str = "Ablehnen"
+    ticket_close_request_declined_msg: str = "%s, deine Anfrage das Ticket zu schließen wurde abgelehnt."
+    ticket_close_request_decline_no_permission: str = "Du hast keine Berechtigung diese Anfrage abzulehnen."
+    ticket_close_request_accept_no_permission: str = "Du hast keine Berechtigung diese Anfrage anzunehmen."
+
+    delete_ticket_button: str = "Löschen"
+    reopen_ticket_button: str = "Wieder öffnen"
+    ticket_delete_no_permission: str = "Du hast keine Berechtigung dieses Ticket zu löschen."
+    ticket_reopen_no_permission: str = "Du hast keine Berechtigung dieses Ticket wieder zu öffnen."
+    ticket_reopened_msg: str = "%s, dein Ticket wurde wieder geöffnet."
 
 
 @dataclass

@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 	category TEXT CHECK(category IN ('application', 'report')),
 	user_id TEXT,
 	assignee_id TEXT,
+	archived BOOLEAN DEFAULT FALSE,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

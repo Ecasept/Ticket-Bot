@@ -3,10 +3,12 @@ Implements the HeaderView for ticket channels, providing UI for closing tickets 
 """
 import discord
 
+from src.close_request import TicketCloseRequestView
+from src.closed import close_ticket
 from src.mod_options import ModOptionsMessage
-from src.utils import R, get_transcript_category
+from src.utils import R, ensure_existence, get_support_role, get_transcript_category
 from src.database import db
-from src.utils import logger
+from src.utils import logger, error_embed
 
 
 class HeaderView(discord.ui.View):
@@ -34,18 +36,35 @@ class HeaderView(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the close action.
         """
-        # Change category
-        category = await get_transcript_category(interaction.guild)
-        await interaction.channel.edit(category=category)
+        cid = str(interaction.channel.id)
+        ticket = db.get_ticket(cid)
+        if not await ensure_existence(ticket, interaction):
+            logger.error("header",
+                         f"Ticket {cid} not found in the database when trying to close it.")
+            return
+        if ticket["archived"]:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_already_closed),
+                ephemeral=True
+            )
+            return
 
-        db.delete_ticket(str(interaction.channel.id))
+        if ticket["user_id"] == str(interaction.user.id):
+            msg, view = TicketCloseRequestView.create(interaction)
+            await interaction.response.send_message(
+                content=msg,
+                view=view,
+            )
+            logger.info("header",
+                        f"Ticket close request sent for ticket {cid} by {interaction.user.name} (ID: {interaction.user.id})")
 
-        await interaction.edit(
-            content=R.ticket_closed_msg,
-            view=None
-        )
-        logger.info("header",
-                    f"Ticket {str(interaction.channel.id)} closed by {interaction.user.name} (ID: {interaction.user.id})")
+        elif get_support_role(interaction.guild) in interaction.user.roles:
+            await close_ticket(interaction)
+        else:
+            await interaction.response.send_message(
+                content=R.ticket_close_no_permission,
+                ephemeral=True
+            )
 
     async def open_mod_options(self, interaction: discord.Interaction):
         """
