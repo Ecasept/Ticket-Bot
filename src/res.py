@@ -46,10 +46,13 @@ class ResDE:
 
     application: str = "Bewerbung"
     report: str = "Report"
+    support: str = "Support"
     application_prefix: str = "bewerbung"
     report_prefix: str = "report"
+    support_prefix: str = "support"
     application_desc: str = "Neue Bewerbung einreichen"
     report_desc: str = "Einen Nutzer melden"
+    support_desc: str = "Hilfe bei allgemeinen Fragen"
 
     choose_category: str = "Wähle eine Kategorie für dein Ticket."
 
@@ -66,6 +69,7 @@ class ResDE:
 
     header_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
     header_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
+    header_msg_support: str = "Willkommen im Ticket, %s! Hier kannst du deine Support-Anfrage stellen"
 
     ticket_not_found_msg: str = "Ticket nicht gefunden. Bitte erstelle ein neues Ticket."
 
@@ -106,3 +110,4 @@ class Constants:
 
     cat_application: str = "application"
     cat_report: str = "report"
+    cat_support: str = "support"

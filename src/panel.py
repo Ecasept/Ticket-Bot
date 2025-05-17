@@ -28,7 +28,7 @@ class PanelView(discord.ui.View):
 
 class TicketCategorySelection(discord.ui.View):
     """
-    A Discord UI view for selecting the ticket category (application or report).
+    A Discord UI view for selecting the ticket category (application, report, or support).
     """
     @discord.ui.select(
         placeholder=R.ticket_category_placeholder,
@@ -39,6 +39,8 @@ class TicketCategorySelection(discord.ui.View):
                 label=R.application, value=C.cat_application, description=R.application_desc),
             discord.SelectOption(
                 label=R.report, value=C.cat_report, description=R.report_desc),
+            discord.SelectOption(
+                label=R.support, value=C.cat_support, description=R.support_desc),
         ],
     )
     async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
@@ -65,7 +67,17 @@ def generate_channel_name(user: discord.User, category: str):
     Returns:
         str: The generated channel name.
     """
-    prefix = R.application_prefix if category == C.cat_application else R.report_prefix
+    match category:
+        case C.cat_application:
+            prefix = R.application_prefix
+        case C.cat_report:
+            prefix = R.report_prefix
+        case C.cat_support:
+            prefix = R.support_prefix
+        case _:
+            logger.error(
+                "panel", f"Invalid category {category} for channel name generation.")
+            prefix = R.support_prefix
 
     channel_name = f"{prefix}-{user.name}"
     i = 1
@@ -120,7 +132,17 @@ async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel:
         category (str): The ticket category.
     """
     view = HeaderView()
-    msg = R.header_msg_application if category == C.cat_application else R.header_msg_report
+    match category:
+        case C.cat_application:
+            msg = R.header_msg_application
+        case C.cat_report:
+            msg = R.header_msg_report
+        case C.cat_support:
+            msg = R.header_msg_support
+        case _:
+            logger.error(
+                "panel", f"Invalid category {category} for ticket channel initialization.")
+            msg = R.header_msg_support
     await channel.send(
         content=msg % user.mention,
         view=view

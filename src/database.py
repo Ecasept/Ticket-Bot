@@ -8,10 +8,47 @@ import os
 from src.utils import C, logger
 
 
+USER_VERSION = 1
+
+
 class Database:
     """
     Handles SQLite database operations for ticket management.
     """
+
+    def _migrate(self, from_version: int = None):
+        """
+        Apply migrations to the database schema.
+        v0 is the initial version of the database.
+        If you want to create the database from scratch, set `from_version` to -1.
+        Args:
+            from_version (int): The version to start migrations from. If None, uses the current user version. Can be set to -1 to create the database from scratch.
+        """
+        if from_version is None:
+            # Get the current user version
+            current_user_version = self.connection.execute(
+                "PRAGMA user_version"
+            ).fetchone()[0]
+        else:
+            current_user_version = from_version
+
+        if current_user_version == USER_VERSION:
+            logger.info("db", "Database version is up to date.")
+            return
+
+        # Incrementally apply migrations until the current user version matches the latest one
+        while current_user_version < USER_VERSION:
+            mig_name = f"db/migrations/v{current_user_version + 1}.sql"
+            with open(mig_name, 'r') as f:
+                migration = f.read()
+            self.connection.executescript(migration)
+            current_user_version += 1
+        # Set the user version to the latest version
+        self.connection.execute(
+            "PRAGMA user_version = {}".format(USER_VERSION)
+        )
+        self.connection.commit()
+        logger.info("db", f"Database migrated to version {USER_VERSION}.")
 
     def __init__(self, filename: str):
         """
@@ -24,12 +61,14 @@ class Database:
     def connect(self):
         """
         Connect to the database. If it doesn't exist, create it.
+        Apply migrations if necessary.
         """
         if not os.path.exists(self.filename):
             self._create_database(self.filename)
         self.connection = sqlite3.connect(self.filename)
         self.cursor = self.connection.cursor()
         logger.info("db", f"Database {self.filename} opened.")
+        self._migrate()
 
     def _create_database(self, filename: str):
         """
@@ -43,9 +82,10 @@ class Database:
         # Create the tables
         self.connection = sqlite3.connect(filename)
         self.cursor = self.connection.cursor()
-        with open(C.db_schema_file, 'r') as f:
-            schema = f.read()
-        self.cursor.executescript(schema)
+
+        # Create the tables using the migrations
+        self._migrate(-1)
+
         self.connection.commit()
         self.connection.close()
         logger.info("db", f"Database {filename} created.")
