@@ -16,13 +16,14 @@ class Database:
     Handles SQLite database operations for ticket management.
     """
 
-    def _migrate(self, from_version: int = None):
+    def _migrate(self, backup: bool, from_version: int = None, ):
         """
         Apply migrations to the database schema.
         v0 is the initial version of the database.
         If you want to create the database from scratch, set `from_version` to -1.
         Args:
             from_version (int): The version to start migrations from. If None, uses the current user version. Can be set to -1 to create the database from scratch.
+            backup (bool): Whether to create a backup of the database before migration.
         """
         if from_version is None:
             # Get the current user version
@@ -35,6 +36,16 @@ class Database:
         if current_user_version == USER_VERSION:
             logger.info("db", "Database version is up to date.")
             return
+
+        if backup:
+            # Create a backup of the database
+            backup_filename = self.filename + ".bak"
+            if os.path.exists(backup_filename):
+                os.remove(backup_filename)
+            with open(self.filename, 'rb') as original_file:
+                with open(backup_filename, 'wb') as backup_file:
+                    backup_file.write(original_file.read())
+            logger.info("db", f"Backup created: {backup_filename}")
 
         # Incrementally apply migrations until the current user version matches the latest one
         while current_user_version < USER_VERSION:
@@ -68,7 +79,7 @@ class Database:
         self.connection = sqlite3.connect(self.filename)
         self.cursor = self.connection.cursor()
         logger.info("db", f"Database {self.filename} opened.")
-        self._migrate()
+        self._migrate(True)
 
     def _create_database(self, filename: str):
         """
@@ -84,7 +95,7 @@ class Database:
         self.cursor = self.connection.cursor()
 
         # Create the tables using the migrations
-        self._migrate(-1)
+        self._migrate(False, -1)
 
         self.connection.commit()
         self.connection.close()
