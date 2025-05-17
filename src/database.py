@@ -34,7 +34,8 @@ class Database:
             current_user_version = from_version
 
         if current_user_version == USER_VERSION:
-            logger.info("db", "Database version is up to date.")
+            logger.info(
+                "db", f"Database version is up to date (v{USER_VERSION}).")
             return
 
         if backup:
