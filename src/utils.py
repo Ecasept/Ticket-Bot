@@ -13,6 +13,11 @@ logger = log.Logger("bot.log")
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 
+class CategoryError(Exception):
+    """Custom exception for category-related errors."""
+    pass
+
+
 def get_support_role(guild: discord.Guild) -> discord.Role:
     """
     Return the role that manages tickets in the server.
@@ -24,62 +29,68 @@ def get_support_role(guild: discord.Guild) -> discord.Role:
     return discord.utils.get(guild.roles, name=C.support_role_name)
 
 
-async def get_ticket_category(interaction: discord.Interaction) -> discord.CategoryChannel | None:
+async def get_ticket_category(interaction: discord.Interaction) -> discord.CategoryChannel:
     """
-    Return the ticket category where tickets are contained. If it doesn't exist, send an error message and return `None`.
-    No action needs to be taken if `None` is returned, as the user is already informed. The command can be cancelled.
+    Return the ticket category where tickets are contained. If it doesn't exist, send an error message and raise an exception.
     Args:
         interaction (discord.Interaction): The interaction context.
     Returns:
-        discord.CategoryChannel: The support category, or `None` if it doesn't exist.
+        discord.CategoryChannel: The support category.
+    Raises:
+        CategoryError: If the category is not set or not found.
     """
     from src.database import db
     category_id = db.get_constant(C.ticket_category)
     if category_id is None:
         # No category set
-        await interaction.response.send_message(
-            embed=error_embed(R.setup_no_ticket_category),
+        msg = R.setup_no_ticket_category
+        await interaction.followup.send(
+            embed=error_embed(msg),
             ephemeral=True
         )
-        return None
+        raise CategoryError(msg)
     category = interaction.guild.get_channel(int(category_id))
     if category is None:
         # Category not found
-        await interaction.response.send_message(
-            embed=error_embed(R.setup_ticket_category_not_found),
+        msg = R.setup_ticket_category_not_found
+        await interaction.followup.send(
+            embed=error_embed(msg),
             ephemeral=True
         )
-        return None
+        raise CategoryError(msg)
     return category
 
 
-async def get_transcript_category(interaction: discord.Interaction) -> discord.CategoryChannel | None:
+async def get_transcript_category(interaction: discord.Interaction) -> discord.CategoryChannel:
     """
-    Return the transcript category for closed tickets. If it doesn't exist, send an error message and return `None`.
-    No action needs to be taken if `None` is returned, as the user is already informed. The command can be cancelled.
+    Return the transcript category for closed tickets. If it doesn't exist, send an error message and raise an exception.
     Args:
         interaction (discord.Interaction): The interaction context.
     Returns:
-        discord.CategoryChannel: The transcript category, or `None` if it doesn't exist.
+        discord.CategoryChannel: The transcript category.
+    Raises:
+        CategoryError: If the category is not set or not found.
     """
     from src.database import db
     category_id = db.get_constant(
         C.transcript_category)
     if category_id is None:
         # No category set
-        await interaction.response.send_message(
-            embed=error_embed(R.setup_no_transcript_category),
+        msg = R.setup_no_transcript_category
+        await interaction.followup.send(
+            embed=error_embed(msg),
             ephemeral=True
         )
-        return None
+        raise CategoryError(msg)
     category = interaction.guild.get_channel(int(category_id))
     if category is None:
         # Category not found
-        await interaction.response.send_message(
-            embed=error_embed(R.setup_transcript_category_not_found),
+        msg = R.setup_transcript_category_not_found
+        await interaction.followup.send(
+            embed=error_embed(msg),
             ephemeral=True
         )
-        return None
+        raise CategoryError(msg)
     return category
 
 
