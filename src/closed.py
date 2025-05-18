@@ -8,17 +8,18 @@ class ClosedView(discord.ui.View):
         super().__init__(timeout=None)
 
     @staticmethod
-    def create(interaction: discord.Interaction) -> tuple[str, discord.ui.View]:
+    def create(interaction: discord.Interaction) -> tuple[discord.Embed, discord.ui.View]:
         """
         Factory method to create the closed ticket message and view for a given interaction.
         Args:
             interaction (discord.Interaction): The interaction context.
         Returns:
-            tuple[str, discord.ui.View]: The message and the view to display.
+            tuple[discord.Embed, discord.ui.View]: The embed and the view to display.
         """
         view = ClosedView()
-        msg = R.ticket_closed_msg % interaction.user.mention
-        return msg, view
+        embed = create_embed(R.ticket_closed_msg %
+                             interaction.user.mention, color=C.error_color)
+        return embed, view
 
     @discord.ui.button(label=R.delete_ticket_button, style=discord.ButtonStyle.danger, custom_id="delete_ticket")
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -104,9 +105,9 @@ async def close_ticket(interaction: discord.Interaction):
     db.update_ticket_archived(str(interaction.channel.id), True)
 
     # Send message
-    msg, view = ClosedView.create(interaction)
+    embed, view = ClosedView.create(interaction)
     await interaction.channel.send(
-        embed=create_embed(msg),
+        embed=embed,
         view=view
     )
     logger.info("closed",
