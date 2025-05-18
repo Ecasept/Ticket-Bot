@@ -8,7 +8,7 @@ import os
 from src.utils import C, logger
 
 
-USER_VERSION = 1
+USER_VERSION = 2
 
 
 class Database:
@@ -194,6 +194,38 @@ class Database:
         )
         self.connection.commit()
         logger.info("db", f"Ticket {channel_id} deleted.")
+
+    # === Constants ===
+
+    def get_constant(self, key: str) -> str | None:
+        """
+        Get a constant value from the database.
+        Args:
+            key (str): Key of the constant.
+        Returns:
+            str or None: Constant value if found, else None.
+        """
+        self.cursor.execute(
+            "SELECT value FROM constants WHERE key = ?", (key,))
+        constant = self.cursor.fetchone()
+        if constant:
+            return constant[0]
+        else:
+            return None
+
+    def set_constant(self, key: str, value: str):
+        """
+        Set a constant value in the database.
+        Args:
+            key (str): Key of the constant.
+            value (str): Value to set.
+        """
+        self.cursor.execute(
+            "INSERT OR REPLACE INTO constants (key, value) VALUES (?, ?)",
+            (key, value)
+        )
+        self.connection.commit()
+        logger.info("db", f"Constant {key} set to {value}.")
 
 
 db = Database(C.db_file)

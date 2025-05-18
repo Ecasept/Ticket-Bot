@@ -6,7 +6,7 @@ import discord
 from src.close_request import TicketCloseRequestView
 from src.closed import close_ticket
 from src.mod_options import ModOptionsMessage
-from src.utils import R, ensure_existence, get_support_role, get_transcript_category
+from src.utils import R, ensure_existence, get_support_role, create_embed
 from src.database import db
 from src.utils import logger, error_embed
 
@@ -52,7 +52,7 @@ class HeaderView(discord.ui.View):
         if ticket["user_id"] == str(interaction.user.id):
             msg, view = TicketCloseRequestView.create(interaction)
             await interaction.response.send_message(
-                content=msg,
+                embed=create_embed(msg),
                 view=view,
             )
             logger.info("header",
@@ -62,7 +62,7 @@ class HeaderView(discord.ui.View):
             await close_ticket(interaction)
         else:
             await interaction.response.send_message(
-                content=R.ticket_close_no_permission,
+                embed=error_embed(R.ticket_close_no_permission),
                 ephemeral=True
             )
 
@@ -77,7 +77,7 @@ class HeaderView(discord.ui.View):
         )
 
         await interaction.response.send_message(
-            content=msg,
+            embed=create_embed(msg),
             view=view,
             ephemeral=True
         )

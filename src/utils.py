@@ -24,46 +24,62 @@ def get_support_role(guild: discord.Guild) -> discord.Role:
     return discord.utils.get(guild.roles, name=C.support_role_name)
 
 
-async def get_support_category(guild: discord.Guild):
+async def get_ticket_category(interaction: discord.Interaction) -> discord.CategoryChannel | None:
     """
-    Return the category that contains the ticket channels. If it doesn't exist, create it.
+    Return the ticket category where tickets are contained. If it doesn't exist, send an error message and return `None`.
+    No action needs to be taken if `None` is returned, as the user is already informed. The command can be cancelled.
     Args:
-        guild (discord.Guild): The Discord guild.
+        interaction (discord.Interaction): The interaction context.
     Returns:
-        discord.CategoryChannel: The support category.
+        discord.CategoryChannel: The support category, or `None` if it doesn't exist.
     """
-    category = discord.utils.get(
-        guild.categories, name=C.support_category_name)
-
+    from src.database import db
+    category_id = db.get_constant(C.ticket_category)
+    if category_id is None:
+        # No category set
+        await interaction.response.send_message(
+            embed=error_embed(R.setup_no_ticket_category),
+            ephemeral=True
+        )
+        return None
+    category = interaction.guild.get_channel(int(category_id))
     if category is None:
-        logger.info(
-            "utils", "Creating support category for server %s", guild.name)
-        category = await guild.create_category(C.support_category_name)
-        category.set_permissions(
-            guild.default_role, read_messages=False)
-        category.set_permissions(guild.me, read_messages=True)
-        category.set_permissions(get_support_role(guild), read_messages=True)
+        # Category not found
+        await interaction.response.send_message(
+            embed=error_embed(R.setup_ticket_category_not_found),
+            ephemeral=True
+        )
+        return None
     return category
 
 
-async def get_transcript_category(guild: discord.Guild):
+async def get_transcript_category(interaction: discord.Interaction) -> discord.CategoryChannel | None:
     """
-    Return the transcript category for closed tickets. If it doesn't exist, create it.
+    Return the transcript category for closed tickets. If it doesn't exist, send an error message and return `None`.
+    No action needs to be taken if `None` is returned, as the user is already informed. The command can be cancelled.
     Args:
-        guild (discord.Guild): The Discord guild.
+        interaction (discord.Interaction): The interaction context.
     Returns:
-        discord.CategoryChannel: The transcript category.
+        discord.CategoryChannel: The transcript category, or `None` if it doesn't exist.
     """
-    category = discord.utils.get(
-        guild.categories, name=C.transcript_category_name)
+    from src.database import db
+    category_id = db.get_constant(
+        C.transcript_category)
+    if category_id is None:
+        # No category set
+        await interaction.response.send_message(
+            embed=error_embed(R.setup_no_transcript_category),
+            ephemeral=True
+        )
+        return None
+    category = interaction.guild.get_channel(int(category_id))
     if category is None:
-        logger.info(
-            "utils", "Creating transcript category for server %s", guild.name)
-        category = await guild.create_category(C.transcript_category_name)
-        category.set_permissions(
-            guild.default_role, read_messages=False)
-        category.set_permissions(guild.me, read_messages=True)
-        category.set_permissions(get_support_role(guild), read_messages=True)
+        # Category not found
+        await interaction.response.send_message(
+            embed=error_embed(R.setup_transcript_category_not_found),
+            ephemeral=True
+        )
+        return None
     return category
 
 
@@ -75,15 +91,29 @@ def error_embed(msg: str) -> discord.Embed:
     Returns:
         discord.Embed: The error message embed.
     """
-    embed = discord.Embed(
-        description=msg,
-        color=discord.Color.red()
-    )
-    return embed
+    return create_embed(msg, discord.Color.red())
 
 
 R = res.get_resources("de")
 C = res.Constants()
+
+
+def create_embed(message: str, color: discord.Color = C.embed_color, title: str = None) -> discord.Embed:
+    """
+    Create a Discord embed.
+    Args:
+        message (str): The main message for the embed.
+        color (discord.Color, optional): The color of the embed. Defaults to C.embed_color.
+        title (str, optional): The title of the embed. Defaults to None.
+    Returns:
+        discord.Embed: The created embed.
+    """
+    embed = discord.Embed(
+        title=title,
+        description=message,
+        color=color
+    )
+    return embed
 
 
 async def ensure_existence(ticket: dict, interaction: discord.Interaction) -> bool:

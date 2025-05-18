@@ -4,6 +4,7 @@ String resources and constants for the Discord bot, supporting localization and 
 # String resources
 
 from dataclasses import dataclass
+import discord
 
 
 def get_resources(lang: str):
@@ -31,9 +32,10 @@ class ResDE:
     create_ticket_button: str = "Ticket erstellen"
     ticket_msg_created: str = "Benutzer können den Knopf unten benutzten um Tickets zu erstellen!"
     create_ticket_emoji: str = "✉️"
+    ticket_panel_title: str = "Ticket Support"
 
     ticket_msg_desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
-    ticket_channel_created: str = "Ticket-Kanal erstellt! %s"
+    ticket_channel_created: str = "Ticket erstellt! %s"
     ticket: str = "ticket"
 
     ping_desc: str = "Testet ob der Bot antwortet."
@@ -96,18 +98,40 @@ class ResDE:
     ticket_reopen_no_permission: str = "Du hast keine Berechtigung dieses Ticket wieder zu öffnen."
     ticket_reopened_msg: str = "%s, dein Ticket wurde wieder geöffnet."
 
+    # setup.py
+    channel_subcommand_desc = "Konfiguriert den Bot."
+
+    # setup_tickets
+    setup_tickets_desc = "Die Kategorie, in der Tickets erstellt werden sollen."
+    setup_no_ticket_category = "Es ist derzeit keine Kategorie für Tickets festgelegt."
+    setup_tickets_current_category = "Die aktuelle Ticket-Kategorie ist %s."
+    setup_tickets_set_category = "Die Ticket-Kategorie wurde auf %s gesetzt."
+    setup_ticket_category_not_found = "Die Kategorie für Tickets konnte nicht gefunden werden. Bitte stelle sicher, dass die Kategorie existiert und der Bot die Berechtigung hat, sie zu sehen."
+
+    # setup_transcript
+    setup_transcript_desc = "Die Kategorie, in der Transkripte gespeichert werden sollen."
+    setup_no_transcript_category = "Es ist derzeit keine Kategorie für Transkripte festgelegt."
+    setup_transcript_current_category = "Die aktuelle Transkript-Kategorie ist %s."
+    setup_transcript_set_category = "Die Transkript-Kategorie wurde auf %s gesetzt."
+    setup_transcript_category_not_found = "Die Kategorie für Transkripte konnte nicht gefunden werden. Bitte stelle sicher, dass die Kategorie existiert und der Bot die Berechtigung hat, sie zu sehen."
+
 
 @dataclass
 class Constants:
     """
     Configuration constants for categories, roles, and database paths.
     """
-    support_category_name: str = "Support"
     support_role_name: str = "Support"
-    transcript_category_name: str = "Archiv"
+    ticket_category: str = "ticket"
+    transcript_category: str = "transcript"
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 
     cat_application: str = "application"
     cat_report: str = "report"
     cat_support: str = "support"
+
+    # Embed colors
+    embed_color: discord.Color = discord.Color.blue()
+    error_color: discord.Color = discord.Color.red()
+    success_color: discord.Color = discord.Color.green()

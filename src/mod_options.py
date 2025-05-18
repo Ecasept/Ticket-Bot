@@ -2,7 +2,7 @@
 Implements the ModOptionsMessage view for moderator actions on tickets, such as assigning, unassigning, approving, or rejecting applications.
 """
 import discord
-from src.utils import C, R, get_support_role
+from src.utils import C, R, get_support_role, create_embed, error_embed
 from src.database import db
 from src.utils import logger
 
@@ -71,23 +71,11 @@ class ModOptionsMessage(discord.ui.View):
         # Update ticket in database
         db.update_ticket_assignee(str(interaction.channel.id), new_assigned_id)
 
-        # Edit channel permissions
-        await interaction.channel.set_permissions(
-            interaction.guild.get_member(int(new_assigned_id)),
-            read_messages=True,
-            send_messages=True
-        )
-        support_role = get_support_role(interaction.guild)
-        await interaction.channel.set_permissions(
-            support_role,
-            read_messages=True,
-            send_messages=False
-        )
         # Edit mod options message
-        new_msg, new_view = ModOptionsMessage.create(interaction)
-        await interaction.edit(
-            content=new_msg,
-            view=new_view
+        msg, view = ModOptionsMessage.create(interaction)
+        await interaction.edit_original_response(
+            embed=create_embed(msg),
+            view=view
         )
 
         logger.info("mod_options",
@@ -120,8 +108,8 @@ class ModOptionsMessage(discord.ui.View):
 
         # Edit mod options message
         new_msg, new_view = ModOptionsMessage.create(interaction)
-        await interaction.edit(
-            content=new_msg,
+        await interaction.edit_original_response(
+            embed=create_embed(new_msg),
             view=new_view
         )
 
@@ -141,7 +129,7 @@ class ModOptionsMessage(discord.ui.View):
         user = interaction.guild.get_member(int(self.user_id))
         if user is None:
             await interaction.followup.send(
-                content=R.user_not_found_msg,
+                embed=error_embed(R.user_not_found_msg),
                 ephemeral=True
             )
             return
@@ -151,7 +139,7 @@ class ModOptionsMessage(discord.ui.View):
         await user.add_roles(support_role)
         # Optionally, you can also send a message in the ticket channel
         await interaction.channel.send(
-            content=R.application_approved_msg % user.mention,
+            embed=create_embed(R.application_approved_msg % user.mention, color=C.success_color),
         )
 
         logger.info("mod_options",
@@ -170,14 +158,14 @@ class ModOptionsMessage(discord.ui.View):
         user = interaction.guild.get_member(int(self.user_id))
         if user is None:
             await interaction.followup.send(
-                content=R.user_not_found_msg,
+                embed=error_embed(R.user_not_found_msg),
                 ephemeral=True
             )
             return
 
         # Optionally, you can also send a message in the ticket channel
         await interaction.channel.send(
-            content=R.application_rejected_msg % user.mention,
+            embed=create_embed(R.application_rejected_msg % user.mention, color=discord.Color.red()),
         )
 
         logger.info("mod_options",

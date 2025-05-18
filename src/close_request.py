@@ -1,9 +1,9 @@
 import discord
 
 from src.closed import close_ticket
-from src.utils import R, ensure_assignee
-from src.utils import logger, error_embed
+from src.utils import R, ensure_assignee, error_embed, create_embed
 from src.database import db
+from src.utils import logger
 from src.utils import get_support_role
 from src.utils import ensure_existence
 
@@ -79,5 +79,5 @@ class TicketCloseRequestView(discord.ui.View):
 
         await interaction.message.delete()
         await interaction.channel.send(
-            content=R.ticket_close_request_declined_msg % interaction.user.mention,
+            embed=create_embed(R.ticket_close_request_declined_msg % interaction.user.mention, color=discord.Color.orange()),
         )

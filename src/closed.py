@@ -1,5 +1,5 @@
 import discord
-from src.utils import R, ensure_assignee, ensure_existence, error_embed, get_support_category, get_transcript_category, logger
+from src.utils import C, R, ensure_assignee, ensure_existence, error_embed, get_ticket_category, get_transcript_category, logger, create_embed
 from src.database import db
 
 
@@ -62,7 +62,7 @@ class ClosedView(discord.ui.View):
             return
 
         # Move back to original category
-        original_category = await get_support_category(interaction.guild)
+        original_category = await get_ticket_category(interaction)
         await interaction.channel.edit(category=original_category)
 
         # Update database
@@ -80,7 +80,8 @@ class ClosedView(discord.ui.View):
         # Send message
         await interaction.message.delete()
         await interaction.channel.send(
-            content=R.ticket_reopened_msg % user.mention,
+            embed=create_embed(R.ticket_reopened_msg %
+                               user.mention, color=C.success_color),
         )
 
         logger.info("header",
@@ -96,7 +97,7 @@ async def close_ticket(interaction: discord.Interaction):
     """
     await interaction.response.defer()
     # Change category
-    category = await get_transcript_category(interaction.guild)
+    category = await get_transcript_category(interaction)
     await interaction.channel.edit(category=category)
 
     # Update database
@@ -105,7 +106,7 @@ async def close_ticket(interaction: discord.Interaction):
     # Send message
     msg, view = ClosedView.create(interaction)
     await interaction.channel.send(
-        content=msg,
+        embed=create_embed(msg),
         view=view
     )
     logger.info("header",

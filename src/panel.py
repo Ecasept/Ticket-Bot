@@ -4,7 +4,7 @@ Implements the PanelView and ticket creation logic for the Discord bot, includin
 import discord
 
 from src.header import HeaderView
-from src.utils import C, R, get_support_category, get_support_role, logger
+from src.utils import C, R, get_ticket_category, get_support_role, logger, create_embed
 from src.database import db
 
 
@@ -21,7 +21,7 @@ class PanelView(discord.ui.View):
         """
         Handles the creation of a new ticket when the panel button is clicked.
         """
-        await interaction.response.send_message(R.choose_category, view=TicketCategorySelection(), ephemeral=True)
+        await interaction.response.send_message(embed=create_embed(R.choose_category), view=TicketCategorySelection(), ephemeral=True)
         logger.info("panel",
                     f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
 
@@ -50,12 +50,12 @@ class TicketCategorySelection(discord.ui.View):
         category = select.values[0]
         await interaction.response.defer(ephemeral=True)
 
-        channel = await create_new_ticket(interaction.guild, interaction.user, category)
+        channel = await create_new_ticket(interaction, interaction.user, category)
 
         msg = R.ticket_channel_created % channel.mention
         await interaction.followup.edit_message(
             message_id=interaction.message.id,
-            content=msg, view=None)
+            embed=create_embed(msg, color=C.success_color), view=None)
 
 
 def generate_channel_name(user: discord.User, category: str):
@@ -91,27 +91,27 @@ def generate_channel_name(user: discord.User, category: str):
     return channel_name
 
 
-async def create_ticket_channel(guild: discord.Guild, user: discord.User, category: str):
+async def create_ticket_channel(interaction: discord.Interaction, user: discord.User, category: str):
     """
     Create a new text channel for the ticket in the support category.
     Args:
-        guild (discord.Guild): The Discord guild.
+        interaction (discord.Interaction): The Discord interaction.
         user (discord.User): The user creating the ticket.
         category (str): The ticket category.
     Returns:
         discord.TextChannel: The created channel.
     """
-    support_category = await get_support_category(guild)
+    ticket_category = await get_ticket_category(interaction)
 
     channel_name = generate_channel_name(user, category)
-    support_role = get_support_role(guild)
+    support_role = get_support_role(interaction.guild)
 
-    channel = await guild.create_text_channel(
+    channel = await interaction.guild.create_text_channel(
         name=channel_name,
-        category=support_category,
+        category=ticket_category,
         overwrites={
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.me: discord.PermissionOverwrite(read_messages=True),
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
             support_role: discord.PermissionOverwrite(read_messages=True),
             user: discord.PermissionOverwrite(read_messages=True)
         }
@@ -122,11 +122,11 @@ async def create_ticket_channel(guild: discord.Guild, user: discord.User, catego
     return channel
 
 
-async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel: discord.TextChannel, category: str):
+async def init_ticket_channel(interaction: discord.Interaction, user: discord.User, channel: discord.TextChannel, category: str):
     """
     Initialize the ticket channel with a header message and view.
     Args:
-        guild (discord.Guild): The Discord guild.
+        interaction (discord.Interaction): The Discord interaction.
         user (discord.User): The user who created the ticket.
         channel (discord.TextChannel): The ticket channel.
         category (str): The ticket category.
@@ -144,7 +144,7 @@ async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel:
                 "panel", f"Invalid category {category} for ticket channel initialization.")
             msg = R.header_msg_support
     await channel.send(
-        content=msg % user.mention,
+        embed=create_embed(msg % user.mention),
         view=view
     )
 
@@ -152,22 +152,22 @@ async def init_ticket_channel(guild: discord.Guild, user: discord.User, channel:
                 f"Ticket channel initialized for {user.name} (ID: {user.id})")
 
 
-async def create_new_ticket(guild: discord.Guild, user: discord.User, category: str):
+async def create_new_ticket(interaction: discord.Interaction, user: discord.User, category: str):
     """
     Create a new ticket: channel, database entry, and header message.
     Args:
-        guild (discord.Guild): The Discord guild.
+        interaction (discord.Interaction): The Discord interaction.
         user (discord.User): The user creating the ticket.
         category (str): The ticket category.
     Returns:
         discord.TextChannel: The created ticket channel.
     """
-    channel = await create_ticket_channel(guild, user, category)
+    channel = await create_ticket_channel(interaction, user, category)
     db.create_ticket(
         str(channel.id),
         category,
         str(user.id),
         None
     )
-    await init_ticket_channel(guild, user, channel, category)
+    await init_ticket_channel(interaction, user, channel, category)
     return channel
