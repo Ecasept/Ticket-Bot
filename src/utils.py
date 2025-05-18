@@ -94,19 +94,20 @@ async def get_transcript_category(interaction: discord.Interaction) -> discord.C
     return category
 
 
-def error_embed(msg: str) -> discord.Embed:
-    """
-    Create an error message embed.
-    Args:
-        msg (str): The error message.
-    Returns:
-        discord.Embed: The error message embed.
-    """
-    return create_embed(msg, discord.Color.red())
-
-
 R = res.get_resources("de")
 C = res.Constants()
+
+
+def error_embed(msg: str, title: str = None) -> discord.Embed:
+    """
+    Create an error embed with a standardized title and color.
+    Args:
+        msg (str): The error message.
+        title (str, optional): The title of the error embed. Defaults to R.error_title.
+    Returns:
+        discord.Embed: The created error embed.
+    """
+    return create_embed(msg, color=C.error_color, title=title or R.error_title)
 
 
 def create_embed(message: str, color: discord.Color = C.embed_color, title: str = None) -> discord.Embed:
@@ -129,9 +130,9 @@ def create_embed(message: str, color: discord.Color = C.embed_color, title: str 
 
 async def ensure_existence(ticket: dict, interaction: discord.Interaction) -> bool:
     """
-    Ensure the ticket exists in the database. Sends an error message if not.
+    Ensure a ticket exists in the database. If not, send an error message and return False.
     Args:
-        ticket (dict): The ticket data.
+        ticket (dict): The ticket to check.
         interaction (discord.Interaction): The interaction context.
     Returns:
         bool: True if the ticket exists, False otherwise.

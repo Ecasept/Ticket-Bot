@@ -29,7 +29,7 @@ async def on_ready():
 @discord.default_permissions(administrator=True)
 async def create_panel(ctx: discord.ApplicationContext):
     await ctx.send(embed=create_embed(R.panel_msg, title=R.ticket_panel_title), view=PanelView())
-    await ctx.respond(embed=create_embed(R.ticket_msg_created, color=C.success_color), ephemeral=True)
+    await ctx.respond(embed=create_embed(R.ticket_msg_created, color=C.success_color, title=R.ticket_panel_title), ephemeral=True)
     logger.info("cmd", f"Panel created by {ctx.user.name} (ID: {ctx.user.id})")
 
 

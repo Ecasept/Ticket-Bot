@@ -21,7 +21,7 @@ class PanelView(discord.ui.View):
         """
         Handles the creation of a new ticket when the panel button is clicked.
         """
-        await interaction.response.send_message(embed=create_embed(R.choose_category), view=TicketCategorySelection(), ephemeral=True)
+        await interaction.response.send_message(embed=create_embed(R.choose_category, title=R.ticket_category_title), view=TicketCategorySelection(), ephemeral=True)
         logger.info("panel",
                     f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
 

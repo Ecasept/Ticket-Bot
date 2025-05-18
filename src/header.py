@@ -52,7 +52,7 @@ class HeaderView(discord.ui.View):
         if ticket["user_id"] == str(interaction.user.id):
             msg, view = TicketCloseRequestView.create(interaction)
             await interaction.response.send_message(
-                embed=create_embed(msg),
+                embed=create_embed(msg, title=R.close_ticket_request_title),
                 view=view,
             )
             logger.info("header",

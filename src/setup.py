@@ -11,7 +11,7 @@ def setup_setup_command(bot: discord.Bot):
     """
     setup = discord.SlashCommandGroup(
         "setup",
-        R.channel_subcommand_desc
+        R.setup_subcommand_desc
     )
 
     @setup.command(name="tickets")
@@ -38,22 +38,24 @@ def setup_setup_command(bot: discord.Bot):
             cat = db.get_constant(C.ticket_category)
             if cat is None:
                 # No category set
-                await ctx.respond(embed=create_embed(R.setup_no_ticket_category, color=discord.Color.orange()), ephemeral=True)
+                await ctx.respond(embed=create_embed(R.setup_no_ticket_category, color=C.warning_color, title=R.setup_title), ephemeral=True)
                 return
             cat = ctx.guild.get_channel(int(cat))
             if cat is None:
                 # Category not found
-                await ctx.respond(embed=error_embed(R.setup_ticket_category_not_found), ephemeral=True)
+                await ctx.respond(embed=error_embed(R.setup_ticket_category_not_found, title=R.setup_title), ephemeral=True)
                 return
             await ctx.respond(
-                embed=create_embed(R.setup_tickets_current_category % cat.mention),
+                embed=create_embed(R.setup_tickets_current_category %
+                                   cat.mention, title=R.setup_title),
                 ephemeral=True
             )
             return
         # Set the category in the database
         db.set_constant(C.ticket_category, str(category.id))
         await ctx.respond(
-            embed=create_embed(R.setup_tickets_set_category % category.mention, color=C.success_color),
+            embed=create_embed(R.setup_tickets_set_category %
+                               category.mention, color=C.success_color, title=R.setup_title),
             ephemeral=True
         )
         logger.info(
@@ -92,14 +94,16 @@ def setup_setup_command(bot: discord.Bot):
                 await ctx.respond(embed=error_embed(R.setup_transcript_category_not_found), ephemeral=True)
                 return
             await ctx.respond(
-                embed=create_embed(R.setup_transcript_current_category % cat.mention),
+                embed=create_embed(
+                    R.setup_transcript_current_category % cat.mention),
                 ephemeral=True
             )
             return
         # Set the category in the database
         db.set_constant(C.transcript_category, str(category.id))
         await ctx.respond(
-            embed=create_embed(R.setup_transcript_set_category % category.mention, color=C.success_color),
+            embed=create_embed(R.setup_transcript_set_category %
+                               category.mention, color=C.success_color),
             ephemeral=True
         )
         logger.info(

@@ -28,6 +28,7 @@ class ResDE:
     """
     German string resources for the bot's UI and messages.
     """
+    error_title: str = "Fehler"
     panel_msg: str = "Drücke den Button um ein Ticket zu erstellen."
     create_ticket_button: str = "Ticket erstellen"
     ticket_msg_created: str = "Benutzer können den Knopf unten benutzten um Tickets zu erstellen!"
@@ -69,6 +70,8 @@ class ResDE:
     approve_application: str = "Annehmen"
     reject_application: str = "Ablehnen"
 
+    close_ticket_request_title: str = "Ticket schließen?"
+
     header_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
     header_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
     header_msg_support: str = "Willkommen im Ticket, %s! Hier kannst du deine Support-Anfrage stellen"
@@ -99,7 +102,8 @@ class ResDE:
     ticket_reopened_msg: str = "%s, dein Ticket wurde wieder geöffnet."
 
     # setup.py
-    channel_subcommand_desc = "Konfiguriert den Bot."
+    setup_title: str = "Setup"
+    setup_subcommand_desc = "Konfiguriert den Bot."
 
     # setup_tickets
     setup_tickets_desc = "Die Kategorie, in der Tickets erstellt werden sollen."
@@ -119,11 +123,11 @@ class ResDE:
 @dataclass
 class Constants:
     """
-    Configuration constants for categories, roles, and database paths.
+    Constants for the bot, such as category names, role names, and colors.
     """
     support_role_name: str = "Support"
-    ticket_category: str = "ticket"
-    transcript_category: str = "transcript"
+    ticket_category: str = "ticket_category"
+    transcript_category: str = "transcript_category"
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 
@@ -133,5 +137,6 @@ class Constants:
 
     # Embed colors
     embed_color: discord.Color = discord.Color.blue()
-    error_color: discord.Color = discord.Color.red()
     success_color: discord.Color = discord.Color.green()
+    error_color: discord.Color = discord.Color.red()
+    warning_color: discord.Color = discord.Color.orange()
