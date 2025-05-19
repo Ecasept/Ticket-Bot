@@ -119,6 +119,34 @@ class ResDE:
     setup_transcript_set_category = "Die Transkript-Kategorie wurde auf %s gesetzt."
     setup_transcript_category_not_found = "Die Kategorie für Transkripte konnte nicht gefunden werden. Bitte stelle sicher, dass die Kategorie existiert und der Bot die Berechtigung hat, sie zu sehen."
 
+    # Setup Log Channel
+    setup_logchannel_desc: str = "Konfiguriert den Log-Channel für Team-Aktionen."
+    setup_no_logchannel: str = "Es ist kein Log-Channel für Team-Aktionen konfiguriert."
+    setup_logchannel_not_found: str = "Der konfigurierte Log-Channel wurde nicht gefunden."
+    setup_logchannel_current: str = "Der aktuelle Log-Channel für Team-Aktionen ist %s."
+    setup_logchannel_set: str = "Der Log-Channel für Team-Aktionen wurde auf %s gesetzt."
+    log_channel_title: str = "Team Log Channel"
+
+    # Team Commands
+    team_group_desc: str = "Verwaltet Team-Mitglieder und Listen."
+    team_add_desc: str = "Fügt einen Benutzer zu einem Team hinzu und weist eine Rolle zu."
+    team_add_success_log: str = "%s wurde von %s die Rolle %s zugewiesen."
+    team_add_no_log_channel: str = "Fehler: Bitte konfiguriere zuerst einen Log-Channel mit `/setup logchannel`."
+    team_list_desc: str = "Listet Team-Mitglieder basierend auf ausgewählten Rollen auf."
+    team_list_select_roles_prompt: str = "Bitte wähle die Rollen aus, die als Team-Rollen angezeigt werden sollen."
+    team_list_role_select_placeholder: str = "Wähle Rollen aus"
+    team_list_submit_button_label: str = "Anzeigen"
+    team_list_embed_title: str = "Team-Mitglieder"
+    team_list_no_members_found: str = "Keine Mitglieder mit dieser Rolle gefunden."
+    team_list_select_at_least_one_role: str = "Bitte wähle mindestens eine Rolle aus."
+    add_role_no_perm: str = "Du hast keine Berechtigung, diese Rolle zuzuweisen."
+    error_occurred: str = "Ein Fehler ist aufgetreten: %s"
+    new_team_member_title: str = "Neues Team-Mitglied"
+
+    # Team command option descriptions
+    team_add_user_desc: str = "Der Benutzer, der zum Team hinzugefügt werden soll."
+    team_add_role_desc: str = "Die Rolle, die dem Benutzer zugewiesen werden soll."
+
 
 @dataclass
 class Constants:
@@ -128,6 +156,7 @@ class Constants:
     support_role_name: str = "Support"
     ticket_category: str = "ticket_category"
     transcript_category: str = "transcript_category"
+    log_channel: str = "log_channel_id"  # Key for the log channel in DB
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 

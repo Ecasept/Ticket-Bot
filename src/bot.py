@@ -9,8 +9,11 @@ from src.panel import PanelView
 from src.header import HeaderView
 from src.utils import R, C, TOKEN, logger, create_embed
 from src.database import db
+from src.team_list import setup_team_list_command
 
-bot = discord.Bot()
+intents = discord.Intents.default()
+intents.members = True
+bot = discord.Bot(intents=intents)
 
 
 @bot.event
@@ -40,6 +43,7 @@ async def ping(ctx: discord.ApplicationContext):
         "cmd", f"Ping command used by {ctx.user.name} (ID: {ctx.user.id})")
 
 setup_setup_command(bot)
+setup_team_list_command(bot)
 
 
 try:

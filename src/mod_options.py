@@ -139,7 +139,8 @@ class ModOptionsMessage(discord.ui.View):
         await user.add_roles(support_role)
         # Optionally, you can also send a message in the ticket channel
         await interaction.channel.send(
-            embed=create_embed(R.application_approved_msg % user.mention, color=C.success_color),
+            embed=create_embed(R.application_approved_msg %
+                               user.mention, color=C.success_color),
         )
 
         logger.info("mod_options",
@@ -165,7 +166,8 @@ class ModOptionsMessage(discord.ui.View):
 
         # Optionally, you can also send a message in the ticket channel
         await interaction.channel.send(
-            embed=create_embed(R.application_rejected_msg % user.mention, color=discord.Color.red()),
+            embed=create_embed(R.application_rejected_msg %
+                               user.mention, color=C.error_color),
         )
 
         logger.info("mod_options",
@@ -183,6 +185,7 @@ class ModOptionsMessage(discord.ui.View):
         """
         support_role = get_support_role(interaction.guild)
         if support_role not in interaction.user.roles:
+            # User does not have the support role
             return R.mod_options_no_permission, None
         else:
             ticket = db.get_ticket(str(interaction.channel.id))

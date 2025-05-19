@@ -18,6 +18,11 @@ class CategoryError(Exception):
     pass
 
 
+class ChannelError(Exception):
+    """Custom exception for channel-related errors."""
+    pass
+
+
 def get_support_role(guild: discord.Guild) -> discord.Role:
     """
     Return the role that manages tickets in the server.
@@ -92,6 +97,38 @@ async def get_transcript_category(interaction: discord.Interaction) -> discord.C
         )
         raise CategoryError(msg)
     return category
+
+
+async def get_log_channel(interaction: discord.Interaction) -> discord.TextChannel:
+    """
+    Return the log channel for team actions. If it doesn't exist, send an error message and raise an exception.
+    Args:
+        interaction (discord.Interaction): The interaction context.
+    Returns:
+        discord.TextChannel: The log channel.
+    Raises:
+        ChannelError: If the channel is not set or not found.
+    """
+    from src.database import db
+    channel_id = db.get_constant(C.log_channel)
+    if channel_id is None:
+        # No channel set
+        msg = R.setup_no_logchannel
+        await interaction.respond(
+            embed=error_embed(msg, title=R.log_channel_title),
+            ephemeral=True
+        )
+        raise ChannelError(msg)
+    channel = interaction.guild.get_channel(int(channel_id))
+    if not isinstance(channel, discord.TextChannel):
+        # Channel not found or not a text channel
+        msg = R.setup_logchannel_not_found
+        await interaction.respond(
+            embed=error_embed(msg, title=R.log_channel_title),
+            ephemeral=True
+        )
+        raise ChannelError(msg)
+    return channel
 
 
 R = res.get_resources("de")
