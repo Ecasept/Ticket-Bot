@@ -48,7 +48,11 @@ class HeaderView(discord.ui.View):
             )
             return
 
-        if ticket["user_id"] == str(interaction.user.id):
+        if is_mod(interaction):
+            # If the user is a mod, close the ticket directly
+            await close_ticket(interaction)
+        elif ticket["user_id"] == str(interaction.user.id):
+            # If the user is the ticket owner, send a close request
             msg, view = TicketCloseRequestView.create(interaction)
             await interaction.response.send_message(
                 embed=create_embed(msg, title=R.close_ticket_request_title),
@@ -56,10 +60,8 @@ class HeaderView(discord.ui.View):
             )
             logger.info("header",
                         f"Ticket close request sent for ticket {cid} by {interaction.user.name} (ID: {interaction.user.id})")
-
-        elif is_mod(interaction):
-            await close_ticket(interaction)
         else:
+            # If the user is neither a mod nor the ticket owner, send an error message
             await interaction.response.send_message(
                 embed=error_embed(R.ticket_close_no_permission),
                 ephemeral=True

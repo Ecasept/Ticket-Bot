@@ -91,7 +91,7 @@ class ResDE:
     ticket_not_found_msg: str = "Ticket nicht gefunden. Bitte erstelle ein neues Ticket."
 
     user_not_found_msg: str = "Ersteller nicht gefunden. Bitte erstelle ein neues Ticket."
-    application_approved_msg: str = "Herzlichen Glückwunsch, %s! Du bist jetzt ein Mitglied des Support-Teams."
+    application_approved_msg: str = "Herzlichen Glückwunsch, %s! Deine Bewerbung wurde angenommen."
     application_rejected_msg: str = "Leider wurde deine Bewerbung abgelehnt, %s."
 
     continue_button: str = "Weiter"

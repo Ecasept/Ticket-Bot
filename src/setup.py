@@ -11,7 +11,8 @@ def setup_setup_command(bot: discord.Bot):
     """
     setup = discord.SlashCommandGroup(
         "setup",
-        R.setup_subcommand_desc
+        R.setup_subcommand_desc,
+        default_member_permissions=discord.Permissions(administrator=True)
     )
 
     @setup.command(name="tickets", description=R.setup_tickets_desc)

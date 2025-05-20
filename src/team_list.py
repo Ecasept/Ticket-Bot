@@ -77,7 +77,8 @@ class RoleSelectView(discord.ui.View):
 def setup_team_list_command(bot: discord.Bot):
     team = discord.SlashCommandGroup(
         "team",
-        R.team_group_desc
+        R.team_group_desc,
+        default_member_permissions=discord.Permissions(administrator=True)
     )
 
     @team.command(name="add", description=R.team_add_desc)
