@@ -4,7 +4,7 @@ Implements the PanelView and ticket creation logic for the Discord bot, includin
 import discord
 
 from src.header import HeaderView
-from src.utils import C, R, error_embed, get_ticket_category, logger, create_embed
+from src.utils import C, R, error_embed, get_mod_roles, get_ticket_category, logger, create_embed
 from src.database import db
 
 
@@ -184,11 +184,24 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
 
     channel_name = generate_channel_name(user, category)
 
+    mod_roles, err = get_mod_roles(interaction.guild)
+    if err:
+        await interaction.response.send_message(
+            embed=error_embed(err),
+            ephemeral=True
+        )
+        logger.error(
+            "panel", f"Error getting mod roles: {err}")
+        return None
+
     overwrites = {
         user: discord.PermissionOverwrite(read_messages=True),
         interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
         interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
     }
+    for role in mod_roles:
+        # Allow moderators to read the ticket channel
+        overwrites[role] = discord.PermissionOverwrite(read_messages=True)
 
     channel = await interaction.guild.create_text_channel(
         name=channel_name,
