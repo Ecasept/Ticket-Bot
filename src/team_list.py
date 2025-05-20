@@ -116,6 +116,88 @@ def setup_team_list_command(bot: discord.Bot):
             await ctx.respond(embed=error_embed(R.error_occurred % e), ephemeral=True)
             logger.error("team", f"Error adding role: {e}")
 
+    @team.command(name="remove", description=R.team_remove_desc)
+    @discord.default_permissions(administrator=True)
+    @discord.option(
+        "user",
+        description=R.team_remove_user_desc,
+        type=discord.SlashCommandOptionType.user,
+        required=True
+    )
+    @discord.option(
+        "role",
+        description=R.team_remove_role_desc,
+        type=discord.SlashCommandOptionType.role,
+        required=True
+    )
+    async def team_remove(ctx: discord.ApplicationContext, user: discord.Member, role: discord.Role):
+        log_channel, err = await get_log_channel(ctx.interaction)
+        if err:
+            await ctx.respond(embed=error_embed(err), ephemeral=True)
+            return
+        if role not in user.roles:
+            await ctx.respond(embed=create_embed(R.team_remove_user_missing_role, color=C.error_color), ephemeral=True)
+            return
+        try:
+            await user.remove_roles(role, reason=f"Removed from team by {ctx.author.name}")
+            log_message = R.team_remove_success_log % (
+                user.mention, ctx.author.mention, role.mention)
+            await log_channel.send(embed=create_embed(log_message, title=R.team_remove_success_title))
+            await ctx.respond(embed=create_embed(log_message, color=C.success_color), ephemeral=True)
+            logger.info(
+                "team", f"{ctx.author.name} removed role {role.name} from {user.name}")
+        except discord.Forbidden:
+            await ctx.respond(embed=error_embed(R.add_role_no_perm), ephemeral=True)
+        except discord.HTTPException as e:
+            await ctx.respond(embed=error_embed(R.error_occurred % e), ephemeral=True)
+            logger.error("team", f"Error removing role: {e}")
+
+    @team.command(name="wechsel", description=R.team_wechsel_desc)
+    @discord.default_permissions(administrator=True)
+    @discord.option(
+        "user",
+        description=R.team_wechsel_user_desc,
+        type=discord.SlashCommandOptionType.user,
+        required=True
+    )
+    @discord.option(
+        "von",
+        description=R.team_wechsel_from_role_desc,
+        type=discord.SlashCommandOptionType.role,
+        required=True
+    )
+    @discord.option(
+        "zu",
+        description=R.team_wechsel_to_role_desc,
+        type=discord.SlashCommandOptionType.role,
+        required=True
+    )
+    async def team_wechsel(ctx: discord.ApplicationContext, user: discord.Member, from_role: discord.Role, to_role: discord.Role):
+        log_channel, err = await get_log_channel(ctx.interaction)
+        if err:
+            await ctx.respond(embed=error_embed(err), ephemeral=True)
+            return
+        if from_role not in user.roles:
+            await ctx.respond(embed=create_embed(R.team_wechsel_user_missing_from_role, color=C.error_color), ephemeral=True)
+            return
+        if to_role in user.roles:
+            await ctx.respond(embed=create_embed(R.team_wechsel_user_already_has_to_role, color=C.error_color), ephemeral=True)
+            return
+        try:
+            await user.remove_roles(from_role, reason=f"Role switch by {ctx.author.name}")
+            await user.add_roles(to_role, reason=f"Role switch by {ctx.author.name}")
+            log_message = R.team_wechsel_success_log % (
+                user.mention, ctx.author.mention, from_role.mention, to_role.mention)
+            await log_channel.send(embed=create_embed(log_message, title=R.team_wechsel_success_title))
+            await ctx.respond(embed=create_embed(log_message, color=C.success_color), ephemeral=True)
+            logger.info(
+                "team", f"{ctx.author.name} switched {user.name} from {from_role.name} to {to_role.name}")
+        except discord.Forbidden:
+            await ctx.respond(embed=error_embed(R.add_role_no_perm), ephemeral=True)
+        except discord.HTTPException as e:
+            await ctx.respond(embed=error_embed(R.error_occurred % e), ephemeral=True)
+            logger.error("team", f"Error switching roles: {e}")
+
     @team.command(name="list", description=R.team_list_desc)
     @discord.default_permissions(administrator=True)
     async def team_list(ctx: discord.ApplicationContext):

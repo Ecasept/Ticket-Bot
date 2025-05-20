@@ -173,6 +173,23 @@ class ResDE:
     add_role_no_perm: str = "Du hast keine Berechtigung, diese Rolle zuzuweisen."
     new_team_member_title: str = "Neues Team-Mitglied"
 
+    team_remove_desc: str = "Entfernt eine Rolle von einem Benutzer."
+    team_remove_success_log: str = "%s wurde von %s die Rolle %s entfernt."
+    team_remove_no_log_channel: str = "Fehler: Bitte konfiguriere zuerst einen Log-Channel mit `/setup logchannel`."
+    team_remove_user_desc: str = "Der Benutzer, von dem die Rolle entfernt werden soll."
+    team_remove_role_desc: str = "Die Rolle, die entfernt werden soll."
+    team_remove_success_title: str = "Team-Mitglied entfernt"
+    team_remove_user_missing_role: str = "Der Benutzer hat diese Rolle nicht."
+
+    team_wechsel_desc: str = "Wechselt die Rolle eines Benutzers."
+    team_wechsel_user_desc: str = "Der Benutzer, dessen Rolle gewechselt werden soll."
+    team_wechsel_from_role_desc: str = "Die Rolle, die entfernt werden soll."
+    team_wechsel_to_role_desc: str = "Die Rolle, die hinzugefügt werden soll."
+    team_wechsel_success_log: str = "%s wurde von %s von %s zu %s gewechselt."
+    team_wechsel_success_title: str = "Team-Rolle gewechselt"
+    team_wechsel_user_missing_from_role: str = "Der Benutzer hat die alte Rolle nicht."
+    team_wechsel_user_already_has_to_role: str = "Der Benutzer hat die neue Rolle bereits."
+
     # Team command option descriptions
     team_add_user_desc: str = "Der Benutzer, der zum Team hinzugefügt werden soll."
     team_add_role_desc: str = "Die Rolle, die dem Benutzer zugewiesen werden soll."
