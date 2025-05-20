@@ -2,7 +2,7 @@
 Implements the ModOptionsMessage view for moderator actions on tickets, such as assigning, unassigning, approving, or rejecting applications.
 """
 import discord
-from src.utils import C, R, create_embed, error_embed, is_mod
+from src.utils import C, R, create_embed, error_embed, get_member, is_mod_or_admin
 from src.database import db
 from src.utils import logger
 
@@ -117,10 +117,10 @@ class ModOptionsMessage(discord.ui.View):
         """
 
         # Get the user who submitted the application
-        user = interaction.guild.get_member(int(self.user_id))
-        if user is None:
-            await interaction.respond(
-                embed=error_embed(R.user_not_found_msg),
+        user, err = get_member(interaction.guild, self.user_id)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
                 ephemeral=True
             )
             return
@@ -143,10 +143,10 @@ class ModOptionsMessage(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the rejection.
         """
         # Get the user who submitted the application
-        user = interaction.guild.get_member(int(self.user_id))
-        if user is None:
-            await interaction.respond(
-                embed=error_embed(R.user_not_found_msg),
+        user, err = get_member(interaction.guild, self.user_id)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
                 ephemeral=True
             )
             return
@@ -176,8 +176,12 @@ class ModOptionsMessage(discord.ui.View):
         if ticket is None:
             return error_embed(R.ticket_not_found_msg), None
 
-        if not is_mod(interaction):
-            # User is the ticket creator
+        val, err = is_mod_or_admin(interaction.user)
+        if err:
+            # Error checking permissions
+            return error_embed(err), None
+        if not val:
+            # User is not a mod or admin
             return error_embed(R.mod_options_no_permission), None
 
         assignee_id = ticket["assignee_id"]

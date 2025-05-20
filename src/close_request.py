@@ -1,10 +1,9 @@
 import discord
 
 from src.closed import close_ticket
-from src.utils import C, R, ensure_assignee, error_embed, create_embed, is_mod
+from src.utils import C, R, error_embed, create_embed, is_mod_or_admin
 from src.database import db
 from src.utils import logger
-from src.utils import ensure_existence
 
 
 class TicketCloseRequestView(discord.ui.View):
@@ -33,15 +32,30 @@ class TicketCloseRequestView(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
         ticket = db.get_ticket(str(interaction.channel.id))
-        if not await ensure_existence(ticket, interaction):
-            logger.error("header",
+        if not ticket:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_not_found),
+                ephemeral=True
+            )
+            logger.error("close_request",
                          f"Ticket {str(interaction.channel.id)} not found in the database when trying to accept close request.")
             return
 
-        assignee_id = ticket["assignee_id"]
-        if not await ensure_assignee(assignee_id, interaction, R.ticket_close_request_accept_no_permission):
-            logger.error("header",
-                         f"User without permission tried to accept close request for ticket {str(interaction.channel.id)}.")
+        val, err = is_mod_or_admin(interaction.user)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
+                ephemeral=True
+            )
+            logger.error(
+                "close_request", f"Error checking permissions for ticket {str(interaction.channel.id)}: {err}")
+            return
+        if not val:
+            await interaction.response.send_message(
+                embed=error_embed(
+                    R.ticket_close_request_accept_no_permission),
+                ephemeral=True
+            )
             return
 
         # Edit the original message to remove buttons
@@ -57,24 +71,34 @@ class TicketCloseRequestView(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
         ticket = db.get_ticket(str(interaction.channel.id))
-        if not await ensure_existence(ticket, interaction):
-            logger.error("header",
+        if not ticket:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_not_found),
+                ephemeral=True
+            )
+            logger.error("close_request",
                          f"Ticket {str(interaction.channel.id)} not found in the database when trying to decline close request.")
             return
-        assignee_id = ticket["assignee_id"]
-        if assignee_id != None and assignee_id != str(interaction.user.id):
+
+        # Updated permission check using is_mod_or_admin
+        user_is_mod_admin, err = is_mod_or_admin(interaction.user)
+        if err:
             await interaction.response.send_message(
-                embed=error_embed(
-                    R.ticket_close_request_decline_no_permission),
+                embed=error_embed(err),
                 ephemeral=True
             )
+            logger.error(
+                "close_request", f"Error checking mod/admin permissions for decline ticket {str(interaction.channel.id)}: {err}")
             return
-        if assignee_id == None and not is_mod(interaction):
+
+        if not user_is_mod_admin:
             await interaction.response.send_message(
                 embed=error_embed(
                     R.ticket_close_request_decline_no_permission),
                 ephemeral=True
             )
+            logger.error(
+                "close_request", f"User {interaction.user.name} (ID: {interaction.user.id}) is not a mod/admin.")
             return
 
         # Edit the original message to remove buttons

@@ -96,9 +96,9 @@ def setup_team_list_command(bot: discord.Bot):
         required=True
     )
     async def team_add(ctx: discord.ApplicationContext, user: discord.Member, role: discord.Role):
-        log_channel = await get_log_channel(ctx.interaction)
-        if not log_channel:
-            await ctx.respond(embed=error_embed(R.team_add_no_log_channel), ephemeral=True)
+        log_channel, err = await get_log_channel(ctx.interaction)
+        if err:
+            await ctx.respond(embed=error_embed(err), ephemeral=True)
             return
 
         try:

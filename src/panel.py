@@ -60,6 +60,9 @@ class TicketCategorySelection(discord.ui.View):
             await interaction.response.defer(ephemeral=True)
 
         channel = await create_new_ticket(interaction, interaction.user, category, info)
+        if channel is None:
+            # Error occurred during ticket creation
+            return
 
         msg = R.ticket_channel_created % channel.mention
         await interaction.followup.edit_message(
@@ -158,7 +161,7 @@ def generate_channel_name(user: discord.User, category: str):
     return channel_name
 
 
-async def create_ticket_channel(interaction: discord.Interaction, user: discord.User, category: str):
+async def create_ticket_channel(interaction: discord.Interaction, user: discord.User, category: str) -> discord.TextChannel | None:
     """
     Create a new text channel for the ticket in the support category.
     Args:
@@ -166,20 +169,31 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
         user (discord.User): The user creating the ticket.
         category (str): The ticket category.
     Returns:
-        discord.TextChannel: The created channel.
+        discord.TextChannel: The created ticket channel.
+        None: If the ticket category is not found or an error occurs.
     """
-    ticket_category = await get_ticket_category(interaction)
+    ticket_category, err = await get_ticket_category(interaction)
+    if err:
+        await interaction.response.send_message(
+            embed=error_embed(err),
+            ephemeral=True
+        )
+        logger.error(
+            "panel", f"Error getting ticket category: {err}")
+        return None
 
     channel_name = generate_channel_name(user, category)
+
+    overwrites = {
+        user: discord.PermissionOverwrite(read_messages=True),
+        interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
+    }
 
     channel = await interaction.guild.create_text_channel(
         name=channel_name,
         category=ticket_category,
-        overwrites={
-            user: discord.PermissionOverwrite(read_messages=True),
-            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
-        },
+        overwrites=overwrites,
     )
 
     logger.info(
@@ -243,7 +257,7 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
                 f"Ticket channel initialized for {user.name} (ID: {user.id})")
 
 
-async def create_new_ticket(interaction: discord.Interaction, user: discord.User, category: str, info: dict | None = None):
+async def create_new_ticket(interaction: discord.Interaction, user: discord.User, category: str, info: dict | None = None) -> discord.TextChannel | None:
     """
     Create a new ticket: channel, database entry, and header message.
     Args:
@@ -253,8 +267,12 @@ async def create_new_ticket(interaction: discord.Interaction, user: discord.User
         info (dict | None): Additional information for the ticket (e.g., application details).
     Returns:
         discord.TextChannel: The created ticket channel.
+        None: If an error occurs during ticket creation.
     """
     channel = await create_ticket_channel(interaction, user, category)
+    if channel is None:
+        # Error ocurred
+        return None
     db.create_ticket(
         str(channel.id),
         category,

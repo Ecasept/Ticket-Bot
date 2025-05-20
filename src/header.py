@@ -6,7 +6,7 @@ import discord
 from src.close_request import TicketCloseRequestView
 from src.closed import close_ticket
 from src.mod_options import ModOptionsMessage
-from src.utils import R, ensure_existence, create_embed, is_mod
+from src.utils import R, create_embed, is_mod_or_admin
 from src.database import db
 from src.utils import logger, error_embed
 
@@ -37,10 +37,15 @@ class HeaderView(discord.ui.View):
         """
         cid = str(interaction.channel.id)
         ticket = db.get_ticket(cid)
-        if not await ensure_existence(ticket, interaction):
+        if not ticket:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_not_found),
+                ephemeral=True
+            )
             logger.error("header",
                          f"Ticket {cid} not found in the database when trying to close it.")
             return
+
         if ticket["archived"]:
             await interaction.response.send_message(
                 embed=error_embed(R.ticket_already_closed),
@@ -48,8 +53,18 @@ class HeaderView(discord.ui.View):
             )
             return
 
-        if is_mod(interaction):
-            # If the user is a mod, close the ticket directly
+        is_mod_admin, err = is_mod_or_admin(interaction.user)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
+                ephemeral=True
+            )
+            logger.error(
+                "header", f"Error checking permissions for ticket {cid}: {err}")
+            return
+
+        if is_mod_admin:
+            # If the user is a mod or admin, close the ticket directly
             await close_ticket(interaction)
         elif ticket["user_id"] == str(interaction.user.id):
             # If the user is the ticket owner, send a close request

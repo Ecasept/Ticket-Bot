@@ -6,157 +6,129 @@ import dotenv
 import src.res as res
 import src.log as log
 import os
+from typing import Tuple, Optional, List
 
 dotenv.load_dotenv()
 
 logger = log.Logger("bot.log")
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-
-class CategoryError(Exception):
-    """Custom exception for category-related errors."""
-    pass
-
-
-class ChannelError(Exception):
-    """Custom exception for channel-related errors."""
-    pass
-
-
-# def get_support_role(guild: discord.Guild) -> discord.Role:
-#     """
-#     Return the role that manages tickets in the server.
-#     Args:
-#         guild (discord.Guild): The Discord guild.
-#     Returns:
-#         discord.Role: The support role.
-#     """
-#     return discord.utils.get(guild.roles, name=C.support_role_name)
-
-
-def get_mod_roles(guild: discord.Guild) -> list[discord.Role]:
-    from src.database import db
-    mod_role_ids = db.get_constant(C.mod_roles)
-    role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
-    roles = [guild.get_role(rid) for rid in role_ids]
-    roles = [r for r in roles if r]
-    return roles
-
-
-def is_mod(interaction: discord.Interaction) -> bool:
-    """
-    Check if the user has a moderator role.
-    Args:
-        interaction (discord.Interaction): The interaction context.
-    Returns:
-        bool: True if the user has a moderator role, False otherwise.
-    """
-    mod_roles = get_mod_roles(interaction.guild)
-    return any(role in interaction.user.roles for role in mod_roles)
-
-
-async def get_ticket_category(interaction: discord.Interaction) -> discord.CategoryChannel:
-    """
-    Return the ticket category where tickets are contained. If it doesn't exist, send an error message and raise an exception.
-    Args:
-        interaction (discord.Interaction): The interaction context.
-    Returns:
-        discord.CategoryChannel: The support category.
-    Raises:
-        CategoryError: If the category is not set or not found.
-    """
-    from src.database import db
-    category_id = db.get_constant(C.ticket_category)
-    if category_id is None:
-        # No category set
-        msg = R.setup_no_ticket_category
-        await interaction.followup.send(
-            embed=error_embed(msg),
-            ephemeral=True
-        )
-        raise CategoryError(msg)
-    category = interaction.guild.get_channel(int(category_id))
-    if category is None:
-        # Category not found
-        msg = R.setup_ticket_category_not_found
-        await interaction.followup.send(
-            embed=error_embed(msg),
-            ephemeral=True
-        )
-        raise CategoryError(msg)
-    return category
-
-
-async def get_transcript_category(interaction: discord.Interaction) -> discord.CategoryChannel:
-    """
-    Return the transcript category for closed tickets. If it doesn't exist, send an error message and raise an exception.
-    Args:
-        interaction (discord.Interaction): The interaction context.
-    Returns:
-        discord.CategoryChannel: The transcript category.
-    Raises:
-        CategoryError: If the category is not set or not found.
-    """
-    from src.database import db
-    category_id = db.get_constant(
-        C.transcript_category)
-    if category_id is None:
-        # No category set
-        msg = R.setup_no_transcript_category
-        await interaction.followup.send(
-            embed=error_embed(msg),
-            ephemeral=True
-        )
-        raise CategoryError(msg)
-    category = interaction.guild.get_channel(int(category_id))
-    if category is None:
-        # Category not found
-        msg = R.setup_transcript_category_not_found
-        await interaction.followup.send(
-            embed=error_embed(msg),
-            ephemeral=True
-        )
-        raise CategoryError(msg)
-    return category
-
-
-async def get_log_channel(interaction: discord.Interaction) -> discord.TextChannel:
-    """
-    Return the log channel for team actions. If it doesn't exist, send an error message and raise an exception.
-    Args:
-        interaction (discord.Interaction): The interaction context.
-    Returns:
-        discord.TextChannel: The log channel.
-    Raises:
-        ChannelError: If the channel is not set or not found.
-    """
-    from src.database import db
-    channel_id = db.get_constant(C.log_channel)
-    if channel_id is None:
-        # No channel set
-        msg = R.setup_no_logchannel
-        await interaction.respond(
-            embed=error_embed(msg, title=R.log_channel_title),
-            ephemeral=True
-        )
-        raise ChannelError(msg)
-    channel = interaction.guild.get_channel(int(channel_id))
-    if not isinstance(channel, discord.TextChannel):
-        # Channel not found or not a text channel
-        msg = R.setup_logchannel_not_found
-        await interaction.respond(
-            embed=error_embed(msg, title=R.log_channel_title),
-            ephemeral=True
-        )
-        raise ChannelError(msg)
-    return channel
-
-
 R = res.get_resources("de")
 C = res.Constants()
 
 
-def error_embed(msg: str, title: str = None) -> discord.Embed:
+def get_mod_roles(guild: discord.Guild) -> Tuple[Optional[List[discord.Role]], Optional[str]]:
+    """
+    Retrieve the list of moderator roles for the guild from the database.
+    Args:
+        guild (discord.Guild): The Discord guild.
+    Returns:
+        Tuple[Optional[List[discord.Role]], Optional[str]]: A tuple containing the list of moderator roles (or None) and an error message (or None).
+    """
+    from src.database import db
+    mod_role_ids = db.get_constant(C.mod_roles)
+    if mod_role_ids is None:
+        return None, R.setup_no_modroles
+    try:
+        role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
+    except ValueError:
+        return None, R.setup_modroles_invalid
+    if not role_ids:
+        return None, R.setup_no_modroles
+    roles = [guild.get_role(rid) for rid in role_ids]
+    if any(role is None for role in roles):
+        return None, R.setup_modroles_not_found
+    return roles, None
+
+
+def is_mod_or_admin(user: discord.Member) -> Tuple[Optional[bool], Optional[str]]:
+    """
+    Check if the user has a moderator or administrator role.
+    Args:
+        user (discord.Member): The Discord member to check.
+    Returns:
+        Tuple[Optional[bool], Optional[str]]: True if the user has a moderator or administrator role, False otherwise. Returns (None, error) if an error occurs.
+    """
+    mod_roles, err = get_mod_roles(user.guild)
+    if err:
+        return None, err
+    return any(role.permissions.administrator for role in user.roles) or any(role in mod_roles for role in user.roles), None
+
+
+def get_member(guild: discord.Guild, user_id: str) -> Tuple[Optional[discord.Member], Optional[str]]:
+    """
+    Get a member from the guild by user ID.
+    Args:
+        guild (discord.Guild): The Discord guild.
+        user_id (str): The user ID to search for.
+    Returns:
+        Tuple[Optional[discord.Member], Optional[str]]: A tuple of (member, error_message). If the member is found, returns (member, None). Otherwise returns (None, error_message) indicating why it failed.
+    """
+    try:
+        member_id = int(user_id)
+    except ValueError:
+        return None, R.user_id_invalid
+    member = guild.get_member(int(user_id))
+    if member is None:
+        return None, R.user_not_found
+    return member, None
+
+
+async def get_ticket_category(interaction: discord.Interaction) -> Tuple[Optional[discord.CategoryChannel], Optional[str]]:
+    """
+    Get the ticket category where tickets are created.
+    Args:
+        interaction (discord.Interaction): The interaction context.
+    Returns:
+        Tuple[Optional[discord.CategoryChannel], Optional[str]]: A tuple of (category, error_message). If the category is configured and found, returns (category, None). Otherwise returns (None, error_message) indicating why it failed.
+    """
+    from src.database import db
+    category_id = db.get_constant(C.ticket_category)
+    if category_id is None:
+        return None, R.setup_no_ticket_category
+    category = interaction.guild.get_channel(int(category_id))
+    if not isinstance(category, discord.CategoryChannel):
+        return None, R.setup_ticket_category_not_found
+    return category, None
+
+
+async def get_transcript_category(interaction: discord.Interaction) -> Tuple[Optional[discord.CategoryChannel], Optional[str]]:
+    """
+    Return the transcript category for closed tickets.
+    Args:
+        interaction (discord.Interaction): The interaction context.
+    Returns:
+        Tuple[Optional[discord.CategoryChannel], Optional[str]]: The transcript category and an error message if not found.
+    """
+    from src.database import db
+    category_id = db.get_constant(C.transcript_category)
+    if category_id is None:
+        return None, R.setup_no_transcript_category
+    category = interaction.guild.get_channel(int(category_id))
+    if category is None:
+        return None, R.setup_transcript_category_not_found
+    return category, None
+
+
+async def get_log_channel(interaction: discord.Interaction) -> Tuple[Optional[discord.TextChannel], Optional[str]]:
+    """
+    Return the log channel for team actions.
+    Args:
+        interaction (discord.Interaction): The interaction context.
+    Returns:
+        Tuple[Optional[discord.TextChannel], Optional[str]]: The log channel and an error message if not found.
+    """
+    from src.database import db
+    channel_id = db.get_constant(C.log_channel)
+    if channel_id is None:
+        return None, R.setup_no_logchannel
+    channel = interaction.guild.get_channel(int(channel_id))
+    if not isinstance(channel, discord.TextChannel):
+        return None, R.setup_logchannel_not_found
+    return channel, None
+
+
+def error_embed(msg: str, title: Optional[str] = None) -> discord.Embed:
     """
     Create an error embed with a standardized title and color.
     Args:
@@ -168,7 +140,7 @@ def error_embed(msg: str, title: str = None) -> discord.Embed:
     return create_embed(msg, color=C.error_color, title=title or R.error_title)
 
 
-def create_embed(message: str, color: discord.Color = C.embed_color, title: str = None) -> discord.Embed:
+def create_embed(message: str, color: discord.Color = C.embed_color, title: Optional[str] = None) -> discord.Embed:
     """
     Create a Discord embed.
     Args:
@@ -184,47 +156,3 @@ def create_embed(message: str, color: discord.Color = C.embed_color, title: str 
         color=color
     )
     return embed
-
-
-async def ensure_existence(ticket: dict, interaction: discord.Interaction) -> bool:
-    """
-    Ensure a ticket exists in the database. If not, send an error message and return False.
-    Args:
-        ticket (dict): The ticket to check.
-        interaction (discord.Interaction): The interaction context.
-    Returns:
-        bool: True if the ticket exists, False otherwise.
-    """
-    if ticket is None:
-        await interaction.response.send_message(
-            embed=error_embed(R.ticket_not_found),
-            ephemeral=True
-        )
-        return False
-    return True
-
-
-async def ensure_assignee(assignee_id: str, interaction: discord.Interaction, msg: str) -> bool:
-    """
-    Ensure the user has permission to perform an action on the ticket.
-    This means that the user is either the assignee (if one is set) or has the support role (if no assignee is set).
-    Args:
-        assignee_id (str): The ID of the user assigned to the ticket, or None if no one is assigned.
-        interaction (discord.Interaction): The interaction context.
-        msg (str): The error message if permission is denied.
-    Returns:
-        bool: True if the user has permission, False otherwise.
-    """
-    if assignee_id is not None and assignee_id != str(interaction.user.id):
-        await interaction.response.send_message(
-            embed=error_embed(msg),
-            ephemeral=True
-        )
-        return False
-    if assignee_id is None and not is_mod(interaction):
-        await interaction.response.send_message(
-            embed=error_embed(msg),
-            ephemeral=True
-        )
-        return False
-    return True

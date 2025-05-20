@@ -1,5 +1,5 @@
 import discord
-from src.utils import C, R, ensure_assignee, ensure_existence, error_embed, get_ticket_category, get_transcript_category, logger, create_embed
+from src.utils import C, R, error_embed, get_ticket_category, get_transcript_category, is_mod_or_admin, logger, create_embed
 from src.database import db
 
 
@@ -30,13 +30,29 @@ class ClosedView(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
         ticket = db.get_ticket(str(interaction.channel.id))
-        if not await ensure_existence(ticket, interaction):
+        if not ticket:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_not_found),
+                ephemeral=True
+            )
             logger.error("closed",
                          f"Ticket {str(interaction.channel.id)} not found in the database when trying to delete it.")
             return
-        if not await ensure_assignee(ticket["assignee_id"], interaction, R.ticket_delete_no_permission):
-            logger.error("closed",
-                         f"User without permission tried to delete ticket {str(interaction.channel.id)}.")
+        # Check if the user has permission to delete the ticket
+        val, err = is_mod_or_admin(interaction.user)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
+                ephemeral=True
+            )
+            logger.error(
+                "closed", f"Error checking permissions for ticket {str(interaction.channel.id)}: {err}")
+            return
+        if not val:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_delete_no_permission),
+                ephemeral=True
+            )
             return
 
         await interaction.channel.delete()
@@ -53,7 +69,14 @@ class ClosedView(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
         # Move back to original category
-        original_category = await get_ticket_category(interaction)
+        original_category, err = await get_ticket_category(interaction)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
+                ephemeral=True
+            )
+            return
+
         await interaction.channel.edit(category=original_category)
 
         # Update database
@@ -80,7 +103,13 @@ async def close_ticket(interaction: discord.Interaction):
     """
     await interaction.response.defer()
     # Change category
-    category = await get_transcript_category(interaction)
+    category, err = await get_transcript_category(interaction)
+    if err:
+        await interaction.respond(
+            embed=error_embed(err),
+            ephemeral=True
+        )
+        return
     await interaction.channel.edit(category=category)
 
     # Update database

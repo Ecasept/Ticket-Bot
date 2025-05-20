@@ -31,6 +31,9 @@ class ResDE:
     error_title: str = "Fehler"
     error_occurred: str = "Ein Fehler ist aufgetreten: %s"
 
+    user_id_invalid: str = "Die Benutzer-ID ist ungültig."
+    user_not_found: str = "Benutzer konnte nicht gefunden werden."
+
     panel_msg: str = "Drücke den Button um ein Ticket zu erstellen. Du kannst danach eine Kategorie auswählen."
     create_ticket_button: str = "Ticket erstellen"
     ticket_msg_created: str = "Benutzer können den Knopf unten benutzten um Tickets zu erstellen!"
@@ -151,8 +154,9 @@ class ResDE:
     setup_modroles_current: str = "Die aktuellen Moderator-Rollen sind: %s."
     mod_roles_title: str = "Moderator Rollen"
     setup_no_modroles: str = "Es sind keine Moderator-Rollen konfiguriert."
-    setup_modroles_not_found: str = "Eine oder mehrere konfigurierte Moderator-Rollen wurden nicht gefunden."
+    setup_modroles_not_found: str = "Eine oder mehrere konfigurierte Moderator-Rollen konnten nicht auf dem Server gefunden werden. Bitte stelle sicher, dass die Rollen existieren und der Bot die Berechtigung hat, sie zu sehen."
     modroles_submit_button_label: str = "Auswählen"
+    setup_modroles_invalid: str = "Eine oder mehrere ausgewählte Mod-Rollen sind ungültig. Bitte wähle gültige Rollen aus."
 
     # Team Commands
     team_group_desc: str = "Verwaltet Team-Mitglieder und Listen."
