@@ -29,7 +29,9 @@ class ResDE:
     German string resources for the bot's UI and messages.
     """
     error_title: str = "Fehler"
-    panel_msg: str = "Drücke den Button um ein Ticket zu erstellen."
+    error_occurred: str = "Ein Fehler ist aufgetreten: %s"
+
+    panel_msg: str = "Drücke den Button um ein Ticket zu erstellen. Du kannst danach eine Kategorie auswählen."
     create_ticket_button: str = "Ticket erstellen"
     ticket_msg_created: str = "Benutzer können den Knopf unten benutzten um Tickets zu erstellen!"
     create_ticket_emoji: str = "✉️"
@@ -73,7 +75,7 @@ class ResDE:
     close_ticket_request_title: str = "Ticket schließen?"
 
     header_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
-    header_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
+    header_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du jemanden melden"
     header_msg_support: str = "Willkommen im Ticket, %s! Hier kannst du deine Support-Anfrage stellen"
     header_title_support: str = "Ticket-Support"
     header_title_application: str = "Bewerbung"
@@ -141,15 +143,24 @@ class ResDE:
     team_list_role_select_placeholder: str = "Wähle Rollen aus"
     team_list_submit_button_label: str = "Anzeigen"
     team_list_embed_title: str = "Team-Mitglieder"
-    team_list_no_members_found: str = "Keine Mitglieder mit dieser Rolle gefunden."
+    team_list_no_members_found: str = "Keine Mitglieder mit diesen Rollen als höchste Berechtigung gefunden."
     team_list_select_at_least_one_role: str = "Bitte wähle mindestens eine Rolle aus."
     add_role_no_perm: str = "Du hast keine Berechtigung, diese Rolle zuzuweisen."
-    error_occurred: str = "Ein Fehler ist aufgetreten: %s"
     new_team_member_title: str = "Neues Team-Mitglied"
 
     # Team command option descriptions
     team_add_user_desc: str = "Der Benutzer, der zum Team hinzugefügt werden soll."
     team_add_role_desc: str = "Die Rolle, die dem Benutzer zugewiesen werden soll."
+
+    # Application
+    application_cancelled: str = "Die Bewerbung wurde abgebrochen."
+    application_info: str = "Bitte gib die Informationen für deine Bewerbung ein."
+    application_age_label: str = "Alter"
+    application_age_placeholder: str = "Gib dein Alter ein"
+    application_apply_for_label: str = "Für was möchtest du dich bewerben?"
+    application_apply_for_placeholder: str = "Z.B. Moderator, Entwickler"
+    application_text_label: str = "Bewerbungstext"
+    application_text_placeholder: str = "Schreibe hier deine Bewerbung..."
 
 
 @dataclass
