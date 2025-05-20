@@ -12,7 +12,7 @@ from src.database import db
 from src.team_list import setup_team_list_command
 
 intents = discord.Intents.default()
-intents.members = True
+intents.members = False
 bot = discord.Bot(intents=intents)
 
 
