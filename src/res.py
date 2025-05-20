@@ -75,6 +75,10 @@ class ResDE:
     header_msg_application: str = "Willkommen im Ticket, %s! Hier kannst du deine Bewerbung einreichen"
     header_msg_report: str = "Willkommen im Ticket, %s! Hier kannst du deinen Report einreichen"
     header_msg_support: str = "Willkommen im Ticket, %s! Hier kannst du deine Support-Anfrage stellen"
+    header_title_support: str = "Ticket-Support"
+    header_title_application: str = "Bewerbung"
+    header_title_report: str = "Report"
+    header_footer: str = "Ticket-ID: %s"
 
     ticket_not_found_msg: str = "Ticket nicht gefunden. Bitte erstelle ein neues Ticket."
 

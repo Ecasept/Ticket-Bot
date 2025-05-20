@@ -15,7 +15,6 @@ class HeaderView(discord.ui.View):
     """
     A Discord UI view that contains buttons for ticket options such as closing the ticket and opening moderator options.
     """
-    view_id: str = "ticket_options"
 
     def __init__(self):
         super().__init__(timeout=None)

@@ -135,16 +135,32 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
     match category:
         case C.cat_application:
             msg = R.header_msg_application
+            title = R.header_title_application
         case C.cat_report:
             msg = R.header_msg_report
+            title = R.header_title_report
         case C.cat_support:
             msg = R.header_msg_support
+            title = R.header_title_support
         case _:
             logger.error(
                 "panel", f"Invalid category {category} for ticket channel initialization.")
             msg = R.header_msg_support
+            title = R.header_title_support
+    embed = discord.Embed(
+        title=title,
+        description=msg % user.mention,
+        color=C.embed_color,
+    )
+    embed.set_footer(text=R.header_footer % str(channel.id))
+    embed.set_author(
+        name=user.name,
+        icon_url=user.display_avatar.url
+    )
+
     await channel.send(
-        embed=create_embed(msg % user.mention),
+        content=user.mention,
+        embed=embed,
         view=view
     )
 
