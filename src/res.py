@@ -168,7 +168,7 @@ class ResDE:
     team_list_role_select_placeholder: str = "Wähle Rollen aus"
     team_list_submit_button_label: str = "Anzeigen"
     team_list_embed_title: str = "Team-Mitglieder"
-    team_list_no_members_found: str = "Keine Mitglieder mit diesen Rollen als höchste Berechtigung gefunden."
+    team_list_no_members_found: str = "Keine Mitglieder mit diesen Rollen gefunden."
     team_list_select_at_least_one_role: str = "Bitte wähle mindestens eine Rolle aus."
     add_role_no_perm: str = "Du hast keine Berechtigung, diese Rolle zuzuweisen."
     new_team_member_title: str = "Neues Team-Mitglied"

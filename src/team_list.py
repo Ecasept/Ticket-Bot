@@ -36,15 +36,12 @@ class RoleSelectView(discord.ui.View):
         sorted_selected_roles = sorted(
             self.selected_roles, key=lambda r: r.position, reverse=True)
 
-        # Create a mapping of members to their highest role
+        # Create a mapping of roles to members
         sorted_role_member_map: dict[discord.Role, list[discord.Member]] = {}
-        assigned_members = []
         for role in sorted_selected_roles:
             sorted_role_member_map[role] = []
             for member in role.members:
-                if member not in assigned_members:
-                    assigned_members.append(member)
-                    sorted_role_member_map[role].append(member)
+                sorted_role_member_map[role].append(member)
 
         # Create embed
         for (role, members) in sorted_role_member_map.items():
