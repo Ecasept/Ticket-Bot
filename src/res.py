@@ -44,7 +44,7 @@ class ResDE:
     ping_desc: str = "Testet ob der Bot antwortet."
 
     close_ticket: str = "Ticket schließen"
-    ticket_closed_msg: str = "Dein Ticket wurde geschlossen, %s!"
+    ticket_closed_msg: str = "Das Ticket wurde von %s geschlossen."
 
     ticket_category_title: str = "Erstelle ein Ticket"
     ticket_category_placeholder: str = "Wähle eine Kategorie"
@@ -64,10 +64,16 @@ class ResDE:
     assign_ticket: str = "Annehmen"
     unassign_ticket: str = "Freigeben"
 
-    mod_options: str = "Moderator-Optionen"
-    mod_options_no_permission: str = "Du hast keine Berechtigung um diese Optionen zu sehen."
-    mod_options_assigned_msg: str = "Dieses Ticket ist an %s zugewiesen."
-    mod_options_unassigned_msg: str = "Dieses Ticket ist nicht zugewiesen."
+    mod_options_title: str = "Moderator-Optionen"
+    mod_options_no_permission: str = "Du hast keine Berechtigung diese Optionen zu benutzen."
+    mod_options_user: str = "Ersteller"
+    mod_options_assignee: str = "Zugewiesen an"
+    mod_options_unassigned: str = "Nicht zugewiesen"
+    mod_options_category: str = "Kategorie"
+    mod_options_created_at: str = "Erstellt am"
+    mod_options_archived: str = "Archiviert"
+    mod_options_archived_yes: str = "Ja"
+    mod_options_archived_no: str = "Nein"
 
     approve_application: str = "Annehmen"
     reject_application: str = "Ablehnen"
@@ -84,7 +90,7 @@ class ResDE:
 
     ticket_not_found_msg: str = "Ticket nicht gefunden. Bitte erstelle ein neues Ticket."
 
-    user_not_found_msg: str = "Benutzer nicht gefunden. Bitte erstelle ein neues Ticket."
+    user_not_found_msg: str = "Ersteller nicht gefunden. Bitte erstelle ein neues Ticket."
     application_approved_msg: str = "Herzlichen Glückwunsch, %s! Du bist jetzt ein Mitglied des Support-Teams."
     application_rejected_msg: str = "Leider wurde deine Bewerbung abgelehnt, %s."
 
@@ -105,7 +111,10 @@ class ResDE:
     reopen_ticket_button: str = "Wieder öffnen"
     ticket_delete_no_permission: str = "Du hast keine Berechtigung dieses Ticket zu löschen."
     ticket_reopen_no_permission: str = "Du hast keine Berechtigung dieses Ticket wieder zu öffnen."
-    ticket_reopened_msg: str = "%s, dein Ticket wurde wieder geöffnet."
+    ticket_reopened_msg: str = "Das Ticket wurde wieder geöffnet von %s."
+
+    ticket_assigned_msg: str = "Das Ticket wurde an %s zugewiesen."
+    ticket_unassigned_msg: str = "Das Ticket wurde freigegeben."
 
     # setup.py
     setup_title: str = "Setup"
@@ -183,6 +192,7 @@ class Constants:
     support_role_name: str = "Support"
     ticket_category: str = "ticket_category"
     transcript_category: str = "transcript_category"
+    mod_roles: str = "mod_role_ids"
     log_channel: str = "log_channel_id"  # Key for the log channel in DB
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"

@@ -136,7 +136,8 @@ def setup_setup_command(bot: discord.Bot):
                 await ctx.respond(embed=error_embed(R.setup_logchannel_not_found, title=R.log_channel_title), ephemeral=True)
                 return
             await ctx.respond(
-                embed=create_embed(R.setup_logchannel_current % log_ch.mention, title=R.log_channel_title),
+                embed=create_embed(R.setup_logchannel_current %
+                                   log_ch.mention, title=R.log_channel_title),
                 ephemeral=True
             )
             return
@@ -144,7 +145,8 @@ def setup_setup_command(bot: discord.Bot):
         # Set the log channel in the database
         db.set_constant(C.log_channel, str(channel.id))
         await ctx.respond(
-            embed=create_embed(R.setup_logchannel_set % channel.mention, color=C.success_color, title=R.log_channel_title),
+            embed=create_embed(R.setup_logchannel_set % channel.mention,
+                               color=C.success_color, title=R.log_channel_title),
             ephemeral=True
         )
         logger.info(
@@ -182,10 +184,12 @@ def setup_setup_command(bot: discord.Bot):
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
-                db.set_constant("mod_role_ids", ",".join(role_ids))
-                roles_mentions = ", ".join([role.mention for role in self.selected_roles])
+                db.set_constant(C.mod_roles, ",".join(role_ids))
+                roles_mentions = ", ".join(
+                    [role.mention for role in self.selected_roles])
                 await interaction.response.edit_message(
-                    embed=create_embed(R.setup_modroles_set % roles_mentions, color=C.success_color, title=R.mod_roles_title),
+                    embed=create_embed(R.setup_modroles_set % roles_mentions,
+                                       color=C.success_color, title=R.mod_roles_title),
                     view=None
                 )
                 logger.info(
@@ -193,20 +197,22 @@ def setup_setup_command(bot: discord.Bot):
                 self.stop()
 
         # Show current mod roles if set
-        mod_role_ids = db.get_constant("mod_role_ids")
+        mod_role_ids = db.get_constant(C.mod_roles)
         if mod_role_ids:
             role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
             roles = [ctx.guild.get_role(rid) for rid in role_ids]
             roles = [r for r in roles if r]
             if roles:
                 await ctx.respond(
-                    embed=create_embed(R.setup_modroles_current % (", ".join([r.mention for r in roles])), title=R.mod_roles_title),
+                    embed=create_embed(R.setup_modroles_current % (
+                        ", ".join([r.mention for r in roles])), title=R.mod_roles_title),
                     ephemeral=True
                 )
             else:
                 await ctx.respond(embed=error_embed(R.setup_modroles_not_found, title=R.mod_roles_title), ephemeral=True)
         await ctx.respond(
-            embed=create_embed(R.setup_modroles_select_prompt, title=R.mod_roles_title),
+            embed=create_embed(R.setup_modroles_select_prompt,
+                               title=R.mod_roles_title),
             view=ModRolesSelectView(),
             ephemeral=True
         )

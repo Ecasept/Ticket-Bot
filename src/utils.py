@@ -23,15 +23,36 @@ class ChannelError(Exception):
     pass
 
 
-def get_support_role(guild: discord.Guild) -> discord.Role:
+# def get_support_role(guild: discord.Guild) -> discord.Role:
+#     """
+#     Return the role that manages tickets in the server.
+#     Args:
+#         guild (discord.Guild): The Discord guild.
+#     Returns:
+#         discord.Role: The support role.
+#     """
+#     return discord.utils.get(guild.roles, name=C.support_role_name)
+
+
+def get_mod_roles(guild: discord.Guild) -> list[discord.Role]:
+    from src.database import db
+    mod_role_ids = db.get_constant(C.mod_roles)
+    role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
+    roles = [guild.get_role(rid) for rid in role_ids]
+    roles = [r for r in roles if r]
+    return roles
+
+
+def is_mod(interaction: discord.Interaction) -> bool:
     """
-    Return the role that manages tickets in the server.
+    Check if the user has a moderator role.
     Args:
-        guild (discord.Guild): The Discord guild.
+        interaction (discord.Interaction): The interaction context.
     Returns:
-        discord.Role: The support role.
+        bool: True if the user has a moderator role, False otherwise.
     """
-    return discord.utils.get(guild.roles, name=C.support_role_name)
+    mod_roles = get_mod_roles(interaction.guild)
+    return any(role in interaction.user.roles for role in mod_roles)
 
 
 async def get_ticket_category(interaction: discord.Interaction) -> discord.CategoryChannel:
@@ -200,7 +221,7 @@ async def ensure_assignee(assignee_id: str, interaction: discord.Interaction, ms
             ephemeral=True
         )
         return False
-    if assignee_id is None and get_support_role(interaction.guild) not in interaction.user.roles:
+    if assignee_id is None and not is_mod(interaction):
         await interaction.response.send_message(
             embed=error_embed(msg),
             ephemeral=True

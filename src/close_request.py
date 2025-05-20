@@ -1,10 +1,9 @@
 import discord
 
 from src.closed import close_ticket
-from src.utils import C, R, ensure_assignee, error_embed, create_embed
+from src.utils import C, R, ensure_assignee, error_embed, create_embed, is_mod
 from src.database import db
 from src.utils import logger
-from src.utils import get_support_role
 from src.utils import ensure_existence
 
 
@@ -70,7 +69,7 @@ class TicketCloseRequestView(discord.ui.View):
                 ephemeral=True
             )
             return
-        if assignee_id == None and get_support_role(interaction.guild) not in interaction.user.roles:
+        if assignee_id == None and not is_mod(interaction):
             await interaction.response.send_message(
                 embed=error_embed(
                     R.ticket_close_request_decline_no_permission),

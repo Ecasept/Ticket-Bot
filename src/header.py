@@ -6,7 +6,7 @@ import discord
 from src.close_request import TicketCloseRequestView
 from src.closed import close_ticket
 from src.mod_options import ModOptionsMessage
-from src.utils import R, ensure_existence, get_support_role, create_embed
+from src.utils import R, ensure_existence, create_embed, is_mod
 from src.database import db
 from src.utils import logger, error_embed
 
@@ -25,7 +25,7 @@ class HeaderView(discord.ui.View):
         self.add_item(close_button)
 
         mod_options = discord.ui.Button(
-            label=R.mod_options, style=discord.ButtonStyle.secondary, custom_id="mod_options")
+            label=R.mod_options_title, style=discord.ButtonStyle.secondary, custom_id="mod_options")
         mod_options.callback = self.open_mod_options
         self.add_item(mod_options)
 
@@ -57,7 +57,7 @@ class HeaderView(discord.ui.View):
             logger.info("header",
                         f"Ticket close request sent for ticket {cid} by {interaction.user.name} (ID: {interaction.user.id})")
 
-        elif get_support_role(interaction.guild) in interaction.user.roles:
+        elif is_mod(interaction):
             await close_ticket(interaction)
         else:
             await interaction.response.send_message(
@@ -71,12 +71,12 @@ class HeaderView(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the mod options.
         """
-        msg, view = ModOptionsMessage.create(
+        embed, view = ModOptionsMessage.create(
             interaction,
         )
 
         await interaction.response.send_message(
-            embed=create_embed(msg),
+            embed=embed,
             view=view,
             ephemeral=True
         )

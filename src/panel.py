@@ -4,7 +4,7 @@ Implements the PanelView and ticket creation logic for the Discord bot, includin
 import discord
 
 from src.header import HeaderView
-from src.utils import C, R, error_embed, get_ticket_category, get_support_role, logger, create_embed
+from src.utils import C, R, error_embed, get_ticket_category, logger, create_embed
 from src.database import db
 
 
@@ -171,7 +171,6 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
     ticket_category = await get_ticket_category(interaction)
 
     channel_name = generate_channel_name(user, category)
-    support_role = get_support_role(interaction.guild)
 
     channel = await interaction.guild.create_text_channel(
         name=channel_name,

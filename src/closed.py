@@ -52,16 +52,6 @@ class ClosedView(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
-        ticket = db.get_ticket(str(interaction.channel.id))
-        if not await ensure_existence(ticket, interaction):
-            logger.error("closed",
-                         f"Ticket {str(interaction.channel.id)} not found in the database when trying to reopen it.")
-            return
-        if not await ensure_assignee(ticket["assignee_id"], interaction, R.ticket_reopen_no_permission):
-            logger.error("closed",
-                         f"User without permission tried to reopen ticket {str(interaction.channel.id)}.")
-            return
-
         # Move back to original category
         original_category = await get_ticket_category(interaction)
         await interaction.channel.edit(category=original_category)
@@ -69,20 +59,12 @@ class ClosedView(discord.ui.View):
         # Update database
         db.update_ticket_archived(str(interaction.channel.id), False)
 
-        # Get user
-        user = interaction.guild.get_member(int(ticket["user_id"]))
-        if user is None:
-            await interaction.response.send_message(embed=error_embed(R.user_not_found_msg), ephemeral=True)
-            logger.error(
-                "closed", f"User with ID {ticket['user_id']} not found when reopening ticket {interaction.channel.id}")
-            return
-
         # Edit the original message to remove buttons
         await interaction.message.edit(view=None)
         # Send message
         await interaction.channel.send(
             embed=create_embed(R.ticket_reopened_msg %
-                               user.mention, color=C.success_color),
+                               interaction.user.mention, color=C.success_color),
         )
 
         logger.info("closed",
