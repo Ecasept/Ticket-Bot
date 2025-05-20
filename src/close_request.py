@@ -1,7 +1,7 @@
 import discord
 
 from src.closed import close_ticket
-from src.utils import C, R, error_embed, create_embed, is_mod_or_admin
+from src.utils import C, R, error_embed, create_embed, get_member, is_mod_or_admin
 from src.database import db
 from src.utils import logger
 
@@ -101,9 +101,20 @@ class TicketCloseRequestView(discord.ui.View):
                 "close_request", f"User {interaction.user.name} (ID: {interaction.user.id}) is not a mod/admin.")
             return
 
+        creator_id = ticket["user_id"]
+        creator, err = get_member(interaction.guild, creator_id)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
+                ephemeral=True
+            )
+            logger.error(
+                "close_request", f"Error getting ticket creator {creator_id}: {err}")
+            return
+
         # Edit the original message to remove buttons
         await interaction.message.edit(view=None)
         await interaction.channel.send(
             embed=create_embed(R.ticket_close_request_declined_msg %
-                               interaction.user.mention, color=C.warning_color),
+                               creator.mention, color=C.warning_color),
         )
