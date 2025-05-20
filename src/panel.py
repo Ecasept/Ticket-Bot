@@ -10,64 +10,43 @@ from src.database import db
 
 class PanelView(discord.ui.View):
     """
-    A Discord UI view for the main ticket panel, allowing users to create new tickets.
+    A Discord UI view for the main ticket panel, allowing users to create new tickets by selecting a category directly.
     """
 
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label=R.create_ticket_button, style=discord.ButtonStyle.primary, emoji=discord.PartialEmoji(name=R.create_ticket_emoji), custom_id="create_ticket")
-    async def callback(self, button: discord.ui.Button, interaction: discord.Interaction):
-        """
-        Handles the creation of a new ticket when the panel button is clicked.
-        """
-        await interaction.response.send_message(embed=create_embed(R.choose_category, title=R.ticket_category_title), view=TicketCategorySelection(), ephemeral=True)
-        logger.info("panel",
-                    f"Panel button clicked by {interaction.user.name} (ID: {interaction.user.id})")
-
-
-class TicketCategorySelection(discord.ui.View):
-    """
-    A Discord UI view for selecting the ticket category (application, report, or support).
-    """
-    @discord.ui.select(
-        placeholder=R.ticket_category_placeholder,
-        min_values=1,
-        max_values=1,
-        options=[
-            discord.SelectOption(
-                label=R.application, value=C.cat_application, description=R.application_desc),
-            discord.SelectOption(
-                label=R.report, value=C.cat_report, description=R.report_desc),
-            discord.SelectOption(
-                label=R.support, value=C.cat_support, description=R.support_desc),
-        ],
-    )
-    async def callback(self, select: discord.ui.Select, interaction: discord.Interaction):
-        """
-        Handles the selection of a ticket category and initiates ticket creation.
-        """
-        category = select.values[0]
-
-        info = None
-        if category == C.cat_application:
-            # Let the user input Information for the application
-            info = await self.get_application_info(interaction)
-            if info is None:
-                # User cancelled the modal
-                return
-        else:
-            await interaction.response.defer(ephemeral=True)
-
-        channel = await create_new_ticket(interaction, interaction.user, category, info)
-        if channel is None:
-            # Error occurred during ticket creation
+    @discord.ui.button(label=R.application, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.application_emoji), custom_id="create_application_ticket")
+    async def application_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
+        info = await self.get_application_info(interaction)
+        if info is None:
             return
-
+        channel = await create_new_ticket(interaction, interaction.user, C.cat_application, info)
+        if channel is None:
+            return
         msg = R.ticket_channel_created % channel.mention
-        await interaction.followup.edit_message(
-            message_id=interaction.message.id,
-            embed=create_embed(msg, color=C.success_color), view=None)
+        await interaction.followup.send(
+            embed=create_embed(msg, color=C.success_color), ephemeral=True)
+
+    @discord.ui.button(label=R.report, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.report_emoji), custom_id="create_report_ticket")
+    async def report_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        channel = await create_new_ticket(interaction, interaction.user, C.cat_report)
+        if channel is None:
+            return
+        msg = R.ticket_channel_created % channel.mention
+        await interaction.followup.send(
+            embed=create_embed(msg, color=C.success_color), ephemeral=True)
+
+    @discord.ui.button(label=R.support, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.support_emoji), custom_id="create_support_ticket")
+    async def support_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
+        channel = await create_new_ticket(interaction, interaction.user, C.cat_support)
+        if channel is None:
+            return
+        msg = R.ticket_channel_created % channel.mention
+        await interaction.followup.send(
+            embed=create_embed(msg, color=C.success_color), ephemeral=True)
 
     async def get_application_info(self, interaction: discord.Interaction) -> dict | None:
         """

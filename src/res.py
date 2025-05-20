@@ -34,11 +34,14 @@ class ResDE:
     user_id_invalid: str = "Die Benutzer-ID ist ungültig."
     user_not_found: str = "Benutzer konnte nicht gefunden werden."
 
-    panel_msg: str = "Drücke den Button um ein Ticket zu erstellen. Du kannst danach eine Kategorie auswählen."
+    panel_msg: str = "Wähle eine Kategorie um ein Ticket zu erstellen."
     create_ticket_button: str = "Ticket erstellen"
     ticket_msg_created: str = "Benutzer können den Knopf unten benutzten um Tickets zu erstellen!"
-    create_ticket_emoji: str = "✉️"
     ticket_panel_title: str = "Ticket Support"
+
+    application_emoji: str = "📝"
+    support_emoji: str = "🛠️"
+    report_emoji: str = "🚨"
 
     ticket_msg_desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
     ticket_channel_created: str = "Ticket erstellt! %s"
