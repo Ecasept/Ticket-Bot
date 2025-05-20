@@ -4,3 +4,4 @@ __pycache__/
 db/*.db
 db/*.db.bak
 .vscode/
+todo.md

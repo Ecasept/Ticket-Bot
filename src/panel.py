@@ -176,8 +176,10 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
         name=channel_name,
         category=ticket_category,
         overwrites={
-            user: discord.PermissionOverwrite(read_messages=True)
-        }
+            user: discord.PermissionOverwrite(read_messages=True),
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            interaction.guild.me: discord.PermissionOverwrite(read_messages=True),
+        },
     )
 
     logger.info(
