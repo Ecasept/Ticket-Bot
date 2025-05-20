@@ -133,6 +133,18 @@ class ResDE:
     setup_logchannel_set: str = "Der Log-Channel für Team-Aktionen wurde auf %s gesetzt."
     log_channel_title: str = "Team Log Channel"
 
+    # Setup Mod Roles (multiple)
+    setup_modroles_desc: str = "Konfiguriert die Moderator-Rollen (mehrere auswählbar)."
+    setup_modroles_select_prompt: str = "Bitte wähle die Moderator-Rollen aus."
+    setup_modroles_select_placeholder: str = "Moderator-Rollen auswählen"
+    setup_modroles_set: str = "Die Moderator-Rollen wurden auf %s gesetzt."
+    setup_modroles_none_selected: str = "Bitte wähle mindestens eine Rolle aus."
+    setup_modroles_current: str = "Die aktuellen Moderator-Rollen sind: %s."
+    mod_roles_title: str = "Moderator Rollen"
+    setup_no_modroles: str = "Es sind keine Moderator-Rollen konfiguriert."
+    setup_modroles_not_found: str = "Eine oder mehrere konfigurierte Moderator-Rollen wurden nicht gefunden."
+    modroles_submit_button_label: str = "Auswählen"
+
     # Team Commands
     team_group_desc: str = "Verwaltet Team-Mitglieder und Listen."
     team_add_desc: str = "Fügt einen Benutzer zu einem Team hinzu und weist eine Rolle zu."
