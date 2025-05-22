@@ -144,6 +144,8 @@ class TeamListMessage(discord.ui.View):
 
         embed = TeamListMessage.create_embed(roles)
         await interaction.response.edit_message(embed=embed)
+        logger.info(
+            "team", f"Team list updated by {interaction.user.name} (ID: {interaction.user.id})")
 
 
 def setup_team_list_command(bot: discord.Bot):
