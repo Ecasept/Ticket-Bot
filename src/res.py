@@ -192,7 +192,7 @@ class ResDE:
     status_offline: str = "⚫"
     status_unknown: str = "❓"
     status_mobile: str = "📱"
-    add_role_no_perm: str = "Du hast keine Berechtigung, diese Rolle zuzuweisen."
+    add_role_no_perm: str = "Der Bot hat keine Berechtigung um auf diese Rolle zuzugreifen."
     new_team_member_title: str = "Neues Team-Mitglied"
 
     team_remove_desc: str = "Entfernt eine Rolle von einem Benutzer."
