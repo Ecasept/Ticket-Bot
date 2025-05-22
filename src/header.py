@@ -20,12 +20,14 @@ class HeaderView(discord.ui.View):
         super().__init__(timeout=None)
 
         close_button = discord.ui.Button(
-            label=R.close_ticket, style=discord.ButtonStyle.danger, custom_id="close_ticket")
+            label=R.close_ticket, style=discord.ButtonStyle.danger, custom_id="close_ticket",
+            emoji=discord.PartialEmoji(name=R.close_emoji))
         close_button.callback = self.close_ticket
         self.add_item(close_button)
 
         mod_options = discord.ui.Button(
-            label=R.mod_options_title, style=discord.ButtonStyle.secondary, custom_id="mod_options")
+            label=R.mod_options_title, style=discord.ButtonStyle.secondary, custom_id="mod_options",
+            emoji=discord.PartialEmoji(name=R.mod_options_emoji))
         mod_options.callback = self.open_mod_options
         self.add_item(mod_options)
 

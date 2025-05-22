@@ -43,13 +43,19 @@ class ResDE:
     support_emoji: str = "🛠️"
     report_emoji: str = "🚨"
 
+    delete_emoji: str = "⛔"
+    reopen_emoji: str = "🔄"
+
+    close_emoji: str = "🔒"  # not an x because the bg of the button is red
+    mod_options_emoji: str = "⚙️"
+
     ticket_msg_desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
     ticket_channel_created: str = "Ticket erstellt! %s"
     ticket: str = "ticket"
 
     ping_desc: str = "Testet ob der Bot antwortet."
 
-    close_ticket: str = "Ticket schließen"
+    close_ticket: str = "Schließen"
     ticket_closed_msg: str = "Das Ticket wurde von %s geschlossen."
 
     ticket_category_title: str = "Erstelle ein Ticket"
@@ -68,9 +74,11 @@ class ResDE:
     choose_category: str = "Wähle eine Kategorie für dein Ticket."
 
     assign_ticket: str = "Annehmen"
+    assign_emoji: str = "📥"
     unassign_ticket: str = "Freigeben"
+    unassign_emoji: str = "📤"
 
-    mod_options_title: str = "Moderator-Optionen"
+    mod_options_title: str = "Mod-Optionen"
     mod_options_no_permission: str = "Du hast keine Berechtigung diese Optionen zu benutzen."
     mod_options_user: str = "Ersteller"
     mod_options_assignee: str = "Zugewiesen an"
@@ -81,8 +89,11 @@ class ResDE:
     mod_options_archived_yes: str = "Ja"
     mod_options_archived_no: str = "Nein"
 
-    approve_application: str = "Annehmen"
-    reject_application: str = "Ablehnen"
+    approve_application: str = "Bewerbung annehmen"
+    approve_application_emoji: str = "✅"
+    reject_application: str = "Bewerbung ablehnen"
+    reject_application_emoji: str = "⛔"  # "🚫"  # prohibition sign
+    # Other options could be: "↩️" (return arrow), "📝" (memo), "✖️" (multiplication x), "⛔" (no entry)
 
     close_ticket_request_title: str = "Ticket schließen?"
 

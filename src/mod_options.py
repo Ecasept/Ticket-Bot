@@ -23,32 +23,36 @@ class ModOptionsMessage(discord.ui.View):
         if self.assignee_id is None:
             # No assignee
             assign_button = discord.ui.Button(
-                label=R.assign_ticket, style=discord.ButtonStyle.success, custom_id="assign_ticket")
+                label=R.assign_ticket, style=discord.ButtonStyle.primary, custom_id="assign_ticket",
+                emoji=discord.PartialEmoji(name=R.assign_emoji))
             assign_button.callback = self.assign_ticket
             self.add_item(assign_button)
         elif self.assignee_id == str(interaction.user.id):
             # Assignee is the current user
             unassign_button = discord.ui.Button(
-                label=R.unassign_ticket, style=discord.ButtonStyle.primary, custom_id="unassign_ticket")
+                label=R.unassign_ticket, style=discord.ButtonStyle.secondary, custom_id="unassign_ticket",
+                emoji=discord.PartialEmoji(name=R.unassign_emoji))
             unassign_button.callback = self.unassign_ticket
             self.add_item(unassign_button)
         else:
             # Assignee is someone else
             unassign_button = discord.ui.Button(
-                label=R.unassign_ticket, style=discord.ButtonStyle.primary, custom_id="unassign_ticket",
-                disabled=True)
+                label=R.unassign_ticket, style=discord.ButtonStyle.secondary, custom_id="unassign_ticket",
+                disabled=True, emoji=discord.PartialEmoji(name=R.unassign_emoji))
             self.add_item(unassign_button)
 
         if self.category == C.cat_application:
             approve_button = discord.ui.Button(
                 row=1,
-                label=R.approve_application, style=discord.ButtonStyle.success, custom_id="approve_ticket")
+                label=R.approve_application, style=discord.ButtonStyle.success, custom_id="approve_ticket",
+                emoji=discord.PartialEmoji(name=R.approve_application_emoji))
             approve_button.callback = self.approve_application
             self.add_item(approve_button)
 
             reject_button = discord.ui.Button(
                 row=1,
-                label=R.reject_application, style=discord.ButtonStyle.danger, custom_id="reject_ticket")
+                label=R.reject_application, style=discord.ButtonStyle.danger, custom_id="reject_ticket",
+                emoji=discord.PartialEmoji(name=R.reject_application_emoji))
             reject_button.callback = self.reject_application
             self.add_item(reject_button)
 

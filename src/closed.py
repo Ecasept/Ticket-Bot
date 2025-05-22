@@ -21,7 +21,7 @@ class ClosedView(discord.ui.View):
                              interaction.user.mention, color=C.error_color)
         return embed, view
 
-    @discord.ui.button(label=R.delete_ticket_button, style=discord.ButtonStyle.danger, custom_id="delete_ticket")
+    @discord.ui.button(label=R.delete_ticket_button, style=discord.ButtonStyle.secondary, custom_id="delete_ticket", emoji=discord.PartialEmoji(name=R.delete_emoji))
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Deletes the ticket channel.
@@ -60,7 +60,7 @@ class ClosedView(discord.ui.View):
         logger.info("closed",
                     f"Ticket {str(interaction.channel.id)} deleted by {interaction.user.name} (ID: {interaction.user.id})")
 
-    @discord.ui.button(label=R.reopen_ticket_button, style=discord.ButtonStyle.success, custom_id="reopen_ticket")
+    @discord.ui.button(label=R.reopen_ticket_button, style=discord.ButtonStyle.secondary, custom_id="reopen_ticket", emoji=discord.PartialEmoji(name=R.reopen_emoji))
     async def reopen(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Reopens the ticket.
