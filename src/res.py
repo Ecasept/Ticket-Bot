@@ -191,7 +191,7 @@ class ResDE:
     status_dnd: str = "⛔"
     status_offline: str = "⚫"
     status_unknown: str = "❓"
-    status_mobiel: str = "📱"
+    status_mobile: str = "📱"
     add_role_no_perm: str = "Du hast keine Berechtigung, diese Rolle zuzuweisen."
     new_team_member_title: str = "Neues Team-Mitglied"
 
