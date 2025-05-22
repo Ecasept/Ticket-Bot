@@ -131,7 +131,7 @@ class TeamListMessage(discord.ui.View):
         for field in interaction.message.embeds[0].fields:
             if field.name == "":
                 # match the role id for all role mentions of the form <@&role_id>
-                regex = re.compile("<@&(\d*)>")
+                regex = re.compile(r"<@&(\d*)>")
                 matches = regex.findall(field.value)
                 for role_id in matches:
                     role = discord.utils.get(

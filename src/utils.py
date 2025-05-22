@@ -1,6 +1,7 @@
 """
 Utility functions and constants for the Discord bot, including role/category helpers and environment loading.
 """
+import datetime
 import discord
 import dotenv
 import src.res as res
@@ -15,6 +16,17 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 
 R = res.get_resources("de")
 C = res.Constants()
+
+
+def format_date(date: datetime.datetime) -> str:
+    """
+    Format a datetime object into a string.
+    Args:
+        date (datetime.datetime): The datetime object to format.
+    Returns:
+        str: The formatted date string.
+    """
+    return date.strftime("%d.%m.%Y %H:%M:%S")
 
 
 def get_mod_roles(guild: discord.Guild) -> Tuple[Optional[List[discord.Role]], Optional[str]]:

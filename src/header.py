@@ -48,7 +48,7 @@ class HeaderView(discord.ui.View):
                          f"Ticket {cid} not found in the database when trying to close it.")
             return
 
-        if ticket["archived"]:
+        if ticket.archived:
             await interaction.response.send_message(
                 embed=error_embed(R.ticket_already_closed),
                 ephemeral=True
@@ -68,7 +68,7 @@ class HeaderView(discord.ui.View):
         if is_mod_admin:
             # If the user is a mod or admin, close the ticket directly
             await close_ticket(interaction)
-        elif ticket["user_id"] == str(interaction.user.id):
+        elif ticket.user_id == str(interaction.user.id):
             # If the user is the ticket owner, send a close request
             msg, view = TicketCloseRequestView.create(interaction)
             await interaction.response.send_message(

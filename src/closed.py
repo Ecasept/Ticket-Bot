@@ -29,15 +29,6 @@ class ClosedView(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
-        ticket = db.get_ticket(str(interaction.channel.id))
-        if not ticket:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_not_found),
-                ephemeral=True
-            )
-            logger.error("closed",
-                         f"Ticket {str(interaction.channel.id)} not found in the database when trying to delete it.")
-            return
         # Check if the user has permission to delete the ticket
         val, err = is_mod_or_admin(interaction.user)
         if err:

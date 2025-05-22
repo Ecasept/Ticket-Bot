@@ -31,16 +31,6 @@ class TicketCloseRequestView(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
-        ticket = db.get_ticket(str(interaction.channel.id))
-        if not ticket:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_not_found),
-                ephemeral=True
-            )
-            logger.error("close_request",
-                         f"Ticket {str(interaction.channel.id)} not found in the database when trying to accept close request.")
-            return
-
         val, err = is_mod_or_admin(interaction.user)
         if err:
             await interaction.response.send_message(
@@ -101,7 +91,7 @@ class TicketCloseRequestView(discord.ui.View):
                 "close_request", f"User {interaction.user.name} (ID: {interaction.user.id}) is not a mod/admin.")
             return
 
-        creator_id = ticket["user_id"]
+        creator_id = ticket.user_id
         creator, err = get_member(interaction.guild, creator_id)
         if err:
             await interaction.response.send_message(

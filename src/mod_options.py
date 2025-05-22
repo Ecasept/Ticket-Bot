@@ -3,8 +3,9 @@ Implements the ModOptionsMessage view for moderator actions on tickets, such as 
 """
 import discord
 from src.utils import C, R, create_embed, error_embed, get_member, is_mod_or_admin
-from src.database import db
+from src.database import Ticket, db
 from src.utils import logger
+from src.utils import format_date
 
 
 class ModOptionsMessage(discord.ui.View):
@@ -13,12 +14,12 @@ class ModOptionsMessage(discord.ui.View):
     """
     view_id: str = "mod_options"
 
-    def __init__(self, ticket: dict, interaction: discord.Interaction):
+    def __init__(self, ticket: Ticket, interaction: discord.Interaction):
         super().__init__()
 
-        self.assignee_id = ticket["assignee_id"]
-        self.user_id = ticket["user_id"]
-        self.category = ticket["category"]
+        self.assignee_id = ticket.assignee_id
+        self.user_id = ticket.user_id
+        self.category = ticket.category
 
         if self.assignee_id is None:
             # No assignee
@@ -188,11 +189,11 @@ class ModOptionsMessage(discord.ui.View):
             # User is not a mod or admin
             return error_embed(R.mod_options_no_permission), None
 
-        assignee_id = ticket["assignee_id"]
-        user_id = ticket["user_id"]
-        archived = ticket["archived"]
-        category = ticket["category"]
-        created_at = ticket["created_at"]
+        assignee_id = ticket.assignee_id
+        user_id = ticket.user_id
+        archived = ticket.archived
+        category = ticket.category
+        created_at = ticket.created_at
 
         # Get assignee mention
         if assignee_id is None:
@@ -258,7 +259,7 @@ class ModOptionsMessage(discord.ui.View):
         )
         embed.add_field(
             name=R.mod_options_created_at,
-            value=created_at,
+            value=format_date(created_at),
             inline=True
         )
         embed.add_field(

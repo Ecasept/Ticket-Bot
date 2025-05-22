@@ -4,11 +4,59 @@ Provides the Database class for CRUD operations on tickets.
 """
 import sqlite3
 import os
-
+import datetime
 from src.utils import C, logger
 
 
 USER_VERSION = 2
+
+# Register adapter and converter for datetime
+
+
+def adapt_datetime_iso(val: datetime.datetime):
+    """Adapt datetime.datetime to ISO 8601 string."""
+    return val.isoformat()
+
+
+def convert_datetime(val):
+    """Convert ISO 8601 string to datetime.datetime."""
+    return datetime.datetime.fromisoformat(val.decode())
+
+
+sqlite3.register_adapter(datetime.datetime, adapt_datetime_iso)
+sqlite3.register_converter("timestamp", convert_datetime)
+sqlite3.register_converter("boolean", lambda val: bool(int(val.decode())))
+
+
+class DatabaseError(Exception):
+    """Custom exception for database errors."""
+    pass
+
+
+class Ticket:
+    def __init__(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool, created_at: datetime.datetime):
+        def is_string_digit(s: str) -> bool:
+            """Check if a string is a digit."""
+            return isinstance(s, str) and s.isdigit()
+
+        if not is_string_digit(channel_id):
+            raise DatabaseError("channel_id has invalid format")
+        if category not in ["application", "report", "support"]:
+            raise DatabaseError("category has invalid format")
+        if not is_string_digit(user_id):
+            raise DatabaseError("user_id has invalid format")
+        if not is_string_digit(assignee_id) and assignee_id is not None:
+            raise DatabaseError("assignee_id has invalid format")
+        if not isinstance(archived, bool):
+            raise DatabaseError("archived has invalid format")
+        if not isinstance(created_at, datetime.datetime):
+            raise DatabaseError("created_at has invalid format")
+        self.channel_id = channel_id
+        self.category = category
+        self.user_id = user_id
+        self.assignee_id = assignee_id
+        self.archived = archived
+        self.created_at = created_at
 
 
 class Database:
@@ -69,6 +117,7 @@ class Database:
             filename (str): Path to the SQLite database file.
         """
         self.filename = filename
+        self.connection = None
 
     def connect(self):
         """
@@ -77,7 +126,9 @@ class Database:
         """
         if not os.path.exists(self.filename):
             self._create_database(self.filename)
-        self.connection = sqlite3.connect(self.filename)
+        self.connection = sqlite3.connect(
+            self.filename, detect_types=sqlite3.PARSE_DECLTYPES
+        )
         self.cursor = self.connection.cursor()
         logger.info("db", f"Database {self.filename} opened.")
         self._migrate(True)
@@ -136,20 +187,21 @@ class Database:
         Args:
             channel_id (str): Discord channel ID for the ticket.
         Returns:
-            dict or None: Ticket data if found, else None.
+            Ticket or None: Ticket data if found, else None.
         """
         self.cursor.execute(
             "SELECT channel_id, category, user_id, assignee_id, archived, created_at FROM tickets WHERE channel_id = ?", (channel_id,))
         ticket = self.cursor.fetchone()
         if ticket:
-            return {
-                "channel_id": ticket[0],
-                "category": ticket[1],
-                "user_id": ticket[2],
-                "assignee_id": ticket[3],
-                "archived": ticket[4],
-                "created_at": ticket[5]
-            }
+            cid, category, user_id, assignee_id, archived, created_at = ticket
+            return Ticket(
+                channel_id=cid,
+                category=category,
+                user_id=user_id,
+                assignee_id=assignee_id,
+                archived=archived,
+                created_at=created_at
+            )
         else:
             return None
 
