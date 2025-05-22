@@ -9,10 +9,11 @@ from src.panel import PanelView
 from src.header import HeaderView
 from src.utils import R, C, TOKEN, logger, create_embed
 from src.database import db
-from src.team_list import setup_team_list_command
+from src.team_list import setup_team_list_command, TeamListMessage
 
 intents = discord.Intents.default()
 intents.members = True
+intents.presences = True
 bot = discord.Bot(intents=intents)
 
 
@@ -26,6 +27,7 @@ async def on_ready():
     bot.add_view(HeaderView())
     bot.add_view(TicketCloseRequestView())
     bot.add_view(ClosedView())
+    bot.add_view(TeamListMessage())
 
 
 @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
