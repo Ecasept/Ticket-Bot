@@ -77,20 +77,20 @@ def get_member(guild: discord.Guild, user_id: str) -> Tuple[Optional[discord.Mem
         Tuple[Optional[discord.Member], Optional[str]]: A tuple of (member, error_message). If the member is found, returns (member, None). Otherwise returns (None, error_message) indicating why it failed.
     """
     try:
-        member_id = int(user_id)
+        id_int = int(user_id)
     except ValueError:
         return None, R.user_id_invalid
-    member = guild.get_member(int(user_id))
+    member = guild.get_member(id_int)
     if member is None:
         return None, R.user_not_found
     return member, None
 
 
-async def get_ticket_category(interaction: discord.Interaction) -> Tuple[Optional[discord.CategoryChannel], Optional[str]]:
+async def get_ticket_category(guild: discord.Guild) -> Tuple[Optional[discord.CategoryChannel], Optional[str]]:
     """
     Get the ticket category where tickets are created.
     Args:
-        interaction (discord.Interaction): The interaction context.
+        guild (discord.Guild): The Discord guild to search in.
     Returns:
         Tuple[Optional[discord.CategoryChannel], Optional[str]]: A tuple of (category, error_message). If the category is configured and found, returns (category, None). Otherwise returns (None, error_message) indicating why it failed.
     """
@@ -98,17 +98,17 @@ async def get_ticket_category(interaction: discord.Interaction) -> Tuple[Optiona
     category_id = db.get_constant(C.ticket_category)
     if category_id is None:
         return None, R.setup_no_ticket_category
-    category = interaction.guild.get_channel(int(category_id))
+    category = guild.get_channel(int(category_id))
     if not isinstance(category, discord.CategoryChannel):
         return None, R.setup_ticket_category_not_found
     return category, None
 
 
-async def get_transcript_category(interaction: discord.Interaction) -> Tuple[Optional[discord.CategoryChannel], Optional[str]]:
+async def get_transcript_category(guild: discord.Guild) -> Tuple[Optional[discord.CategoryChannel], Optional[str]]:
     """
     Return the transcript category for closed tickets.
     Args:
-        interaction (discord.Interaction): The interaction context.
+        guild (discord.Guild): The Discord guild to search in.
     Returns:
         Tuple[Optional[discord.CategoryChannel], Optional[str]]: The transcript category and an error message if not found.
     """
@@ -116,17 +116,17 @@ async def get_transcript_category(interaction: discord.Interaction) -> Tuple[Opt
     category_id = db.get_constant(C.transcript_category)
     if category_id is None:
         return None, R.setup_no_transcript_category
-    category = interaction.guild.get_channel(int(category_id))
+    category = guild.get_channel(int(category_id))
     if category is None:
         return None, R.setup_transcript_category_not_found
     return category, None
 
 
-async def get_log_channel(interaction: discord.Interaction) -> Tuple[Optional[discord.TextChannel], Optional[str]]:
+async def get_log_channel(guild: discord.Guild) -> Tuple[Optional[discord.TextChannel], Optional[str]]:
     """
     Return the log channel for team actions.
     Args:
-        interaction (discord.Interaction): The interaction context.
+        guild (discord.Guild): The Discord guild to search in.
     Returns:
         Tuple[Optional[discord.TextChannel], Optional[str]]: The log channel and an error message if not found.
     """
@@ -134,7 +134,7 @@ async def get_log_channel(interaction: discord.Interaction) -> Tuple[Optional[di
     channel_id = db.get_constant(C.log_channel)
     if channel_id is None:
         return None, R.setup_no_logchannel
-    channel = interaction.guild.get_channel(int(channel_id))
+    channel = guild.get_channel(int(channel_id))
     if not isinstance(channel, discord.TextChannel):
         return None, R.setup_logchannel_not_found
     return channel, None

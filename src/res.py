@@ -88,6 +88,8 @@ class ResDE:
     mod_options_archived: str = "Archiviert"
     mod_options_archived_yes: str = "Ja"
     mod_options_archived_no: str = "Nein"
+    noch_fragen_label: str = "Noch Fragen?"
+    noch_fragen_emoji: str = "❓"
 
     approve_application: str = "Bewerbung annehmen"
     approve_application_emoji: str = "✅"
@@ -226,6 +228,19 @@ class ResDE:
     application_text_label: str = "Bewerbungstext"
     application_text_placeholder: str = "Schreibe hier deine Bewerbung..."
 
+    # Noch Fragen functionality
+    noch_fragen_msg: str = "Hast du noch Fragen? Falls nicht, wird dieses Ticket in %d Stunden automatisch geschlossen."
+    noch_fragen_title: str = "Ticket wird geschlossen"
+    no_questions: str = "Keine Fragen mehr"
+    noch_fragen_delete_emoji: str = "✅"
+    no_questions_cancel: str = "Ich habe noch Fragen"
+    noch_fragen_cancel_emoji: str = "❓"
+    noch_fragen_no_permission: str = "Nur der Ersteller kann die Fragen beantworten."
+    ticket_noch_fragen_close_error_title: str = "Fehler beim automatischen Schließen"
+    ticket_no_close_time: str = "Dieses Ticket ist nicht (mehr) für das automatische Schließen konfiguriert. Bitte schließe es manuell."
+    noch_fragen_cancel_msg: str = "Du kannst jetzt wieder Fragen stellen."
+    noch_fragen_delete_msg: str = "%s hat keine Fragen mehr. Das Ticket wurde geschlossen."
+
 
 @dataclass
 class Constants:
@@ -243,6 +258,9 @@ class Constants:
     cat_application: str = "application"
     cat_report: str = "report"
     cat_support: str = "support"
+
+    # Ticket closing
+    ticket_close_time: int = 12  # Hours after which noch fragen-tickets are closed
 
     # Embed colors
     embed_color: discord.Color = discord.Color.blue()

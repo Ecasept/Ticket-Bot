@@ -2,6 +2,7 @@
 Main entry point for the Discord bot. Handles bot events, command registration, and startup/shutdown logic.
 """
 import discord
+from src.noch_fragen import NochFragenMessage, setup_noch_fragen
 from src.setup import setup_setup_command
 from src.close_request import TicketCloseRequestView
 from src.closed import ClosedView
@@ -28,6 +29,7 @@ async def on_ready():
     bot.add_view(TicketCloseRequestView())
     bot.add_view(ClosedView())
     bot.add_view(TeamListMessage())
+    bot.add_view(NochFragenMessage())
 
 
 @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
@@ -46,6 +48,7 @@ async def ping(ctx: discord.ApplicationContext):
 
 setup_setup_command(bot)
 setup_team_list_command(bot)
+setup_noch_fragen(bot)
 
 
 try:

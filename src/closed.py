@@ -1,5 +1,5 @@
 import discord
-from src.utils import C, R, error_embed, get_ticket_category, get_transcript_category, is_mod_or_admin, logger, create_embed
+from src.utils import C, R, error_embed, get_member, get_ticket_category, get_transcript_category, is_mod_or_admin, logger, create_embed
 from src.database import db
 
 
@@ -60,18 +60,33 @@ class ClosedView(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
         # Move back to original category
-        original_category, err = await get_ticket_category(interaction)
+        original_category, err = await get_ticket_category(interaction.guild)
         if err:
             await interaction.response.send_message(
                 embed=error_embed(err),
                 ephemeral=True
             )
             return
+        ticket = db.get_ticket(str(interaction.channel.id))
+        if ticket is None:
+            await interaction.response.send_message(
+                embed=error_embed(R.ticket_not_found),
+                ephemeral=True
+            )
+            return
+        user, err = await get_member(interaction.guild, ticket.user_id)
+        if err:
+            await interaction.response.send_message(
+                embed=error_embed(err),
+                ephemeral=True
+            )
+            return
+        interaction.channel.set_permissions(user, read_messages=True)
 
         await interaction.channel.edit(category=original_category)
 
         # Update database
-        db.update_ticket_archived(str(interaction.channel.id), False)
+        db.update_ticket(str(interaction.channel.id), archived=False)
 
         # Edit the original message to remove buttons
         await interaction.message.edit(view=None)
@@ -85,6 +100,23 @@ class ClosedView(discord.ui.View):
                     f"Ticket {str(interaction.channel.id)} reopened by {interaction.user.name} (ID: {interaction.user.id})")
 
 
+async def close_channel(channel: discord.TextChannel):
+    # Change category
+    category, err = await get_transcript_category(channel.guild)
+    if err:
+        return err
+    await channel.edit(category=category)
+    # Change permissions
+    ticket = db.get_ticket(str(channel.id))
+    if ticket is None:
+        return R.ticket_not_found
+    user, err = get_member(channel.guild, ticket.user_id)
+    if err:
+        return err
+    await channel.set_permissions(user, read_messages=False)
+    return None
+
+
 async def close_ticket(interaction: discord.Interaction):
     """
     Closes the ticket by moving it to the transcript category, updating the database, and responding to the interaction.
@@ -93,18 +125,17 @@ async def close_ticket(interaction: discord.Interaction):
         interaction (discord.Interaction): The interaction that triggered the close action.
     """
     await interaction.response.defer()
-    # Change category
-    category, err = await get_transcript_category(interaction)
+    # Change channel
+    err = await close_channel(interaction.channel)
     if err:
         await interaction.respond(
             embed=error_embed(err),
             ephemeral=True
         )
         return
-    await interaction.channel.edit(category=category)
 
     # Update database
-    db.update_ticket_archived(str(interaction.channel.id), True)
+    db.update_ticket(str(interaction.channel.id), archived=True, close_at=None)
 
     # Send message
     embed, view = ClosedView.create(interaction)

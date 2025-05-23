@@ -170,7 +170,7 @@ def setup_team_list_command(bot: discord.Bot):
         required=True
     )
     async def team_add(ctx: discord.ApplicationContext, user: discord.Member, role: discord.Role):
-        log_channel, err = await get_log_channel(ctx.interaction)
+        log_channel, err = await get_log_channel(ctx.interaction.guild)
         if err:
             await ctx.respond(embed=error_embed(err), ephemeral=True)
             return
@@ -208,7 +208,7 @@ def setup_team_list_command(bot: discord.Bot):
         required=True
     )
     async def team_remove(ctx: discord.ApplicationContext, user: discord.Member, role: discord.Role):
-        log_channel, err = await get_log_channel(ctx.interaction)
+        log_channel, err = await get_log_channel(ctx.interaction.guild)
         if err:
             await ctx.respond(embed=error_embed(err), ephemeral=True)
             return
@@ -250,7 +250,7 @@ def setup_team_list_command(bot: discord.Bot):
         required=True
     )
     async def team_wechsel(ctx: discord.ApplicationContext, user: discord.Member, from_role: discord.Role, to_role: discord.Role):
-        log_channel, err = await get_log_channel(ctx.interaction)
+        log_channel, err = await get_log_channel(ctx.interaction.guild)
         if err:
             await ctx.respond(embed=error_embed(err), ephemeral=True)
             return

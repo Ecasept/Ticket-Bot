@@ -8,7 +8,7 @@ import datetime
 from src.utils import C, logger
 
 
-USER_VERSION = 2
+USER_VERSION = 4
 
 # Register adapter and converter for datetime
 
@@ -34,7 +34,7 @@ class DatabaseError(Exception):
 
 
 class Ticket:
-    def __init__(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool, created_at: datetime.datetime):
+    def __init__(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool, created_at: datetime.datetime, close_at: datetime.datetime | None):
         def is_string_digit(s: str) -> bool:
             """Check if a string is a digit."""
             return isinstance(s, str) and s.isdigit()
@@ -51,12 +51,15 @@ class Ticket:
             raise DatabaseError("archived has invalid format")
         if not isinstance(created_at, datetime.datetime):
             raise DatabaseError("created_at has invalid format")
+        if not (isinstance(close_at, datetime.datetime) or close_at is None):
+            raise DatabaseError("close_at has invalid format")
         self.channel_id = channel_id
         self.category = category
         self.user_id = user_id
         self.assignee_id = assignee_id
         self.archived = archived
         self.created_at = created_at
+        self.close_at = close_at
 
 
 class Database:
@@ -91,10 +94,9 @@ class Database:
             backup_filename = self.filename + ".bak"
             if os.path.exists(backup_filename):
                 os.remove(backup_filename)
-            with open(self.filename, 'rb') as original_file:
-                with open(backup_filename, 'wb') as backup_file:
-                    backup_file.write(original_file.read())
-            logger.info("db", f"Backup created: {backup_filename}")
+            backup_conn = sqlite3.connect(backup_filename)
+            with backup_conn:
+                self.connection.backup(backup_conn)
 
         # Incrementally apply migrations until the current user version matches the latest one
         while current_user_version < USER_VERSION:
@@ -160,7 +162,7 @@ class Database:
         self.connection.close()
         logger.info("db", "Database connection closed.")
 
-    def create_ticket(self, channel_id: str, category: str, user_id: str, assignee_id: str, archived: bool = False):
+    def create_ticket(self, channel_id: str, category: str, user_id: str, assignee_id: str, archived: bool = False, close_at: datetime.datetime | None = None):
         """
         Create a new ticket record in the database.
         Args:
@@ -169,16 +171,17 @@ class Database:
             user_id (str): ID of the user who created the ticket.
             assignee_id (str): ID of the user assigned to the ticket.
             archived (bool): Whether the ticket is archived or not. Defaults to False.
+            close_at (datetime.datetime | None): When the ticket should be closed. Defaults to None.
         Returns:
             str: The channel_id of the created ticket.
         """
         self.cursor.execute(
-            "INSERT INTO tickets (channel_id, category, user_id, assignee_id, archived) VALUES (?, ?, ?, ?, ?)",
-            (channel_id, category, user_id, assignee_id, archived)
+            "INSERT INTO tickets (channel_id, category, user_id, assignee_id, archived, close_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (channel_id, category, user_id, assignee_id, archived, close_at)
         )
         self.connection.commit()
         logger.info("db",
-                    f"Ticket {channel_id} created with category {category}, user {user_id}, assignee {assignee_id}, and archived status {archived}.")
+                    f"Ticket {channel_id} created with category {category}, user {user_id}, assignee {assignee_id}, archived status {archived}, and close_at {close_at}.")
         return channel_id
 
     def get_ticket(self, channel_id: str):
@@ -190,50 +193,51 @@ class Database:
             Ticket or None: Ticket data if found, else None.
         """
         self.cursor.execute(
-            "SELECT channel_id, category, user_id, assignee_id, archived, created_at FROM tickets WHERE channel_id = ?", (channel_id,))
+            "SELECT channel_id, category, user_id, assignee_id, archived, created_at, close_at FROM tickets WHERE channel_id = ?", (channel_id,))
         ticket = self.cursor.fetchone()
         if ticket:
-            cid, category, user_id, assignee_id, archived, created_at = ticket
+            cid, category, user_id, assignee_id, archived, created_at, close_at = ticket
             return Ticket(
                 channel_id=cid,
                 category=category,
                 user_id=user_id,
                 assignee_id=assignee_id,
                 archived=archived,
-                created_at=created_at
+                created_at=created_at,
+                close_at=close_at
             )
         else:
             return None
 
-    def update_ticket_assignee(self, channel_id: str, assignee_id: str):
+    def update_ticket(self, channel_id: str, **fields):
         """
-        Update the assignee of a ticket.
+        Update one or more fields of a ticket.
         Args:
             channel_id (str): Discord channel ID for the ticket.
-            assignee_id (str): New assignee's user ID.
+            **fields: Keyword arguments for fields to update.
+                     Supported fields: assignee_id, archived, close_at
         """
-        self.cursor.execute(
-            "UPDATE tickets SET assignee_id = ? WHERE channel_id = ?",
-            (assignee_id, channel_id)
-        )
-        self.connection.commit()
-        logger.info(
-            "db", f"Ticket {channel_id} assignee updated to {assignee_id}.")
+        if not fields:
+            raise ValueError("At least one field must be provided for update")
 
-    def update_ticket_archived(self, channel_id: str, archived: bool):
-        """
-        Update the archived status of a ticket.
-        Args:
-            channel_id (str): Discord channel ID for the ticket.
-            archived (bool): New archived status.
-        """
-        self.cursor.execute(
-            "UPDATE tickets SET archived = ? WHERE channel_id = ?",
-            (archived, channel_id)
-        )
+        set_clauses = []
+        values = []
+        for field, value in fields.items():
+            if field not in ['assignee_id', 'archived', 'close_at']:
+                raise ValueError(f"Invalid field '{field}' for ticket update")
+            set_clauses.append(f"{field} = ?")
+            values.append(value)
+
+        # Add channel_id to the end for the WHERE clause
+        values.append(channel_id)
+
+        query = f"UPDATE tickets SET {', '.join(set_clauses)} WHERE channel_id = ?"
+        self.cursor.execute(query, values)
         self.connection.commit()
-        logger.info(
-            "db", f"Ticket {channel_id} archived status updated to {archived}.")
+
+        # Log the update
+        field_updates = ", ".join([f"{k}={v}" for k, v in fields.items()])
+        logger.info("db", f"Ticket {channel_id} updated: {field_updates}")
 
     def delete_ticket(self, channel_id: str):
         """
@@ -246,6 +250,28 @@ class Database:
         )
         self.connection.commit()
         logger.info("db", f"Ticket {channel_id} deleted.")
+
+    def get_overdue_tickets(self, time: datetime.datetime) -> list[str]:
+        """
+        Finds tickets where `close_at` is less than `now` and `archived` is `FALSE`,
+        and returns their channel_ids.
+        Args:
+            time (datetime.datetime): The time to compare against ticket `close_at` times.
+        Returns:
+            list[str]: A list of channel_ids for the overdue tickets.
+
+        """
+        query = """
+            SELECT channel_id
+            FROM tickets
+            WHERE close_at < ? AND archived = FALSE;
+        """
+        self.cursor.execute(query, (time,))
+        overdue_ticket_ids = [row[0] for row in self.cursor.fetchall()]
+        if overdue_ticket_ids:
+            logger.info(
+                "db", f"Found {len(overdue_ticket_ids)} overdue tickets: {', '.join(overdue_ticket_ids)}")
+        return overdue_ticket_ids
 
     # === Constants ===
 

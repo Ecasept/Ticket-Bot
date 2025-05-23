@@ -1,10 +1,11 @@
 CREATE TABLE IF NOT EXISTS tickets (
 	channel_id TEXT PRIMARY KEY,
 	category TEXT CHECK(category IN ('application', 'report', 'support')),
-	user_id TEXT,
+	user_id TEXT NOT NULL,
 	assignee_id TEXT,
-	archived BOOLEAN DEFAULT FALSE,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	archived BOOLEAN DEFAULT FALSE NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	close_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS constants (

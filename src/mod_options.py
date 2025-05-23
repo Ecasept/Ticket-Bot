@@ -2,6 +2,7 @@
 Implements the ModOptionsMessage view for moderator actions on tickets, such as assigning, unassigning, approving, or rejecting applications.
 """
 import discord
+from src.noch_fragen import create_noch_fragen
 from src.utils import C, R, create_embed, error_embed, get_member, is_mod_or_admin
 from src.database import Ticket, db
 from src.utils import logger
@@ -12,7 +13,6 @@ class ModOptionsMessage(discord.ui.View):
     """
     A Discord UI view that provides moderator options for ticket management, including assignment and application review.
     """
-    view_id: str = "mod_options"
 
     def __init__(self, ticket: Ticket, interaction: discord.Interaction):
         super().__init__()
@@ -42,6 +42,13 @@ class ModOptionsMessage(discord.ui.View):
                 disabled=True, emoji=discord.PartialEmoji(name=R.unassign_emoji))
             self.add_item(unassign_button)
 
+        if not ticket.archived and not ticket.close_at:
+            noch_fragen_button = discord.ui.Button(
+                label=R.noch_fragen_label, style=discord.ButtonStyle.secondary, custom_id="noch_fragen",
+                emoji=discord.PartialEmoji(name=R.noch_fragen_emoji))
+            noch_fragen_button.callback = self.noch_fragen
+            self.add_item(noch_fragen_button)
+
         if self.category == C.cat_application:
             approve_button = discord.ui.Button(
                 row=1,
@@ -57,18 +64,23 @@ class ModOptionsMessage(discord.ui.View):
             reject_button.callback = self.reject_application
             self.add_item(reject_button)
 
+    async def noch_fragen(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+        await create_noch_fragen(interaction)
+
     async def assign_ticket(self, interaction: discord.Interaction):
         """
         Assign the ticket to the current user.
         Args:
             interaction (discord.Interaction): The interaction that triggered the assignment.
         """
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
         new_assigned_id = str(interaction.user.id)
 
         # Update ticket in database
-        db.update_ticket_assignee(str(interaction.channel.id), new_assigned_id)
+        db.update_ticket(str(interaction.channel.id),
+                         assignee_id=new_assigned_id)
 
         # Send update message in the ticket channel
         await interaction.channel.send(
@@ -96,7 +108,7 @@ class ModOptionsMessage(discord.ui.View):
         await interaction.response.defer(ephemeral=True)
 
         # Update ticket in database
-        db.update_ticket_assignee(str(interaction.channel.id), None)
+        db.update_ticket(str(interaction.channel.id), assignee_id=None)
 
         # Send update message in the ticket channel
         await interaction.channel.send(

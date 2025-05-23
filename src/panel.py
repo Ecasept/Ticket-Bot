@@ -151,9 +151,9 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
         discord.TextChannel: The created ticket channel.
         None: If the ticket category is not found or an error occurs.
     """
-    ticket_category, err = await get_ticket_category(interaction)
+    ticket_category, err = await get_ticket_category(interaction.guild)
     if err:
-        await interaction.response.send_message(
+        await interaction.respond(
             embed=error_embed(err),
             ephemeral=True
         )
@@ -165,7 +165,7 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
 
     mod_roles, err = get_mod_roles(interaction.guild)
     if err:
-        await interaction.response.send_message(
+        await interaction.respond(
             embed=error_embed(err),
             ephemeral=True
         )
