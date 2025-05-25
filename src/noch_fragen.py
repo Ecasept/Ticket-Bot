@@ -1,6 +1,6 @@
 import discord
 from discord.ext import tasks
-from src.closed import close_channel
+from src.closed import ClosedView, close_channel, close_ticket
 from src.database import db
 from src.utils import create_embed, error_embed, logger, R, C
 import datetime
@@ -59,19 +59,13 @@ class NochFragenMessage(discord.ui.View):
                 "noch_fragen", f"Ticket {interaction.channel.id} has no close time.")
             return
 
-        await interaction.channel.send(
-            embed=create_embed(R.noch_fragen_delete_msg % interaction.user.mention, color=C.success_color))
-        err = await close_channel(interaction.channel)
-        if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"Error closing channel {interaction.channel.id}: {err}")
-            return
-        await interaction.response.edit_message(view=None)
-        db.update_ticket(interaction.channel.id, close_at=None, archived=True)
+        await interaction.response.defer()
+        await interaction.followup.send(
+            embed=create_embed(R.noch_fragen_delete_msg, color=C.error_color),
+            ephemeral=True
+        )
+        await close_ticket(interaction)
+        await interaction.edit_original_response(view=None)
         logger.info(
             "noch_fragen", f"Closed ticket {interaction.channel.id} after user confirmation.")
 
@@ -113,7 +107,7 @@ class NochFragenMessage(discord.ui.View):
 
         # Tell the user that the ticket will not be closed
         await interaction.channel.send(
-            embed=create_embed(R.noch_fragen_cancel_msg, color=C.success_color))
+            embed=create_embed(R.noch_fragen_cancel_msg % interaction.user.mention, color=C.success_color))
 
         db.update_ticket(interaction.channel.id, close_at=None)
         logger.info(
@@ -157,6 +151,12 @@ def setup_noch_fragen(bot: discord.Bot):
 
             # If close_channel was successful
             db.update_ticket(id, close_at=None, archived=True)
+            embed, view = ClosedView.create(R.noch_fragen_closed_msg)
+            await channel.send(
+                embed=embed,
+                view=view
+            )
             logger.info(
                 "noch_fragen", f"Closed ticket {id} after timeout.")
+
     delete_noch_fragen.start()

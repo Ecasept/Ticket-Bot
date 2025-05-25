@@ -8,17 +8,16 @@ class ClosedView(discord.ui.View):
         super().__init__(timeout=None)
 
     @staticmethod
-    def create(interaction: discord.Interaction) -> tuple[discord.Embed, discord.ui.View]:
+    def create(message: str) -> tuple[discord.Embed, discord.ui.View]:
         """
-        Factory method to create the closed ticket message and view for a given interaction.
+        Factory method to create the closed ticket message and view.
         Args:
-            interaction (discord.Interaction): The interaction context.
+            message (str): The message to display in the closed ticket embed.
         Returns:
             tuple[discord.Embed, discord.ui.View]: The embed and the view to display.
         """
         view = ClosedView()
-        embed = create_embed(R.ticket_closed_msg %
-                             interaction.user.mention, color=C.error_color)
+        embed = create_embed(message, color=C.error_color)
         return embed, view
 
     @discord.ui.button(label=R.delete_ticket_button, style=discord.ButtonStyle.secondary, custom_id="delete_ticket", emoji=discord.PartialEmoji(name=R.delete_emoji))
@@ -74,14 +73,14 @@ class ClosedView(discord.ui.View):
                 ephemeral=True
             )
             return
-        user, err = await get_member(interaction.guild, ticket.user_id)
+        user, err = get_member(interaction.guild, ticket.user_id)
         if err:
             await interaction.response.send_message(
                 embed=error_embed(err),
                 ephemeral=True
             )
             return
-        interaction.channel.set_permissions(user, read_messages=True)
+        await interaction.channel.set_permissions(user, read_messages=True)
 
         await interaction.channel.edit(category=original_category)
 
@@ -124,7 +123,9 @@ async def close_ticket(interaction: discord.Interaction):
     Args:
         interaction (discord.Interaction): The interaction that triggered the close action.
     """
-    await interaction.response.defer()
+    if not interaction.response.is_done():
+        await interaction.response.defer()
+
     # Change channel
     err = await close_channel(interaction.channel)
     if err:
@@ -137,8 +138,9 @@ async def close_ticket(interaction: discord.Interaction):
     # Update database
     db.update_ticket(str(interaction.channel.id), archived=True, close_at=None)
 
+    msg = R.ticket_closed_msg % interaction.user.mention
     # Send message
-    embed, view = ClosedView.create(interaction)
+    embed, view = ClosedView.create(msg)
     await interaction.channel.send(
         embed=embed,
         view=view

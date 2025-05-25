@@ -238,8 +238,9 @@ class ResDE:
     noch_fragen_no_permission: str = "Nur der Ersteller kann die Fragen beantworten."
     ticket_noch_fragen_close_error_title: str = "Fehler beim automatischen Schließen"
     ticket_no_close_time: str = "Dieses Ticket ist nicht (mehr) für das automatische Schließen konfiguriert. Bitte schließe es manuell."
-    noch_fragen_cancel_msg: str = "Du kannst jetzt wieder Fragen stellen."
-    noch_fragen_delete_msg: str = "%s hat keine Fragen mehr. Das Ticket wurde geschlossen."
+    noch_fragen_cancel_msg: str = "%s, Du kannst jetzt wieder Fragen stellen."
+    noch_fragen_delete_msg: str = "Das Ticket wird jetzt gelöscht. Der Channel wird nicht mehr benutzbar sein."
+    noch_fragen_closed_msg: str = "Das Ticket wurde automatisch geschlossen."
 
 
 @dataclass
