@@ -35,7 +35,7 @@ def setup_setup_command(bot: discord.Bot):
 
         if category is None:
             # Tell the user the current category
-            cat = db.get_constant(C.ticket_category)
+            cat = db.get_constant(C.ticket_category, ctx.guild.id)
             if cat is None:
                 # No category set
                 await ctx.respond(embed=create_embed(R.setup_no_ticket_category, color=C.warning_color), ephemeral=True)
@@ -52,7 +52,7 @@ def setup_setup_command(bot: discord.Bot):
             )
             return
         # Set the category in the database
-        db.set_constant(C.ticket_category, str(category.id))
+        db.set_constant(C.ticket_category, str(category.id), ctx.guild.id)
         await ctx.respond(
             embed=create_embed(R.setup_tickets_set_category %
                                category.mention, color=C.success_color, title=R.setup_title),
@@ -81,7 +81,7 @@ def setup_setup_command(bot: discord.Bot):
 
         if category is None:
             # Tell the user the current category
-            cat = db.get_constant(C.transcript_category)
+            cat = db.get_constant(C.transcript_category, ctx.guild.id)
             if cat is None:
                 # No category set
                 await ctx.respond(embed=create_embed(R.setup_no_transcript_category, color=C.warning_color), ephemeral=True)
@@ -99,7 +99,7 @@ def setup_setup_command(bot: discord.Bot):
             )
             return
         # Set the category in the database
-        db.set_constant(C.transcript_category, str(category.id))
+        db.set_constant(C.transcript_category, str(category.id), ctx.guild.id)
         await ctx.respond(
             embed=create_embed(R.setup_transcript_set_category %
                                category.mention, color=C.success_color),
@@ -128,7 +128,7 @@ def setup_setup_command(bot: discord.Bot):
         """
         if channel is None:
             # Tell the user the current log channel
-            log_channel_id = db.get_constant(C.log_channel)
+            log_channel_id = db.get_constant(C.log_channel, ctx.guild.id)
             if log_channel_id is None:
                 await ctx.respond(embed=create_embed(R.setup_no_logchannel, color=C.warning_color, title=R.log_channel_title), ephemeral=True)
                 return
@@ -144,7 +144,7 @@ def setup_setup_command(bot: discord.Bot):
             return
 
         # Set the log channel in the database
-        db.set_constant(C.log_channel, str(channel.id))
+        db.set_constant(C.log_channel, str(channel.id), ctx.guild.id)
         await ctx.respond(
             embed=create_embed(R.setup_logchannel_set % channel.mention,
                                color=C.success_color, title=R.log_channel_title),
@@ -185,7 +185,7 @@ def setup_setup_command(bot: discord.Bot):
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
-                db.set_constant(C.mod_roles, ",".join(role_ids))
+                db.set_constant(C.mod_roles, ",".join(role_ids), ctx.guild.id)
                 roles_mentions = ", ".join(
                     [role.mention for role in self.selected_roles])
                 await interaction.response.edit_message(
@@ -198,7 +198,7 @@ def setup_setup_command(bot: discord.Bot):
                 self.stop()
 
         # Show current mod roles if set
-        mod_role_ids = db.get_constant(C.mod_roles)
+        mod_role_ids = db.get_constant(C.mod_roles, ctx.guild.id)
         if mod_role_ids:
             role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
             roles = [ctx.guild.get_role(rid) for rid in role_ids]

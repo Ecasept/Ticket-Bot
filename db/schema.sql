@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS tickets (
-	channel_id TEXT PRIMARY KEY,
+	channel_id TEXT PRIMARY KEY NOT NULL,
 	category TEXT CHECK(category IN ('application', 'report', 'support')),
 	user_id TEXT NOT NULL,
 	assignee_id TEXT,
@@ -9,13 +9,16 @@ CREATE TABLE IF NOT EXISTS tickets (
 );
 
 CREATE TABLE IF NOT EXISTS constants (
-	key TEXT PRIMARY KEY,
-	value TEXT
+	key TEXT NOT NULL,
+	guild_id INTEGER NOT NULL,
+	value TEXT,
+	PRIMARY KEY (key, guild_id)
 );
 
 -- Indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_tickets_category ON tickets(category);
 CREATE INDEX IF NOT EXISTS idx_tickets_assignee ON tickets(assignee_id);
+CREATE INDEX IF NOT EXISTS idx_constants_guild ON constants(guild_id);
 
 
 

@@ -6,9 +6,10 @@ import sqlite3
 import os
 import datetime
 from src.utils import C, logger
+import re
 
 
-USER_VERSION = 4
+USER_VERSION = 5
 
 # Register adapter and converter for datetime
 
@@ -31,6 +32,31 @@ sqlite3.register_converter("boolean", lambda val: bool(int(val.decode())))
 class DatabaseError(Exception):
     """Custom exception for database errors."""
     pass
+
+
+def replace_migration_placeholders(migration_script: str) -> str:
+    """
+    Replace placeholders in the migration script with actual values.
+
+    Placeholders are in the format `{{name|default_value}}`.
+    If the environment variable `name` is set, the placeholder is replaced with its value.
+    If not, it is replaced with `default_value`.
+    This is useful for migrating databases to a schema with new columns.
+
+    Args:
+        migration_script (str): The migration script with placeholders.
+    Returns:
+        str: The migration script with placeholders replaced.
+    """
+    regex = re.compile(r'{{(.*?)\|(.*?)}}')
+    placeholders = re.findall(regex, migration_script)
+    for (ph, default) in placeholders:
+        value = os.getenv(ph.strip())
+        if value is None:
+            value = default.strip()
+        migration_script = migration_script.replace(
+            f'{{{{{ph}|{default}}}}}', value)
+    return migration_script
 
 
 class Ticket:
@@ -103,6 +129,7 @@ class Database:
             mig_name = f"db/migrations/v{current_user_version + 1}.sql"
             with open(mig_name, 'r') as f:
                 migration = f.read()
+            migration = replace_migration_placeholders(migration)
             self.connection.executescript(migration)
             current_user_version += 1
         # Set the user version to the latest version
@@ -275,35 +302,37 @@ class Database:
 
     # === Constants ===
 
-    def get_constant(self, key: str) -> str | None:
+    def get_constant(self, key: str, guild: int) -> str | None:
         """
         Get a constant value from the database.
         Args:
             key (str): Key of the constant.
+            guild (int): Guild ID for the constant.
         Returns:
             str or None: Constant value if found, else None.
         """
         self.cursor.execute(
-            "SELECT value FROM constants WHERE key = ?", (key,))
+            "SELECT value FROM constants WHERE key = ? AND guild_id = ?", (key, guild))
         constant = self.cursor.fetchone()
         if constant:
             return constant[0]
         else:
             return None
 
-    def set_constant(self, key: str, value: str):
+    def set_constant(self, key: str, value: str, guild: int):
         """
         Set a constant value in the database.
         Args:
             key (str): Key of the constant.
             value (str): Value to set.
+            guild (int): Guild ID for the constant.
         """
         self.cursor.execute(
-            "INSERT OR REPLACE INTO constants (key, value) VALUES (?, ?)",
-            (key, value)
+            "INSERT OR REPLACE INTO constants (key, guild_id, value) VALUES (?, ?, ?)",
+            (key, guild, value)
         )
         self.connection.commit()
-        logger.info("db", f"Constant {key} set to {value}.")
+        logger.info("db", f"Constant {key} set to {value} for guild {guild}.")
 
 
 db = Database(C.db_file)

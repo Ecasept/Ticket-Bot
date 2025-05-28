@@ -38,7 +38,7 @@ def get_mod_roles(guild: discord.Guild) -> Tuple[Optional[List[discord.Role]], O
         Tuple[Optional[List[discord.Role]], Optional[str]]: A tuple containing the list of moderator roles (or None) and an error message (or None).
     """
     from src.database import db
-    mod_role_ids = db.get_constant(C.mod_roles)
+    mod_role_ids = db.get_constant(C.mod_roles, guild.id)
     if mod_role_ids is None:
         return None, R.setup_no_modroles
     try:
@@ -95,7 +95,7 @@ async def get_ticket_category(guild: discord.Guild) -> Tuple[Optional[discord.Ca
         Tuple[Optional[discord.CategoryChannel], Optional[str]]: A tuple of (category, error_message). If the category is configured and found, returns (category, None). Otherwise returns (None, error_message) indicating why it failed.
     """
     from src.database import db
-    category_id = db.get_constant(C.ticket_category)
+    category_id = db.get_constant(C.ticket_category, guild.id)
     if category_id is None:
         return None, R.setup_no_ticket_category
     category = guild.get_channel(int(category_id))
@@ -113,7 +113,7 @@ async def get_transcript_category(guild: discord.Guild) -> Tuple[Optional[discor
         Tuple[Optional[discord.CategoryChannel], Optional[str]]: The transcript category and an error message if not found.
     """
     from src.database import db
-    category_id = db.get_constant(C.transcript_category)
+    category_id = db.get_constant(C.transcript_category, guild.id)
     if category_id is None:
         return None, R.setup_no_transcript_category
     category = guild.get_channel(int(category_id))
@@ -131,7 +131,7 @@ async def get_log_channel(guild: discord.Guild) -> Tuple[Optional[discord.TextCh
         Tuple[Optional[discord.TextChannel], Optional[str]]: The log channel and an error message if not found.
     """
     from src.database import db
-    channel_id = db.get_constant(C.log_channel)
+    channel_id = db.get_constant(C.log_channel, guild.id)
     if channel_id is None:
         return None, R.setup_no_logchannel
     channel = guild.get_channel(int(channel_id))
