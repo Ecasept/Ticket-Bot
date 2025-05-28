@@ -59,6 +59,8 @@ class ResDE:
     """
     German string resources for the bot's UI and messages.
     """
+    bot_activity: str = "auf /hilfe"
+
     error_title: str = "Fehler"
     error_occurred: str = "Ein Fehler ist aufgetreten: %s"
 

@@ -23,6 +23,10 @@ bot = discord.Bot(intents=intents)
 async def on_ready():
     logger.info("event", f"Logged in as {bot.user.name} (ID: {bot.user.id})")
     logger.info("event", "------")
+
+    activity = discord.Game(name=R.bot_activity)
+    await bot.change_presence(activity=activity)
+
     # Register views as persistent
     # This is required to make them work after a restart
     bot.add_view(PanelView())
