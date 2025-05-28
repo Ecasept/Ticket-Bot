@@ -21,8 +21,7 @@ class Constants:
     db_schema_file: str = "db/schema.sql"
 
     bot_name = "BotControl"
-    me = "Ecasept"
-    support_guild_invite_link: str = "https://discord.gg/bGt76jem9v"
+    support_guild_invite_link: str = "https://discord.gg/mD4EQFCC8s"
 
     cat_application: str = "application"
     cat_report: str = "report"
@@ -283,5 +282,5 @@ class ResDE:
     help_setup_commands: str = "⚙️ **Setup Befehle** (Administrator erforderlich)"
     help_team_commands: str = "👥 **Team Befehle** (Administrator erforderlich)"
     help_tutorial_title: str = "🚀 **Erste Schritte**"
-    help_tutorial_text: str = "**Setup-Reihenfolge:**\n1️⃣ `/setup tickets` - Kategorie für neue Tickets festlegen\n2️⃣ `/setup transcript` - Kategorie für geschlossene Tickets festlegen\n3️⃣ `/setup modroles` - Moderator-Rollen auswählen\n4️⃣ `/setup logchannel` - Log-Channel für Team-Aktionen *(optional)*\n5️⃣ `/createpanel` - Ticket-Panel für User erstellen\n\n✨ **Tipp:** Nach dem Setup können User über das Panel Tickets erstellen!"
-    help_footer: str = f"{Constants.bot_name} - Ticket Bot von {Constants.me} - {Constants.support_guild_invite_link}"
+    help_tutorial_text: str = f"**Setup-Reihenfolge:**\n1️⃣ `/setup tickets` - Kategorie für neue Tickets festlegen\n2️⃣ `/setup transcript` - Kategorie für geschlossene Tickets festlegen\n3️⃣ `/setup modroles` - Moderator-Rollen auswählen\n4️⃣ `/setup logchannel` - Log-Channel für Team-Aktionen *(optional)*\n5️⃣ `/createpanel` - Ticket-Panel für User erstellen\n\n✨ Nach dem Setup können User über das Panel Tickets erstellen!\n\n Wenn du Fragen hast, kannst du uns gerne im Support-Server kontaktieren: {Constants.support_guild_invite_link}"
+    help_footer: str = f"{Constants.bot_name} - Tickets & more"
