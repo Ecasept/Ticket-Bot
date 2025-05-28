@@ -11,6 +11,7 @@ from src.header import HeaderView
 from src.utils import R, C, TOKEN, logger, create_embed
 from src.database import db
 from src.team_list import setup_team_list_command, TeamListMessage
+from src.help import setup_help_command
 
 intents = discord.Intents.default()
 intents.members = True
@@ -48,6 +49,7 @@ async def ping(ctx: discord.ApplicationContext):
 
 setup_setup_command(bot)
 setup_team_list_command(bot)
+setup_help_command(bot)
 setup_noch_fragen(bot)
 
 

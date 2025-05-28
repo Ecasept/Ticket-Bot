@@ -15,7 +15,7 @@ logger = log.Logger("bot.log")
 TOKEN = os.getenv("DISCORD_TOKEN")
 
 R = res.get_resources("de")
-C = res.Constants()
+C = res.Constants
 
 
 def format_date(date: datetime.datetime) -> str:

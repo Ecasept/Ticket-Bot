@@ -7,6 +7,37 @@ from dataclasses import dataclass
 import discord
 
 
+@dataclass
+class Constants:
+    """
+    Constants for the bot, such as category names, role names, and colors.
+    """
+    support_role_name: str = "Support"
+    ticket_category: str = "ticket_category"
+    transcript_category: str = "transcript_category"
+    mod_roles: str = "mod_role_ids"
+    log_channel: str = "log_channel_id"  # Key for the log channel in DB
+    db_file: str = "db/tickets.db"
+    db_schema_file: str = "db/schema.sql"
+
+    bot_name = "BotControl"
+    me = "Ecasept"
+    support_guild_invite_link: str = "https://discord.gg/bGt76jem9v"
+
+    cat_application: str = "application"
+    cat_report: str = "report"
+    cat_support: str = "support"
+
+    # Ticket closing
+    ticket_close_time: int = 12  # Hours after which noch fragen-tickets are closed
+
+    # Embed colors
+    embed_color: discord.Color = discord.Color.blue()
+    success_color: discord.Color = discord.Color.green()
+    error_color: discord.Color = discord.Color.red()
+    warning_color: discord.Color = discord.Color.orange()
+
+
 def get_resources(lang: str):
     """
     Return the resource class for the specified language.
@@ -147,7 +178,7 @@ class ResDE:
     setup_ticket_category_not_found = "Die Kategorie für Tickets konnte nicht gefunden werden. Bitte stelle sicher, dass die Kategorie existiert und der Bot die Berechtigung hat, sie zu sehen."
 
     # setup_transcript
-    setup_transcript_desc = "Die Kategorie, in der Transkripte gespeichert werden sollen."
+    setup_transcript_desc = "Die Kategorie, in der Transkripte/alte Tickets gespeichert werden sollen."
     setup_no_transcript_category = "Es ist derzeit keine Kategorie für Transkripte festgelegt."
     setup_transcript_current_category = "Die aktuelle Transkript-Kategorie ist %s."
     setup_transcript_set_category = "Die Transkript-Kategorie wurde auf %s gesetzt."
@@ -242,29 +273,13 @@ class ResDE:
     noch_fragen_delete_msg: str = "Das Ticket wird jetzt gelöscht. Der Channel wird nicht mehr benutzbar sein."
     noch_fragen_closed_msg: str = "Das Ticket wurde automatisch geschlossen."
 
-
-@dataclass
-class Constants:
-    """
-    Constants for the bot, such as category names, role names, and colors.
-    """
-    support_role_name: str = "Support"
-    ticket_category: str = "ticket_category"
-    transcript_category: str = "transcript_category"
-    mod_roles: str = "mod_role_ids"
-    log_channel: str = "log_channel_id"  # Key for the log channel in DB
-    db_file: str = "db/tickets.db"
-    db_schema_file: str = "db/schema.sql"
-
-    cat_application: str = "application"
-    cat_report: str = "report"
-    cat_support: str = "support"
-
-    # Ticket closing
-    ticket_close_time: int = 12  # Hours after which noch fragen-tickets are closed
-
-    # Embed colors
-    embed_color: discord.Color = discord.Color.blue()
-    success_color: discord.Color = discord.Color.green()
-    error_color: discord.Color = discord.Color.red()
-    warning_color: discord.Color = discord.Color.orange()
+    # Help command
+    help_desc: str = "Zeigt alle verfügbaren Bot-Befehle an."
+    help_title: str = "🤖 Bot Hilfe"
+    help_description: str = "Hier sind alle verfügbaren Befehle für diesen Bot:"
+    help_general_commands: str = "📋 **Allgemeine Befehle**"
+    help_setup_commands: str = "⚙️ **Setup Befehle** (Administrator erforderlich)"
+    help_team_commands: str = "👥 **Team Befehle** (Administrator erforderlich)"
+    help_tutorial_title: str = "🚀 **Erste Schritte**"
+    help_tutorial_text: str = "**Setup-Reihenfolge:**\n1️⃣ `/setup tickets` - Kategorie für neue Tickets festlegen\n2️⃣ `/setup transcript` - Kategorie für geschlossene Tickets festlegen\n3️⃣ `/setup modroles` - Moderator-Rollen auswählen\n4️⃣ `/setup logchannel` - Log-Channel für Team-Aktionen *(optional)*\n5️⃣ `/createpanel` - Ticket-Panel für User erstellen\n\n✨ **Tipp:** Nach dem Setup können User über das Panel Tickets erstellen!"
+    help_footer: str = f"{Constants.bot_name} - Ticket Bot von {Constants.me} - {Constants.support_guild_invite_link}"
