@@ -25,6 +25,7 @@ bot = discord.Bot(intents=intents)
 @bot.event
 async def on_ready():
     logger.info(f"Logged in as {bot.user.name} (ID: {bot.user.id})")
+    logger.info(f"Connected to {len(bot.guilds)} guilds")
     logger.info("------")
 
     activity = discord.Game(name=R.bot_activity)
