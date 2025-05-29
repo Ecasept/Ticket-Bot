@@ -4,8 +4,10 @@ Implements the PanelView and ticket creation logic for the Discord bot, includin
 import discord
 
 from src.header import HeaderView
-from src.utils import C, R, error_embed, get_mod_roles, get_ticket_category, logger, create_embed
+from src.utils import get_mod_roles, get_ticket_category, logger, create_embed, handle_error
 from src.database import db
+from src.res import C, R
+from src.error import Ce
 
 
 class PanelView(discord.ui.View):
@@ -58,10 +60,8 @@ class PanelView(discord.ui.View):
             None: If the user cancels the modal.
         """
         modal = ApplicationModal()
-        logger.info(
-            "panel", f"Application modal opened for {interaction.user.name} (ID: {interaction.user.id})"
-        )
         await interaction.response.send_modal(modal)
+        logger.info("Application modal opened", interaction)
         await modal.wait()
         if modal.age is None or modal.apply_for is None or modal.application_text is None:
             # User cancelled or closed the modal
@@ -100,14 +100,21 @@ class ApplicationModal(discord.ui.Modal):
     async def callback(self, interaction: discord.Interaction):
         # Acknowledge the interaction
         await interaction.response.defer(ephemeral=True)
+        # The modal data will be accessed later via the modal instance properties
 
     async def on_error(self, interaction: discord.Interaction, error: Exception):
-        logger.error("panel", f"Error in ApplicationModal: {error}")
-        await interaction.respond(
-            embed=error_embed(R.error_occurred), ephemeral=True)
+        """
+        Handle errors that occur in the ApplicationModal.
+        Args:
+            interaction (discord.Interaction): The interaction that caused the error.
+            error (Exception): The exception that occurred.
+        """
+        err = Ce(f"Error in ApplicationModal: {error}")
+        logger.error(err, interaction)
+        await handle_error(interaction, err)
 
 
-def generate_channel_name(user: discord.User, category: str):
+def generate_channel_name(user: discord.User, category: str) -> str:
     """
     Generate a unique channel name for a ticket based on the user and category.
     Args:
@@ -124,8 +131,8 @@ def generate_channel_name(user: discord.User, category: str):
         case C.cat_support:
             prefix = R.support_prefix
         case _:
-            logger.error(
-                "panel", f"Invalid category {category} for channel name generation.")
+            err = Ce(f"Invalid category {category} for channel name generation.")
+            logger.error(err)
             prefix = R.support_prefix
 
     channel_name = f"{prefix}-{user.name}"
@@ -153,24 +160,14 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
     """
     ticket_category, err = await get_ticket_category(interaction.guild)
     if err:
-        await interaction.respond(
-            embed=error_embed(err),
-            ephemeral=True
-        )
-        logger.error(
-            "panel", f"Error getting ticket category: {err}")
+        await handle_error(interaction, err)
         return None
 
     channel_name = generate_channel_name(user, category)
 
     mod_roles, err = get_mod_roles(interaction.guild)
     if err:
-        await interaction.respond(
-            embed=error_embed(err),
-            ephemeral=True
-        )
-        logger.error(
-            "panel", f"Error getting mod roles: {err}")
+        await handle_error(interaction, err)
         return None
 
     overwrites = {
@@ -189,7 +186,7 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
     )
 
     logger.info(
-        "panel", f"Ticket channel created for {user.name} (ID: {user.id})")
+        f"Ticket channel #{channel.name} (ID: {channel.id}) created", interaction)
     return channel
 
 
@@ -215,8 +212,8 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
             msg = R.header_msg_support
             title = R.header_title_support
         case _:
-            logger.error(
-                "panel", f"Invalid category {category} for ticket channel initialization.")
+            logger.error(Ce(f"Invalid category {category} for ticket channel initialization, "
+                            f"using support as default."), interaction)
             msg = R.header_msg_support
             title = R.header_title_support
     embed = discord.Embed(
@@ -245,8 +242,8 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
         view=view
     )
 
-    logger.info("panel",
-                f"Ticket channel initialized for {user.name} (ID: {user.id})")
+    logger.info(
+        f"Ticket channel #{channel.name} (ID: {channel.id}) initialized", interaction)
 
 
 async def create_new_ticket(interaction: discord.Interaction, user: discord.User, category: str, info: dict | None = None) -> discord.TextChannel | None:

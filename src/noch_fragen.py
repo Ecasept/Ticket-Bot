@@ -2,11 +2,16 @@ import discord
 from discord.ext import tasks
 from src.closed import ClosedView, close_channel, close_ticket
 from src.database import db
-from src.utils import create_embed, error_embed, logger, R, C
+from src.utils import create_embed, logger, handle_error
 import datetime
-
+from src.res import C, R
+from src.error import Ce, We
 
 class NochFragenMessage(discord.ui.View):
+    """
+    View for handling the "noch fragen" (any more questions) message.
+    """
+    
     def __init__(self):
         super().__init__(timeout=None)
 
@@ -33,30 +38,14 @@ class NochFragenMessage(discord.ui.View):
             interaction (discord.Interaction): The interaction context.
         """
 
-        ticket = db.get_ticket(interaction.channel.id)
-        if ticket is None:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_not_found),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"Ticket {interaction.channel.id} not found in database.")
+        if (ticket := db.get_ticket(interaction.channel.id)) is None:
+            await handle_error(interaction, Ce(R.ticket_not_found))
             return
         if ticket.user_id != str(interaction.user.id):
-            await interaction.response.send_message(
-                embed=error_embed(R.noch_fragen_no_permission),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"User {interaction.user.id} does not have permission to close ticket {interaction.channel.id}.")
+            await handle_error(interaction, We(R.noch_fragen_no_permission))
             return
         if ticket.close_at is None:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_no_close_time),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"Ticket {interaction.channel.id} has no close time.")
+            await handle_error(interaction, We(R.ticket_no_close_time))
             return
 
         await interaction.response.defer()
@@ -66,8 +55,7 @@ class NochFragenMessage(discord.ui.View):
         )
         await close_ticket(interaction)
         await interaction.edit_original_response(view=None)
-        logger.info(
-            "noch_fragen", f"Closed ticket {interaction.channel.id} after user confirmation.")
+        logger.info("closed ticket after user confirmation", interaction)
 
     @discord.ui.button(label=R.no_questions_cancel, style=discord.ButtonStyle.primary, custom_id="noch_fragen_cancel", emoji=discord.PartialEmoji(name=R.noch_fragen_cancel_emoji))
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -77,30 +65,14 @@ class NochFragenMessage(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction context.
         """
-        ticket = db.get_ticket(interaction.channel.id)
-        if ticket is None:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_not_found),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"Ticket {interaction.channel.id} not found in database.")
+        if (ticket := db.get_ticket(interaction.channel.id)) is None:
+            await handle_error(interaction, Ce(R.ticket_not_found))
             return
         if ticket.user_id != str(interaction.user.id):
-            await interaction.response.send_message(
-                embed=error_embed(R.noch_fragen_no_permission),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"User {interaction.user.id} does not have permission to close ticket {interaction.channel.id}.")
+            await handle_error(interaction, We(R.noch_fragen_no_permission))
             return
         if ticket.close_at is None:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_no_close_time),
-                ephemeral=True
-            )
-            logger.error(
-                "noch_fragen", f"Ticket {interaction.channel.id} has no close time.")
+            await handle_error(interaction, We(R.ticket_no_close_time))
             return
 
         await interaction.response.edit_message(view=None)
@@ -110,8 +82,7 @@ class NochFragenMessage(discord.ui.View):
             embed=create_embed(R.noch_fragen_cancel_msg % interaction.user.mention, color=C.success_color))
 
         db.update_ticket(interaction.channel.id, close_at=None)
-        logger.info(
-            "noch_fragen", f"Cancelled closing ticket {interaction.channel.id} after user confirmation.")
+        logger.info("cancelled noch fragen after user request", interaction)
 
 
 async def create_noch_fragen(interaction: discord.Interaction):
@@ -124,29 +95,34 @@ async def create_noch_fragen(interaction: discord.Interaction):
     now = datetime.datetime.now()
     close_time = now + datetime.timedelta(hours=C.ticket_close_time)
     db.update_ticket(interaction.channel.id, close_at=close_time)
-    logger.info(
-        "noch_fragen", f"Created noch fragen message for ticket {interaction.channel.id}.")
     await interaction.channel.send(
         embed=embed,
         view=view,
     )
+    logger.info("noch fragen message sent", interaction)
 
 
 def setup_noch_fragen(bot: discord.Bot):
+    """
+    Setup the automatic ticket closing task for the bot.
+    Args:
+        bot (discord.Bot): The Discord bot instance.
+    """
     @tasks.loop(minutes=5)
     async def delete_noch_fragen():
+        """
+        Background task that automatically closes overdue tickets.
+        """
         now = datetime.datetime.now()
         overdue_ids = db.get_overdue_tickets(now)
         for id in overdue_ids:
             channel = bot.get_channel(int(id))
             if channel is None:
-                logger.error(
-                    "noch_fragen", f"Channel {id} not found, skipping deletion.")
+                logger.error(We(f"Channel {id} not found, skipping deletion."))
                 continue  # Continue to next id if channel not found
             err = await close_channel(channel)
             if err:
-                logger.error(
-                    "noch_fragen", f"Error closing channel {id}: {err}")
+                logger.error(err)
                 continue  # Skip database update if closing channel failed
 
             # If close_channel was successful
@@ -156,7 +132,6 @@ def setup_noch_fragen(bot: discord.Bot):
                 embed=embed,
                 view=view
             )
-            logger.info(
-                "noch_fragen", f"Closed ticket {id} after timeout.")
+            logger.info(f"Closed channel {id} due to overdue noch fragen.")
 
     delete_noch_fragen.start()

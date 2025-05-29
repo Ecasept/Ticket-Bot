@@ -1,7 +1,8 @@
 import discord
-from src.utils import C, R, error_embed, get_member, get_ticket_category, get_transcript_category, is_mod_or_admin, logger, create_embed
+from src.utils import get_member, get_ticket_category, get_transcript_category, logger, create_embed, handle_error, verify_mod_or_admin
 from src.database import db
-
+from src.res import C, R
+from src.error import Ce, We, Error
 
 class ClosedView(discord.ui.View):
     def __init__(self):
@@ -29,26 +30,13 @@ class ClosedView(discord.ui.View):
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
         # Check if the user has permission to delete the ticket
-        val, err = is_mod_or_admin(interaction.user)
-        if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
-            logger.error(
-                "closed", f"Error checking permissions for ticket {str(interaction.channel.id)}: {err}")
-            return
-        if not val:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_delete_no_permission),
-                ephemeral=True
-            )
+
+        if not await verify_mod_or_admin(interaction, We(R.ticket_delete_no_permission)):
             return
 
         await interaction.channel.delete()
         db.delete_ticket(str(interaction.channel.id))
-        logger.info("closed",
-                    f"Ticket {str(interaction.channel.id)} deleted by {interaction.user.name} (ID: {interaction.user.id})")
+        logger.info("ticket deleted", interaction)
 
     @discord.ui.button(label=R.reopen_ticket_button, style=discord.ButtonStyle.secondary, custom_id="reopen_ticket", emoji=discord.PartialEmoji(name=R.reopen_emoji))
     async def reopen(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -61,24 +49,15 @@ class ClosedView(discord.ui.View):
         # Move back to original category
         original_category, err = await get_ticket_category(interaction.guild)
         if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
+            await handle_error(interaction, err)
             return
         ticket = db.get_ticket(str(interaction.channel.id))
         if ticket is None:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_not_found),
-                ephemeral=True
-            )
+            await handle_error(interaction, Ce(R.ticket_not_found))
             return
         user, err = get_member(interaction.guild, ticket.user_id)
         if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
+            await handle_error(interaction, err)
             return
         await interaction.channel.set_permissions(user, read_messages=True)
 
@@ -94,12 +73,17 @@ class ClosedView(discord.ui.View):
             embed=create_embed(R.ticket_reopened_msg %
                                interaction.user.mention, color=C.success_color),
         )
-
-        logger.info("closed",
-                    f"Ticket {str(interaction.channel.id)} reopened by {interaction.user.name} (ID: {interaction.user.id})")
+        logger.info("ticket reopened", interaction)
 
 
-async def close_channel(channel: discord.TextChannel):
+async def close_channel(channel: discord.TextChannel) -> Error | None:
+    """
+    Close a ticket channel by moving it to the transcript category and updating permissions.
+    Args:
+        channel (discord.TextChannel): The ticket channel to close.
+    Returns:
+        Error | None: An error if one occurred, None if successful.
+    """
     # Change category
     category, err = await get_transcript_category(channel.guild)
     if err:
@@ -108,7 +92,7 @@ async def close_channel(channel: discord.TextChannel):
     # Change permissions
     ticket = db.get_ticket(str(channel.id))
     if ticket is None:
-        return R.ticket_not_found
+        return Ce(R.ticket_not_found)
     user, err = get_member(channel.guild, ticket.user_id)
     if err:
         return err
@@ -129,10 +113,7 @@ async def close_ticket(interaction: discord.Interaction):
     # Change channel
     err = await close_channel(interaction.channel)
     if err:
-        await interaction.respond(
-            embed=error_embed(err),
-            ephemeral=True
-        )
+        await handle_error(interaction, err)
         return
 
     # Update database
@@ -145,5 +126,4 @@ async def close_ticket(interaction: discord.Interaction):
         embed=embed,
         view=view
     )
-    logger.info("closed",
-                f"Ticket {str(interaction.channel.id)} closed by {interaction.user.name} (ID: {interaction.user.id})")
+    logger.info("ticket closed", interaction)

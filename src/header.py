@@ -6,9 +6,11 @@ import discord
 from src.close_request import TicketCloseRequestView
 from src.closed import close_ticket
 from src.mod_options import ModOptionsMessage
-from src.utils import R, create_embed, is_mod_or_admin
+from src.utils import create_embed, is_mod_or_admin
 from src.database import db
-from src.utils import logger, error_embed
+from src.utils import logger, handle_error
+from src.res import R
+from src.error import Ce, We
 
 
 class HeaderView(discord.ui.View):
@@ -40,29 +42,16 @@ class HeaderView(discord.ui.View):
         cid = str(interaction.channel.id)
         ticket = db.get_ticket(cid)
         if not ticket:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_not_found),
-                ephemeral=True
-            )
-            logger.error("header",
-                         f"Ticket {cid} not found in the database when trying to close it.")
+            await handle_error(interaction, Ce(R.ticket_not_found))
             return
 
         if ticket.archived:
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_already_closed),
-                ephemeral=True
-            )
+            await handle_error(interaction, We(R.ticket_already_closed))
             return
 
         is_mod_admin, err = is_mod_or_admin(interaction.user)
         if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
-            logger.error(
-                "header", f"Error checking permissions for ticket {cid}: {err}")
+            await handle_error(interaction, err)
             return
 
         if is_mod_admin:
@@ -75,14 +64,10 @@ class HeaderView(discord.ui.View):
                 embed=create_embed(msg, title=R.close_ticket_request_title),
                 view=view,
             )
-            logger.info("header",
-                        f"Ticket close request sent for ticket {cid} by {interaction.user.name} (ID: {interaction.user.id})")
+            logger.info("close request sent", interaction)
         else:
             # If the user is neither a mod nor the ticket owner, send an error message
-            await interaction.response.send_message(
-                embed=error_embed(R.ticket_close_no_permission),
-                ephemeral=True
-            )
+            await handle_error(interaction, We(R.ticket_close_no_permission))
 
     async def open_mod_options(self, interaction: discord.Interaction):
         """
@@ -90,7 +75,7 @@ class HeaderView(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the mod options.
         """
-        embed, view = ModOptionsMessage.create(
+        embed, view = await ModOptionsMessage.create(
             interaction,
         )
 
@@ -100,5 +85,4 @@ class HeaderView(discord.ui.View):
             ephemeral=True
         )
 
-        logger.info("header",
-                    f"Mod options opened for ticket {str(interaction.channel.id)} by {interaction.user.name} (ID: {interaction.user.id})")
+        logger.info("mod options opened", interaction)

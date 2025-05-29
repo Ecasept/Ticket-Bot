@@ -2,7 +2,8 @@
 Help command module for the Discord bot. Provides an overview of all available commands.
 """
 import discord
-from src.utils import R, C, create_embed, logger
+from src.utils import logger
+from src.res import C, R
 
 
 def setup_help_command(bot: discord.Bot):
@@ -77,5 +78,4 @@ def setup_help_command(bot: discord.Bot):
         embed.set_footer(text=R.help_footer)
 
         await ctx.respond(embed=embed, ephemeral=True)
-        logger.info(
-            "cmd", f"Help command used by {ctx.user.name} (ID: {ctx.user.id})")
+        logger.info("Help command executed", ctx.interaction)

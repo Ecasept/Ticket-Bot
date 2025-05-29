@@ -3,10 +3,12 @@ Implements the ModOptionsMessage view for moderator actions on tickets, such as 
 """
 import discord
 from src.noch_fragen import create_noch_fragen
-from src.utils import C, R, create_embed, error_embed, get_member, is_mod_or_admin
+from src.utils import create_embed, error_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, verify_mod_or_admin
 from src.database import Ticket, db
 from src.utils import logger
 from src.utils import format_date
+from src.res import C, R
+from src.error import Ce, We
 
 
 class ModOptionsMessage(discord.ui.View):
@@ -65,6 +67,11 @@ class ModOptionsMessage(discord.ui.View):
             self.add_item(reject_button)
 
     async def noch_fragen(self, interaction: discord.Interaction):
+        """
+        Create a "noch fragen" (any more questions) message for the ticket.
+        Args:
+            interaction (discord.Interaction): The interaction that triggered this action.
+        """
         await interaction.response.defer()
         await create_noch_fragen(interaction)
 
@@ -89,15 +96,13 @@ class ModOptionsMessage(discord.ui.View):
         )
 
         # Edit mod options message
-        embed, view = ModOptionsMessage.create(interaction)
+        embed, view = await ModOptionsMessage.create(interaction)
         await interaction.edit_original_response(
             embed=embed,
             view=view
         )
 
-        logger.info("mod_options",
-                    f"Ticket {str(interaction.channel.id)} assigned to {interaction.user.name} (ID: {interaction.user.id})"
-                    )
+        logger.info("new assignee", interaction)
 
     async def unassign_ticket(self, interaction: discord.Interaction):
         """
@@ -116,15 +121,13 @@ class ModOptionsMessage(discord.ui.View):
         )
 
         # Edit mod options message
-        new_embed, new_view = ModOptionsMessage.create(interaction)
+        new_embed, new_view = await ModOptionsMessage.create(interaction)
         await interaction.edit_original_response(
             embed=new_embed,
             view=new_view
         )
 
-        logger.info("mod_options",
-                    f"Ticket {str(interaction.channel.id)} unassigned by {interaction.user.name} (ID: {interaction.user.id})"
-                    )
+        logger.info("ticket unassigned", interaction)
 
     async def approve_application(self, interaction: discord.Interaction):
         """
@@ -136,10 +139,7 @@ class ModOptionsMessage(discord.ui.View):
         # Get the user who submitted the application
         user, err = get_member(interaction.guild, self.user_id)
         if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
+            await handle_error(interaction, err)
             return
 
         # Send update message in the ticket channel
@@ -149,9 +149,8 @@ class ModOptionsMessage(discord.ui.View):
                                user.mention, color=C.success_color),
         )
 
-        logger.info("mod_options",
-                    f"Application approved for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
-                    )
+        logger.info(
+            f"Application approved for {user.name} (ID: {user.id})", interaction)
 
     async def reject_application(self, interaction: discord.Interaction):
         """
@@ -162,10 +161,7 @@ class ModOptionsMessage(discord.ui.View):
         # Get the user who submitted the application
         user, err = get_member(interaction.guild, self.user_id)
         if err:
-            await interaction.response.send_message(
-                embed=error_embed(err),
-                ephemeral=True
-            )
+            await handle_error(interaction, err)
             return
 
         # Send update message in the ticket channel
@@ -175,31 +171,33 @@ class ModOptionsMessage(discord.ui.View):
                                user.mention, color=C.error_color),
         )
 
-        logger.info("mod_options",
-                    f"Application rejected for {user.name} (ID: {user.id}) by {interaction.user.name} (ID: {interaction.user.id})"
-                    )
+        logger.info(
+            f"Application rejected for {user.name} (ID: {user.id})", interaction)
 
     @staticmethod
-    def create(interaction: discord.Interaction) -> tuple[discord.Embed, discord.ui.View]:
+    async def create(interaction: discord.Interaction) -> tuple[discord.Embed | None, discord.ui.View | None]:
         """
         Factory method to create the mod options message and view for a given interaction.
         Args:
             interaction (discord.Interaction): The interaction context.
         Returns:
-            tuple[discord.Embed, discord.ui.View]: The message and view for the mod options.
+            tuple[discord.Embed | None, discord.ui.View | None]: The message and view for the mod options.
         """
 
         ticket = db.get_ticket(str(interaction.channel.id))
         if ticket is None:
-            return error_embed(R.ticket_not_found_msg), None
+            err = Ce(R.ticket_not_found_msg)
+            logger.error(err, interaction)
+            return error_to_embed(err), None
 
-        val, err = is_mod_or_admin(interaction.user)
+        has_permission, err = is_mod_or_admin(interaction.user)
         if err:
-            # Error checking permissions
-            return error_embed(err), None
-        if not val:
-            # User is not a mod or admin
-            return error_embed(R.mod_options_no_permission), None
+            logger.error(err, interaction)
+            return error_to_embed(err), None
+        if not has_permission:
+            err = We(R.mod_options_no_permission)
+            logger.error(err, interaction)
+            return error_to_embed(err), None
 
         assignee_id = ticket.assignee_id
         user_id = ticket.user_id
@@ -209,40 +207,57 @@ class ModOptionsMessage(discord.ui.View):
 
         # Get assignee mention
         if assignee_id is None:
-            # No assignee
-            assignee_mention = None
+            assignee_mention = R.mod_options_unassigned
         else:
             try:
-                assignee = interaction.guild.get_member(
-                    int(assignee_id))
+                assignee = interaction.guild.get_member(int(assignee_id))
             except ValueError:
                 # Invalid assignee ID
                 assignee = None
+                logger.error(
+                    Ce(f"Invalid assignee ID {assignee_id}"), interaction)
             assignee_mention = assignee.mention if assignee else f"<@{assignee_id}>"
 
         # Get user mention
         if user_id is None:
             # No user
-            return error_embed(R.user_not_found_msg), None
+            err = Ce(R.user_not_found_msg)
+            logger.error(err, interaction)
+            return error_to_embed(err), None
         try:
             user = interaction.guild.get_member(int(user_id))
         except ValueError:
             # Invalid user ID
             user = None
+            logger.error(Ce(f"Invalid user ID {user_id}"), interaction)
         user_mention = user.mention if user else f"<@{user_id}>"
 
         # Create the view
-        view = ModOptionsMessage(
-            ticket=ticket,
-            interaction=interaction,
-        )
+        view = ModOptionsMessage(ticket, interaction)
 
-        # Create the embed message
+        # Create the embed
         embed = discord.Embed(
             title=R.mod_options_title,
             color=C.embed_color
         )
-
+        # Add fields based on ticket category
+        category_display_name = ""
+        match category:
+            case C.cat_application:
+                category_display_name = R.application
+            case C.cat_report:
+                category_display_name = R.report
+            case C.cat_support:
+                category_display_name = R.support
+            case _:
+                logger.error(
+                    Ce(f"Unknown category {category}, defaulting to support"), interaction)
+                category_display_name = R.support
+        embed.add_field(
+            name=R.mod_options_category,
+            value=category_display_name,
+            inline=True
+        )
         embed.add_field(
             name=R.mod_options_user,
             value=user_mention,
@@ -250,23 +265,7 @@ class ModOptionsMessage(discord.ui.View):
         )
         embed.add_field(
             name=R.mod_options_assignee,
-            value=assignee_mention if assignee_mention else R.mod_options_unassigned,
-            inline=True
-        )
-        match category:
-            case C.cat_application:
-                c = R.application
-            case C.cat_report:
-                c = R.report
-            case C.cat_support:
-                c = R.support
-            case _:
-                logger.error(
-                    "mod_options", f"Unknown category {category} for ticket {str(interaction.channel.id)}")
-                c = R.support
-        embed.add_field(
-            name=R.mod_options_category,
-            value=c,
+            value=assignee_mention,
             inline=True
         )
         embed.add_field(

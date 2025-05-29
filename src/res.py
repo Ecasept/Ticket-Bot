@@ -64,7 +64,7 @@ class ResDE:
     error_occurred: str = "Ein Fehler ist aufgetreten: %s"
 
     user_id_invalid: str = "Die Benutzer-ID ist ungültig."
-    user_not_found: str = "Benutzer konnte nicht gefunden werden."
+    user_not_found: str = "Benutzer konnte nicht auf dem Server gefunden werden."
 
     panel_msg: str = "Wähle eine Kategorie um ein Ticket zu erstellen."
     create_ticket_button: str = "Ticket erstellen"
@@ -188,7 +188,7 @@ class ResDE:
     # Setup Log Channel
     setup_logchannel_desc: str = "Konfiguriert den Log-Channel für Team-Aktionen."
     setup_no_logchannel: str = "Es ist kein Log-Channel für Team-Aktionen konfiguriert."
-    setup_logchannel_not_found: str = "Der konfigurierte Log-Channel wurde nicht gefunden."
+    setup_logchannel_not_found: str = "Der konfigurierte Log-Channel wurde nicht auf diesem Server gefunden. Bitte stelle sicher, dass der Channel existiert und der Bot die Berechtigung hat, ihn zu sehen."
     setup_logchannel_current: str = "Der aktuelle Log-Channel für Team-Aktionen ist %s."
     setup_logchannel_set: str = "Der Log-Channel für Team-Aktionen wurde auf %s gesetzt."
     log_channel_title: str = "Team Log Channel"
@@ -284,3 +284,7 @@ class ResDE:
     help_tutorial_title: str = "🚀 **Erste Schritte**"
     help_tutorial_text: str = f"**Setup-Reihenfolge:**\n1️⃣ `/setup tickets` - Kategorie für neue Tickets festlegen\n2️⃣ `/setup transcript` - Kategorie für geschlossene Tickets festlegen\n3️⃣ `/setup modroles` - Moderator-Rollen auswählen\n4️⃣ `/setup logchannel` - Log-Channel für Team-Aktionen *(optional)*\n5️⃣ `/createpanel` - Ticket-Panel für User erstellen\n\n✨ **Tipp:** Deine Frage wurde nicht beantwortet? Erstelle auf unserem [Support-Server]({Constants.support_guild_invite_link}) ein Ticket!"
     help_footer: str = f"{Constants.bot_name} - Tickets & more"
+
+
+R = get_resources("de")
+C = Constants

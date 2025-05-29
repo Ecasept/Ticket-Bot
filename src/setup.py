@@ -1,13 +1,16 @@
 import discord
 
-from src.utils import C, R, error_embed, create_embed
+from src.utils import error_embed, create_embed
+from src.error import We
 from src.database import db
 from src.utils import logger
-
+from src.res import C, R
 
 def setup_setup_command(bot: discord.Bot):
     """
     Setup the setup command for the bot.
+    Args:
+        bot (discord.Bot): The Discord bot instance.
     """
     setup = discord.SlashCommandGroup(
         "setup",
@@ -39,17 +42,22 @@ def setup_setup_command(bot: discord.Bot):
             if cat is None:
                 # No category set
                 await ctx.respond(embed=create_embed(R.setup_no_ticket_category, color=C.warning_color), ephemeral=True)
+                logger.error(We(R.setup_no_ticket_category), ctx.interaction)
                 return
             cat = ctx.guild.get_channel(int(cat))
             if cat is None:
                 # Category not found
                 await ctx.respond(embed=error_embed(R.setup_ticket_category_not_found), ephemeral=True)
+                logger.error(
+                    We(R.setup_ticket_category_not_found), ctx.interaction)
                 return
             await ctx.respond(
                 embed=create_embed(R.setup_tickets_current_category %
                                    cat.mention, title=R.setup_title),
                 ephemeral=True
             )
+            logger.info(f"Told user current ticket category: {cat.name} (ID: {cat.id})",
+                        ctx.interaction)
             return
         # Set the category in the database
         db.set_constant(C.ticket_category, str(category.id), ctx.guild.id)
@@ -59,7 +67,8 @@ def setup_setup_command(bot: discord.Bot):
             ephemeral=True
         )
         logger.info(
-            "setup", f"Ticket category set to {category.name} (ID: {category.id}) by {ctx.user.name} (ID: {ctx.user.id})")
+            f"Ticket category set to {category.name} (ID: {category.id})",
+            ctx.interaction)
 
     @setup.command(name="transcript", description=R.setup_transcript_desc)
     @discord.default_permissions(administrator=True)
@@ -85,18 +94,24 @@ def setup_setup_command(bot: discord.Bot):
             if cat is None:
                 # No category set
                 await ctx.respond(embed=create_embed(R.setup_no_transcript_category, color=C.warning_color), ephemeral=True)
+                logger.error(We(R.setup_no_transcript_category),
+                             ctx.interaction)
                 return
             # Get the category channel
             cat = ctx.guild.get_channel(int(cat))
             if cat is None:
                 # Category not found
                 await ctx.respond(embed=error_embed(R.setup_transcript_category_not_found), ephemeral=True)
+                logger.error(
+                    We(R.setup_transcript_category_not_found), ctx.interaction)
                 return
             await ctx.respond(
                 embed=create_embed(
                     R.setup_transcript_current_category % cat.mention),
                 ephemeral=True
             )
+            logger.info(f"Told user current transcript category: {cat.name} (ID: {cat.id})",
+                        ctx.interaction)
             return
         # Set the category in the database
         db.set_constant(C.transcript_category, str(category.id), ctx.guild.id)
@@ -106,7 +121,8 @@ def setup_setup_command(bot: discord.Bot):
             ephemeral=True
         )
         logger.info(
-            "setup", f"Transcript category set to {category.name} (ID: {category.id}) by {ctx.user.name} (ID: {ctx.user.id})")
+            f"Transcript category set to {category.name} (ID: {category.id})",
+            ctx.interaction)
 
     @setup.command(name="logchannel", description=R.setup_logchannel_desc)
     @discord.default_permissions(administrator=True)
@@ -131,16 +147,21 @@ def setup_setup_command(bot: discord.Bot):
             log_channel_id = db.get_constant(C.log_channel, ctx.guild.id)
             if log_channel_id is None:
                 await ctx.respond(embed=create_embed(R.setup_no_logchannel, color=C.warning_color, title=R.log_channel_title), ephemeral=True)
+                logger.error(We(R.setup_no_logchannel), ctx.interaction)
                 return
             log_ch = ctx.guild.get_channel(int(log_channel_id))
             if log_ch is None:
                 await ctx.respond(embed=error_embed(R.setup_logchannel_not_found, title=R.log_channel_title), ephemeral=True)
+                logger.error(
+                    We(R.setup_logchannel_not_found), ctx.interaction)
                 return
             await ctx.respond(
                 embed=create_embed(R.setup_logchannel_current %
                                    log_ch.mention, title=R.log_channel_title),
                 ephemeral=True
             )
+            logger.info(f"Told user current log channel: {log_ch.name} (ID: {log_ch.id})",
+                        ctx.interaction)
             return
 
         # Set the log channel in the database
@@ -151,13 +172,16 @@ def setup_setup_command(bot: discord.Bot):
             ephemeral=True
         )
         logger.info(
-            "setup", f"Log channel set to {channel.name} (ID: {channel.id}) by {ctx.user.name} (ID: {ctx.user.id})")
+            f"Log channel set to {channel.name} (ID: {channel.id})",
+            ctx.interaction)
 
     @setup.command(name="modroles", description=R.setup_modroles_desc)
     @discord.default_permissions(administrator=True)
     async def setup_modroles(ctx: discord.ApplicationContext):
         """
         Show a dialog to select multiple moderator roles for the bot.
+        Args:
+            ctx (discord.ApplicationContext): The command context.
         """
         class ModRolesSelectView(discord.ui.View):
             def __init__(self):
@@ -182,6 +206,8 @@ def setup_setup_command(bot: discord.Bot):
             async def submit_callback(self, button, interaction: discord.Interaction):
                 if not self.selected_roles:
                     await interaction.response.send_message(embed=create_embed(R.setup_modroles_none_selected, color=C.error_color), ephemeral=True)
+                    logger.error(
+                        We(R.setup_modroles_none_selected), ctx.interaction)
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
@@ -194,7 +220,8 @@ def setup_setup_command(bot: discord.Bot):
                     view=None
                 )
                 logger.info(
-                    "setup", f"Moderator roles set to {[role.name for role in self.selected_roles]} by {ctx.user.name} (ID: {ctx.user.id})")
+                    f"Moderator roles set to {[role.name for role in self.selected_roles]}",
+                    ctx.interaction)
                 self.stop()
 
         # Show current mod roles if set
@@ -204,18 +231,24 @@ def setup_setup_command(bot: discord.Bot):
             roles = [ctx.guild.get_role(rid) for rid in role_ids]
             roles = [r for r in roles if r]
             if roles:
+                current_roles_msg = R.setup_modroles_current % (
+                    ", ".join([r.mention for r in roles]))
                 await ctx.respond(
-                    embed=create_embed(R.setup_modroles_current % (
-                        ", ".join([r.mention for r in roles])), title=R.mod_roles_title),
+                    embed=create_embed(current_roles_msg, title=R.mod_roles_title),
                     ephemeral=True
                 )
+                logger.info(
+                    f"Told user current mod roles: {[r.name for r in roles]}", ctx.interaction)
             else:
                 await ctx.respond(embed=error_embed(R.setup_modroles_not_found, title=R.mod_roles_title), ephemeral=True)
+                logger.error(
+                    We(R.setup_modroles_not_found), ctx.interaction)
         await ctx.respond(
             embed=create_embed(R.setup_modroles_select_prompt,
                                title=R.mod_roles_title),
             view=ModRolesSelectView(),
             ephemeral=True
         )
+        logger.info("Opened mod roles set dialog", ctx.interaction)
 
     bot.add_application_command(setup)
