@@ -20,6 +20,9 @@ class Constants:
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 
+    embed_desc_max_length: int = 4096  # Max length for embed descriptions
+    max_embeds: int = 10  # Max number of embeds per message
+
     bot_name = "BotControl"
     support_guild_invite_link: str = "https://discord.gg/mD4EQFCC8s"
 
@@ -220,6 +223,8 @@ class ResDE:
     team_list_update_button_label: str = "Aktualisieren"
     team_list_upate_emoji: str = "🔄"
     team_list_select_at_least_one_role: str = "Bitte wähle mindestens eine Rolle aus."
+    team_list_old_version: str = "Diese Team-Liste wurde mit einer älteren Version des Bots erstellt. Bitte lösche sie und erstelle eine neue."
+    team_list_too_long: str = "Die Team-Liste ist zu lang, um sie in einem Embed anzuzeigen. Bitte wähle weniger Rollen aus."
     status_online: str = "🟢"
     status_idle: str = "🟡"
     status_dnd: str = "⛔"

@@ -1,10 +1,17 @@
 from src.res import R
 import traceback
 
-type Error = CriticalError | WarningError
+
+class Error:
+    """Base class for errors."""
+    def __init__(self, message: str, title: str = R.error_title, show_traceback: bool = False):
+        self.message = message
+        self.title = title
+        self.show_traceback = show_traceback
+        self.stack = traceback.extract_stack()
 
 
-class CriticalError():
+class CriticalError(Error):
     """
     Represents an error that is unexpected and may hint at a bug in the code.
 
@@ -14,13 +21,10 @@ class CriticalError():
     """
 
     def __init__(self, message: str, title: str = R.error_title):
-        self.message = message
-        self.title = title
-        self.show_traceback = True
-        self.stack = traceback.extract_stack()
+        super().__init__(message, title, show_traceback=True)
 
 
-class WarningError():
+class WarningError(Error):
     """
     Represents an error that can occur during normal operation, such as user input errors.
 
@@ -30,10 +34,7 @@ class WarningError():
     """
 
     def __init__(self, message: str, title: str = R.error_title):
-        self.message = message
-        self.title = title
-        self.show_traceback = False
-        self.stack = traceback.extract_stack()
+        super().__init__(message, title, show_traceback=False)
 
 
 # Shortcuts for error types

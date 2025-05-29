@@ -1,5 +1,5 @@
-from src.utils import logger, create_embed, error_embed, error_to_embed, get_log_channel
-from src.error import We
+from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel
+from src.error import Error, We
 import discord
 import re
 from src.res import C, R
@@ -48,8 +48,15 @@ class RoleSelectView(discord.ui.View):
             logger.error(We(R.team_list_select_at_least_one_role), interaction)
             return
         await interaction.response.defer()
-        embed, view = TeamListMessage.create(self.selected_roles)
-        await interaction.channel.send(embed=embed, view=view)
+        embeds, view = TeamListMessage.create(self.selected_roles)
+        if isinstance(embeds, Error):
+            await handle_error(interaction, embeds)
+            return
+
+        await interaction.channel.send(
+            embeds=embeds,
+            view=view
+        )
         await interaction.delete_original_response()
 
         logger.info(
@@ -62,17 +69,17 @@ class TeamListMessage(discord.ui.View):
     """
 
     @staticmethod
-    def create(roles: list[discord.Role]) -> tuple[discord.Embed, discord.ui.View]:
+    def create(roles: list[discord.Role]) -> tuple[list[discord.Embed] | Error, discord.ui.View]:
         """
-        Factory method to create team list embed and view.
+        Factory method to create team list embeds and view.
         Args:
             roles (list[discord.Role]): List of roles to display.
         Returns:
-            tuple[discord.Embed, discord.ui.View]: The embed and view.
+            tuple[list[discord.Embed] | Error, discord.ui.View]: The embeds (or an error) and view.
         """
-        embed = TeamListMessage.create_embed(roles)
+        embeds_or_err = TeamListMessage.create_embeds(roles)
         view = TeamListMessage()
-        return embed, view
+        return embeds_or_err, view
 
     @staticmethod
     def status_to_str(status: discord.Status) -> str:
@@ -95,17 +102,41 @@ class TeamListMessage(discord.ui.View):
             return R.status_unknown
 
     @staticmethod
-    def create_embed(roles: list[discord.Role]) -> discord.Embed:
+    def _split_message(message: str) -> tuple[list[str], None] | tuple[None, We]:
+        """Splits a message into chunks that fit within the embed description limit."""
+        split = []
+        i = 0
+        max_len = C.embed_desc_max_length - 10  # -10 to be safe
+        while i < len(message):
+            # Find the last newline within the max length
+            next_index = message.rfind("\n", i, i + max_len)
+            if next_index == -1:
+                # If no newline is found in the area,
+                # either the message is too long (return error)
+                # or we are at the end of the message (append the rest)
+                if len(message[i:]) > max_len:
+                    return None, We(R.team_list_too_long)
+                next_index = i + max_len
+            split.append(message[i:next_index])
+            i = next_index + 1
+        if len(split) > C.max_embeds:
+            return None, We(R.team_list_too_long)
+        return split, None
+
+    @staticmethod
+    def create_embeds(roles: list[discord.Role]) -> list[discord.Embed] | Error:
         """
-        Create an embed showing team members for the given roles.
+        Create a list of embeds showing team members for the given roles.
+        
+        Formats each role with its members, displaying their mention, status, and name.
+        If the content is too large, it will be split into multiple embeds.
+        
         Args:
             roles (list[discord.Role]): List of roles to display.
+            
         Returns:
-            discord.Embed: The formatted embed.
+            list[discord.Embed] | Error: The formatted embeds, or an Error if content is too large.
         """
-        embed = discord.Embed(
-            title=R.team_list_embed_title, color=C.embed_color)
-
         # Sort roles by position (highest first)
         sorted_roles = sorted(
             roles, key=lambda r: r.position, reverse=True)
@@ -116,6 +147,8 @@ class TeamListMessage(discord.ui.View):
             sorted_role_member_map[role] = []
             for member in role.members:
                 sorted_role_member_map[role].append(member)
+
+        message = []
 
         # Create embed
         for (role, members) in sorted_role_member_map.items():
@@ -131,19 +164,22 @@ class TeamListMessage(discord.ui.View):
                     msg = f"- {mention} {status} ({name})"
                     text.append(msg)
                 text = "\n".join(text)
-                embed.add_field(
-                    name="",
-                    value=f"{title}\n{text}",
-                    inline=False
-                )
+                message.append((title, text))
             else:
-                embed.add_field(
-                    name="",
-                    value=f"{title}\n{R.team_list_no_members_found}",
-                    inline=False
-                )
+                message.append((title, R.team_list_no_members_found))
 
-        return embed
+        message = "\n\n".join(
+            [f"{title}\n{text}" for (title, text) in message])
+        split, err = TeamListMessage._split_message(message)
+        if err:
+            return err
+        embeds = [discord.Embed(
+            title=R.team_list_embed_title if i == 0 else None,
+            description=desc,
+            color=C.embed_color
+        ) for i, desc in enumerate(split)]
+
+        return embeds
 
     def __init__(self):
         super().__init__(timeout=None)
@@ -160,24 +196,29 @@ class TeamListMessage(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
-        # Get the original message
+        # Old version used fields
+        if len(interaction.message.embeds[0].fields) > 0:
+            await handle_error(interaction, We(R.team_list_old_version))
+            return
 
         roles = []
-        for field in interaction.message.embeds[0].fields:
-            if field.name == "":
-                # match the role id for all role mentions of the form <@&role_id>
-                regex = re.compile(r"<@&(\d*)>")
-                matches = regex.findall(field.value)
-                for role_id in matches:
-                    role = interaction.guild.get_role(int(role_id))
-                    if role:
-                        roles.append(role)
-                    else:
-                        logger.error(
-                            We(f"Role with ID {role_id} not found in guild"), interaction)
+        for embed in interaction.message.embeds:
+            # match the role id for all role mentions of the form <@&role_id>
+            regex = re.compile(r"<@&(\d+)>")
+            matches = regex.findall(embed.description)
+            for role_id in matches:
+                role = interaction.guild.get_role(int(role_id))
+                if role:
+                    roles.append(role)
+                else:
+                    logger.error(
+                        We(f"Role with ID {role_id} not found in guild"), interaction)
 
-        embed = TeamListMessage.create_embed(roles)
-        await interaction.response.edit_message(embed=embed)
+        embeds_or_err = TeamListMessage.create_embeds(roles)
+        if isinstance(embeds_or_err, Error):
+            await handle_error(interaction, embeds_or_err)
+            return
+        await interaction.response.edit_message(embeds=embeds_or_err)
         logger.info(f"Team list updated", interaction)
 
 
