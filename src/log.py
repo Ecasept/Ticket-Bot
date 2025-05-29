@@ -136,7 +136,7 @@ class Logger:
         )
 
         if extended_traceback and formatted_stack:
-            traceback_list = "\n".join(formatted_stack)
+            traceback_list = "\n".join(traceback.format_list(stack))
             msg += f"Traceback:\n{traceback_list}\n"
             msg_colored += f"{Col.RED}Traceback:\n{Col.RESET}{traceback_list}\n"
 
