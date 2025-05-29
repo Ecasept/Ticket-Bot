@@ -8,6 +8,7 @@ from src.close_request import TicketCloseRequestView
 from src.closed import ClosedView
 from src.panel import PanelView
 from src.header import HeaderView
+from src.giveaway import setup_giveaway_command
 from src.utils import TOKEN, logger, create_embed
 from src.error import We
 from src.database import db
@@ -68,6 +69,7 @@ setup_setup_command(bot)
 setup_team_list_command(bot)
 setup_help_command(bot)
 setup_noch_fragen(bot)
+setup_giveaway_command(bot)
 
 
 try:

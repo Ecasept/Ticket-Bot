@@ -33,6 +33,10 @@ class Constants:
     # Ticket closing
     ticket_close_time: int = 12  # Hours after which noch fragen-tickets are closed
 
+    # Giveaway settings
+    giveaway_check_interval: int = 30  # Seconds between giveaway checks
+    giveaway_reaction: str = "🎉"
+
     # Embed colors
     embed_color: discord.Color = discord.Color.blue()
     success_color: discord.Color = discord.Color.green()
@@ -169,6 +173,33 @@ class ResDE:
 
     ticket_assigned_msg: str = "Das Ticket wurde an %s zugewiesen."
     ticket_unassigned_msg: str = "Das Ticket wurde freigegeben."
+
+    # Giveaway strings
+    giveaway_desc: str = "Starte ein Giveaway mit automatischer Gewinnermittlung."
+    giveaway_duration_desc: str = "Dauer des Giveaways (z.B. 30s, 2m, 1h)"
+    giveaway_prize_desc: str = "Was wird verlost?"
+    giveaway_winners_desc: str = "Anzahl der Gewinner"
+    giveaway_role_desc: str = "Rolle die Gewinner erhalten (optional)"
+
+    giveaway_invalid_duration: str = "❌ Ungültige Dauer. Nutze z.B. `10s`, `1m`, `2h`."
+    giveaway_duration_extreme: str = "❌ Dauer muss zwischen 10 Sekunden und 30 Tagen liegen."
+    giveaway_invalid_winners: str = "❌ Ungültige Gewinner-Anzahl. Muss zwischen 1 und 20 sein."
+    giveaway_started: str = "✅ Giveaway wurde gestartet!"
+    giveaway_title: str = "🎉 Giveaway"
+    giveaway_prize: str = "**Preis:** %s"
+    giveaway_duration: str = "**Dauer:** %s"
+    giveaway_role: str = "**Rolle:** %s"
+    giveaway_host: str = "Veranstaltet von: %s"
+    giveaway_winner_count: str = "Gewinner: %s"
+
+    giveaway_winners_announcement: str = "🎊 Glückwunsch %s! Du hast **%s** gewonnen!"
+    giveaway_no_participants: str = "Keiner hat das Giveaway gewonnen, da niemand teilgenommen hat."
+    giveaway_ended_title: str = "🎉 Giveaway beendet"
+    giveaway_role_awarded: str = "✅ Rolle %s wurde an die Gewinner vergeben."
+    giveaway_role_perms_error: str = "⚠️ Konnte %s nicht an %s vergeben (fehlende Rechte)."
+    giveaway_not_found: str = "Giveaway nicht in der Datenbank gefunden."
+    giveaway_already_ended: str = "Dieses Giveaway ist bereits beendet."
+    giveaway_no_role: str = "Keine Rolle"
 
     # setup.py
     setup_title: str = "Setup"

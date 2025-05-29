@@ -30,7 +30,8 @@ def setup_help_command(bot: discord.Bot):
         general_commands = [
             "- `/ping` - " + R.ping_desc,
             "- `/help` - " + R.help_desc,
-            "- `/createpanel` - " + R.ticket_msg_desc + " *(Administrator)*"
+            "- `/createpanel` - " + R.ticket_msg_desc + " *(Administrator)*",
+            "- `/giveaway` - " + R.giveaway_desc + " *(Administrator)*"
         ]
 
         embed.add_field(
