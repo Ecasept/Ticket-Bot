@@ -1,14 +1,28 @@
+from typing import Type
 from src.res import R
 import traceback
 
 
 class Error:
     """Base class for errors."""
+
     def __init__(self, message: str, title: str = R.error_title, show_traceback: bool = False):
         self.message = message
         self.title = title
         self.show_traceback = show_traceback
         self.stack = traceback.extract_stack()
+
+    def iserr(self, error_type: Type['Error']) -> bool:
+        """
+        Check if the current error is of a specific type.
+
+        Args:
+            error_type (Type[Error]): The type to check against.
+
+        Returns:
+            bool: True if the current error is of the specified type, False otherwise.
+        """
+        return isinstance(self, error_type)
 
 
 class CriticalError(Error):
@@ -22,6 +36,12 @@ class CriticalError(Error):
 
     def __init__(self, message: str, title: str = R.error_title):
         super().__init__(message, title, show_traceback=True)
+
+
+class UserNotFoundError(Error):
+    def __init__(self, user_id: int, title: str = R.error_title):
+        message = R.user_not_found % user_id
+        super().__init__(message, title, show_traceback=False)
 
 
 class WarningError(Error):

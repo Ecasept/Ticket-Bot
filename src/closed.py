@@ -2,7 +2,8 @@ import discord
 from src.utils import get_member, get_ticket_category, get_transcript_category, logger, create_embed, handle_error, verify_mod_or_admin
 from src.database import db
 from src.res import C, R
-from src.error import Ce, We, Error
+from src.error import Ce, UserNotFoundError, We, Error
+
 
 class ClosedView(discord.ui.View):
     def __init__(self):
@@ -56,10 +57,13 @@ class ClosedView(discord.ui.View):
             await handle_error(interaction, Ce(R.ticket_not_found))
             return
         user, err = get_member(interaction.guild, ticket.user_id)
-        if err:
+        if err.iserr(UserNotFoundError):
+            pass  # User not found, but don't block reopening the ticket
+        elif err:
             await handle_error(interaction, err)
             return
-        await interaction.channel.set_permissions(user, read_messages=True)
+        else:
+            await interaction.channel.set_permissions(user, read_messages=True)
 
         await interaction.channel.edit(category=original_category)
 
@@ -94,9 +98,12 @@ async def close_channel(channel: discord.TextChannel) -> Error | None:
     if ticket is None:
         return Ce(R.ticket_not_found)
     user, err = get_member(channel.guild, ticket.user_id)
-    if err:
+    if err.iserr(UserNotFoundError):
+        pass  # User not found, but don't block closing the ticket
+    elif err:
         return err
-    await channel.set_permissions(user, read_messages=False)
+    else:
+        await channel.set_permissions(user, read_messages=False)
     return None
 
 

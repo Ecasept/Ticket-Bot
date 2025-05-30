@@ -5,7 +5,7 @@ import datetime
 import discord
 import dotenv
 from src.log import Logger
-from src.error import Error, We, Ce
+from src.error import Error, UserNotFoundError, We, Ce
 from src.res import C, R
 import os
 from typing import Tuple, Optional, List
@@ -80,7 +80,7 @@ def get_member(guild: discord.Guild, user_id: str) -> Tuple[Optional[discord.Mem
         return None, Ce(R.user_id_invalid)
     member = guild.get_member(id_int)
     if member is None:
-        return None, We(R.user_not_found)
+        return None, UserNotFoundError(user_id=id_int)
     return member, None
 
 

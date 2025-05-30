@@ -71,7 +71,7 @@ class ResDE:
     error_occurred: str = "Ein Fehler ist aufgetreten: %s"
 
     user_id_invalid: str = "Die Benutzer-ID ist ungültig."
-    user_not_found: str = "Benutzer konnte nicht auf dem Server gefunden werden."
+    user_not_found: str = "Der Benutzer <@%s> konnte nicht auf dem Server gefunden werden."
 
     panel_msg: str = "Wähle eine Kategorie um ein Ticket zu erstellen."
     create_ticket_button: str = "Ticket erstellen"
@@ -148,7 +148,6 @@ class ResDE:
 
     ticket_not_found_msg: str = "Ticket nicht gefunden. Bitte erstelle ein neues Ticket."
 
-    user_not_found_msg: str = "Ersteller nicht gefunden. Bitte erstelle ein neues Ticket."
     application_approved_msg: str = "Herzlichen Glückwunsch, %s! Deine Bewerbung wurde angenommen."
     application_rejected_msg: str = "Leider wurde deine Bewerbung abgelehnt, %s."
 

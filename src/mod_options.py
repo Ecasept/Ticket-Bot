@@ -3,7 +3,7 @@ Implements the ModOptionsMessage view for moderator actions on tickets, such as 
 """
 import discord
 from src.noch_fragen import create_noch_fragen
-from src.utils import create_embed, error_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, verify_mod_or_admin
+from src.utils import create_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, mention
 from src.database import Ticket, db
 from src.utils import logger
 from src.utils import format_date
