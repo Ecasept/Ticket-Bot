@@ -69,3 +69,5 @@ class TicketCloseRequestView(discord.ui.View):
             embed=create_embed(R.ticket_close_request_declined_msg %
                                creator.mention, color=C.warning_color),
         )
+        logger.info(
+            f"close request from {creator.name} (ID: {creator.id}) declined", interaction)
