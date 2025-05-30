@@ -7,7 +7,7 @@ import datetime
 import random
 import re
 from src.database import db
-from src.utils import error_embed, logger, handle_error, create_embed
+from src.utils import error_embed, logger, handle_error, create_embed, mention
 from src.res import C, R
 from src.error import Ce, Error, We
 
@@ -94,7 +94,7 @@ async def create_giveaway_embed(giveaway_data: dict) -> discord.Embed:
     duration = R.giveaway_duration % format_duration(duration)
     role = R.giveaway_role % role_text
     winner_count = R.giveaway_winner_count % giveaway_data['winner_count']
-    host = R.giveaway_host % f"<@{giveaway_data['host_id']}>"
+    host = R.giveaway_host % mention(giveaway_data['host_id'])
 
     embed = discord.Embed(
         title=title,

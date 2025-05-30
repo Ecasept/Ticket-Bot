@@ -210,3 +210,14 @@ async def verify_mod_or_admin(interaction: discord.Interaction, no_perms_err: Er
         await handle_error(interaction, no_perms_err)
         return False
     return True
+
+
+def mention(id: int | str) -> str:
+    """
+    Create a mention string for a user or role by ID.
+    Args:
+        id (int | str): The ID of the user or role.
+    Returns:
+        str: The mention string.
+    """
+    return f"<@{id}>" if id else "user not found"

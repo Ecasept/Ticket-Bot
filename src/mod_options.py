@@ -205,32 +205,12 @@ class ModOptionsMessage(discord.ui.View):
         category = ticket.category
         created_at = ticket.created_at
 
-        # Get assignee mention
         if assignee_id is None:
             assignee_mention = R.mod_options_unassigned
         else:
-            try:
-                assignee = interaction.guild.get_member(int(assignee_id))
-            except ValueError:
-                # Invalid assignee ID
-                assignee = None
-                logger.error(
-                    Ce(f"Invalid assignee ID {assignee_id}"), interaction)
-            assignee_mention = assignee.mention if assignee else f"<@{assignee_id}>"
+            assignee_mention = mention(assignee_id)
 
-        # Get user mention
-        if user_id is None:
-            # No user
-            err = Ce(R.user_not_found_msg)
-            logger.error(err, interaction)
-            return error_to_embed(err), None
-        try:
-            user = interaction.guild.get_member(int(user_id))
-        except ValueError:
-            # Invalid user ID
-            user = None
-            logger.error(Ce(f"Invalid user ID {user_id}"), interaction)
-        user_mention = user.mention if user else f"<@{user_id}>"
+        user_mention = mention(user_id)
 
         # Create the view
         view = ModOptionsMessage(ticket, interaction)
