@@ -122,6 +122,9 @@ class TeamListMessage(discord.ui.View):
             i = next_index + 1
         if len(split) > C.max_embeds:
             return None, We(R.team_list_too_long)
+        if sum(len(s) for s in split) > C.embed_total_max_length:
+            return None, We(R.team_list_too_long)
+
         return split, None
 
     @staticmethod

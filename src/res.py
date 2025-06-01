@@ -22,6 +22,7 @@ class Constants:
 
     embed_desc_max_length: int = 4096  # Max length for embed descriptions
     max_embeds: int = 10  # Max number of embeds per message
+    embed_total_max_length: int = 6000  # Max total length for all embeds in a message
 
     bot_name = "BotControl"
     support_guild_invite_link: str = "https://discord.gg/mD4EQFCC8s"
