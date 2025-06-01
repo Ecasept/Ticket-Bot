@@ -57,7 +57,7 @@ class ClosedView(discord.ui.View):
             await handle_error(interaction, Ce(R.ticket_not_found))
             return
         user, err = get_member(interaction.guild, ticket.user_id)
-        if err.iserr(UserNotFoundError):
+        if err and err.iserr(UserNotFoundError):
             pass  # User not found, but don't block reopening the ticket
         elif err:
             await handle_error(interaction, err)
@@ -98,7 +98,7 @@ async def close_channel(channel: discord.TextChannel) -> Error | None:
     if ticket is None:
         return Ce(R.ticket_not_found)
     user, err = get_member(channel.guild, ticket.user_id)
-    if err.iserr(UserNotFoundError):
+    if err and err.iserr(UserNotFoundError):
         pass  # User not found, but don't block closing the ticket
     elif err:
         return err
