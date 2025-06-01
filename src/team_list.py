@@ -109,12 +109,13 @@ class TeamListMessage(discord.ui.View):
         max_len = C.embed_desc_max_length - 10  # -10 to be safe
         while i < len(message):
             # Find the last newline within the max length
-            next_index = message.rfind("\n", i, i + max_len)
-            if next_index == -1:
-                # If no newline is found in the area,
-                # either the message is too long (return error)
-                # or we are at the end of the message (append the rest)
-                if len(message[i:]) > max_len:
+            if i + max_len >= len(message):
+                # The remaining part fits in one chunk
+                next_index = len(message)
+            else:
+                next_index = message.rfind("\n", i, i + max_len)
+                if next_index == -1:
+                    # No newline found, message is too long
                     return None, We(R.team_list_too_long)
                 next_index = i + max_len
             split.append(message[i:next_index])
@@ -127,13 +128,13 @@ class TeamListMessage(discord.ui.View):
     def create_embeds(roles: list[discord.Role]) -> list[discord.Embed] | Error:
         """
         Create a list of embeds showing team members for the given roles.
-        
+
         Formats each role with its members, displaying their mention, status, and name.
         If the content is too large, it will be split into multiple embeds.
-        
+
         Args:
             roles (list[discord.Role]): List of roles to display.
-            
+
         Returns:
             list[discord.Embed] | Error: The formatted embeds, or an Error if content is too large.
         """
