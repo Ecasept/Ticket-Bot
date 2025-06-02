@@ -7,70 +7,9 @@ import datetime
 import random
 import re
 from src.database import db
-from src.utils import error_embed, logger, handle_error, create_embed, mention
+from src.utils import error_embed, format_duration, logger, handle_error, create_embed, mention, parse_duration
 from src.res import C, R
-from src.error import Ce, Error, We
-
-
-def parse_duration(duration_str: str) -> tuple[int | None, Error | None]:
-    """
-    Parse a duration string like "30s", "2m", "1h" into seconds.
-    Args:
-        duration_str (str): The duration string to parse.
-    Returns:
-        tuple[int | None, Error | None]: (seconds, error). Returns (None, error) if invalid.
-    """
-    units = {"s": 1, "m": 60, "h": 3600, "d": 86400}
-
-    # Match pattern like "30s", "2m", "1h"
-    match = re.match(r'^(\d+)([smhd])$', duration_str.lower().strip())
-    if not match:
-        return None, R.giveaway_invalid_duration
-
-    try:
-        number = int(match.group(1))
-        unit = match.group(2)
-        seconds = number * units[unit]
-
-        # Limit duration to reasonable bounds (min 10 seconds, max 30 days)
-        if seconds < 10:
-            return None, R.giveaway_duration_extreme
-        if seconds > 30 * 86400:  # 30 days
-            return None, R.giveaway_duration_extreme
-
-        return seconds, None
-    except (ValueError, KeyError):
-        return None, R.giveaway_invalid_duration
-
-
-def format_duration(seconds: int) -> str:
-    """
-    Format seconds into a human-readable duration string.
-    Args:
-        seconds (int): Duration in seconds.
-    Returns:
-        str: Formatted duration string.
-    """
-    if seconds < 60:
-        return f"{seconds}s"
-    elif seconds < 3600:
-        minutes = seconds // 60
-        remaining_seconds = seconds % 60
-        if remaining_seconds == 0:
-            return f"{minutes}m"
-        return f"{minutes}m {remaining_seconds}s"
-    elif seconds < 86400:
-        hours = seconds // 3600
-        remaining_minutes = (seconds % 3600) // 60
-        if remaining_minutes == 0:
-            return f"{hours}h"
-        return f"{hours}h {remaining_minutes}m"
-    else:
-        days = seconds // 86400
-        remaining_hours = (seconds % 86400) // 3600
-        if remaining_hours == 0:
-            return f"{days}d"
-        return f"{days}d {remaining_hours}h"
+from src.error import We
 
 
 async def create_giveaway_embed(giveaway_data: dict) -> discord.Embed:
@@ -237,6 +176,9 @@ def setup_giveaway_command(bot: discord.Bot):
         seconds, error = parse_duration(dauer)
         if error:
             await handle_error(interaction, error)
+            return
+        if seconds < C.giveaway_min_duration or seconds > C.giveaway_max_duration:
+            await handle_error(interaction, We(R.giveaway_duration_extreme))
             return
 
         # Validate winner count

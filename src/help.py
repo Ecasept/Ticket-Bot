@@ -31,7 +31,8 @@ def setup_help_command(bot: discord.Bot):
             "- `/ping` - " + R.ping_desc,
             "- `/help` - " + R.help_desc,
             "- `/createpanel` - " + R.ticket_msg_desc + " *(Administrator)*",
-            "- `/giveaway` - " + R.giveaway_desc + " *(Administrator)*"
+            "- `/giveaway` - " + R.giveaway_desc + " *(Administrator)*",
+            "- `/timeout` - " + R.timeout_command_desc + " *(Moderator)*",
         ]
 
         embed.add_field(
@@ -45,7 +46,8 @@ def setup_help_command(bot: discord.Bot):
             "- `/setup tickets [category]` - " + R.setup_tickets_desc,
             "- `/setup transcript [category]` - " + R.setup_transcript_desc,
             "- `/setup logchannel [channel]` - " + R.setup_logchannel_desc,
-            "- `/setup modroles` - " + R.setup_modroles_desc
+            "- `/setup modroles` - " + R.setup_modroles_desc,
+            "- `/setup timeoutlogchannel [channel]` - " + R.setup_timeout_logchannel_desc,
         ]
 
         embed.add_field(

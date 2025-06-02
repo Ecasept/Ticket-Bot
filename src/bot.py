@@ -2,20 +2,22 @@
 Main entry point for the Discord bot. Handles bot events, command registration, and startup/shutdown logic.
 """
 import discord
-from src.noch_fragen import NochFragenMessage, setup_noch_fragen
-from src.setup import setup_setup_command
-from src.close_request import TicketCloseRequestView
-from src.closed import ClosedView
-from src.panel import PanelView
-from src.header import HeaderView
-from src.giveaway import setup_giveaway_command
-from src.utils import TOKEN, logger, create_embed
-from src.error import We
-from src.database import db
-from src.team_list import setup_team_list_command, TeamListMessage
-from src.help import setup_help_command
+
+from .features.timeout import setup_timeout_commands
+from .features.ticket.noch_fragen import NochFragenMessage, setup_noch_fragen
+from .features.setup import setup_setup_command
+from .features.ticket.close_request import TicketCloseRequestView
+from .features.ticket.closed import ClosedView
+from .features.ticket.panel import PanelView
+from .features.ticket.header import HeaderView
+from .features.giveaway import setup_giveaway_command
+from .utils import TOKEN, logger, create_embed
+from .error import We
+from .database import db
+from .features.team_list import setup_team_list_command, TeamListMessage
+from .help import setup_help_command
+from .res import C, R
 import traceback
-from src.res import C, R
 
 intents = discord.Intents.default()
 intents.members = True
@@ -70,6 +72,7 @@ setup_team_list_command(bot)
 setup_help_command(bot)
 setup_noch_fragen(bot)
 setup_giveaway_command(bot)
+setup_timeout_commands(bot)
 
 
 try:

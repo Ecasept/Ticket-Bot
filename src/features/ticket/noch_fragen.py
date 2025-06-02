@@ -1,17 +1,18 @@
 import discord
 from discord.ext import tasks
-from src.closed import ClosedView, close_channel, close_ticket
+from .closed import ClosedView, close_channel, close_ticket
 from src.database import db
 from src.utils import create_embed, logger, handle_error
 import datetime
 from src.res import C, R
 from src.error import Ce, We
 
+
 class NochFragenMessage(discord.ui.View):
     """
     View for handling the "noch fragen" (any more questions) message.
     """
-    
+
     def __init__(self):
         super().__init__(timeout=None)
 

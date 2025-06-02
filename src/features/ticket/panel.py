@@ -3,7 +3,7 @@ Implements the PanelView and ticket creation logic for the Discord bot, includin
 """
 import discord
 
-from src.header import HeaderView
+from .header import HeaderView
 from src.utils import get_mod_roles, get_ticket_category, logger, create_embed, handle_error
 from src.database import db
 from src.res import C, R
@@ -131,7 +131,8 @@ def generate_channel_name(user: discord.User, category: str) -> str:
         case C.cat_support:
             prefix = R.support_prefix
         case _:
-            err = Ce(f"Invalid category {category} for channel name generation.")
+            err = Ce(
+                f"Invalid category {category} for channel name generation.")
             logger.error(err)
             prefix = R.support_prefix
 

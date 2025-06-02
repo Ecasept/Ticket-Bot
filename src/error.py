@@ -44,6 +44,12 @@ class UserNotFoundError(Error):
         super().__init__(message, title, show_traceback=False)
 
 
+class InvalidDurationError(Error):
+    def __init__(self, duration: str, title: str = R.error_title):
+        message = R.invalid_duration % duration
+        super().__init__(message, title, show_traceback=False)
+
+
 class WarningError(Error):
     """
     Represents an error that can occur during normal operation, such as user input errors.

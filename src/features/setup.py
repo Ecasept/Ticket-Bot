@@ -1,10 +1,11 @@
 import discord
 
-from src.utils import error_embed, create_embed
+from src.utils import error_embed, create_embed, handle_error
 from src.error import We
 from src.database import db
 from src.utils import logger
 from src.res import C, R
+
 
 def setup_setup_command(bot: discord.Bot):
     """
@@ -234,7 +235,8 @@ def setup_setup_command(bot: discord.Bot):
                 current_roles_msg = R.setup_modroles_current % (
                     ", ".join([r.mention for r in roles]))
                 await ctx.respond(
-                    embed=create_embed(current_roles_msg, title=R.mod_roles_title),
+                    embed=create_embed(current_roles_msg,
+                                       title=R.mod_roles_title),
                     ephemeral=True
                 )
                 logger.info(
@@ -250,5 +252,58 @@ def setup_setup_command(bot: discord.Bot):
             ephemeral=True
         )
         logger.info("Opened mod roles set dialog", ctx.interaction)
+
+    @setup.command(name="timeoutlogchannel", description=R.setup_timeout_logchannel_desc)
+    @discord.default_permissions(administrator=True)
+    @discord.option(
+        "channel",
+        description=R.setup_timeout_logchannel_desc,
+        required=False,
+        default=None,
+        type=discord.SlashCommandOptionType.channel,
+        channel_types=[discord.ChannelType.text]
+    )
+    async def setup_timeout_logchannel(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
+        """
+        Set the log channel for timeouts.
+        If no channel is provided, it will show the current log channel.
+        Args:
+            ctx (discord.ApplicationContext): The context of the command.
+            channel (discord.TextChannel, optional): The text channel to set for timeout logs. Defaults to None.
+        """
+        guild_id = ctx.guild.id
+        if channel is None:
+            # Tell the user the current timeout log channel
+            log_channel_id = db.get_constant(C.timeout_log_channel, guild_id)
+            if log_channel_id is None:
+                # No log channel set
+                await handle_error(
+                    ctx.interaction, We(R.setup_no_timeout_logchannel)
+                )
+                return
+            log_channel = ctx.guild.get_channel(int(log_channel_id))
+            if log_channel is None:
+                await handle_error(
+                    ctx.interaction, We(R.setup_timeout_logchannel_not_found)
+                )
+                return
+            await ctx.respond(
+                embed=create_embed(R.setup_timeout_logchannel_current %
+                                   log_channel.mention, title=R.timeout_log_channel_title),
+                ephemeral=True
+            )
+            return
+
+        # Set the log channel in the database
+        db.set_constant(C.timeout_log_channel,
+                        str(channel.id), guild_id)
+        await ctx.respond(
+            embed=create_embed(R.setup_timeout_logchannel_set % channel.mention,
+                               color=C.success_color, title=R.timeout_log_channel_title),
+            ephemeral=True
+        )
+        logger.info(
+            f"Timeout log channel set to {channel.name} (ID: {channel.id})",
+            ctx.interaction)
 
     bot.add_application_command(setup)

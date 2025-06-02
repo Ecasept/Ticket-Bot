@@ -103,7 +103,7 @@ async def close_channel(channel: discord.TextChannel) -> Error | None:
     elif err:
         return err
     else:
-        await channel.set_permissions(user, read_messages=False)
+        await channel.set_permissions(user, read_messages=None)
     return None
 
 

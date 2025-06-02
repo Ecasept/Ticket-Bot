@@ -17,6 +17,8 @@ class Constants:
     transcript_category: str = "transcript_category"
     mod_roles: str = "mod_role_ids"
     log_channel: str = "log_channel_id"  # Key for the log channel in DB
+    # Key for the timeout log channel in DB
+    timeout_log_channel: str = "timeout_log_channel_id"
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 
@@ -43,6 +45,11 @@ class Constants:
     success_color: discord.Color = discord.Color.green()
     error_color: discord.Color = discord.Color.red()
     warning_color: discord.Color = discord.Color.orange()
+
+    giveaway_max_duration: int = 30 * 86400
+    giveaway_min_duration: int = 10
+
+    timeout_max_duration: int = 28 * 86400  # Max duration for timeouts in seconds
 
 
 def get_resources(lang: str):
@@ -88,6 +95,8 @@ class ResDE:
 
     close_emoji: str = "🔒"  # not an x because the bg of the button is red
     mod_options_emoji: str = "⚙️"
+
+    invalid_duration: str = "❌ Ungültige Dauer. Nutze z.B. `10s`, `1m`, `2h`."
 
     ticket_msg_desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
     ticket_channel_created: str = "Ticket erstellt! %s"
@@ -181,7 +190,6 @@ class ResDE:
     giveaway_winners_desc: str = "Anzahl der Gewinner"
     giveaway_role_desc: str = "Rolle die Gewinner erhalten (optional)"
 
-    giveaway_invalid_duration: str = "❌ Ungültige Dauer. Nutze z.B. `10s`, `1m`, `2h`."
     giveaway_duration_extreme: str = "❌ Dauer muss zwischen 10 Sekunden und 30 Tagen liegen."
     giveaway_invalid_winners: str = "❌ Ungültige Gewinner-Anzahl. Muss zwischen 1 und 20 sein."
     giveaway_started: str = "✅ Giveaway wurde gestartet!"
@@ -320,6 +328,33 @@ class ResDE:
     help_tutorial_title: str = "🚀 **Erste Schritte**"
     help_tutorial_text: str = f"**Setup-Reihenfolge:**\n1️⃣ `/setup tickets` - Kategorie für neue Tickets festlegen\n2️⃣ `/setup transcript` - Kategorie für geschlossene Tickets festlegen\n3️⃣ `/setup modroles` - Moderator-Rollen auswählen\n4️⃣ `/setup logchannel` - Log-Channel für Team-Aktionen *(optional)*\n5️⃣ `/createpanel` - Ticket-Panel für User erstellen\n\n✨ **Tipp:** Deine Frage wurde nicht beantwortet? Erstelle auf unserem [Support-Server]({Constants.support_guild_invite_link}) ein Ticket!"
     help_footer: str = f"{Constants.bot_name} - Tickets & more"
+
+    # Timeout
+    timeout_command_desc: str = "Timeoutet einen Benutzer für eine bestimmte Dauer."
+    timeout_user_desc: str = "Der Benutzer, der getimeoutet werden soll."
+    timeout_duration_desc: str = "Dauer des Timeouts (z.B. 1m, 2h, 3d)."
+    timeout_reason_desc: str = "Grund für den Timeout (optional)."
+    timeout_success: str = "✅ %s wurde für %s getimeoutet. Grund: %s"
+    timeout_success_no_reason: str = "✅ %s wurde für %s getimeoutet."
+    timeout_dm_notification: str = "Du wurdest auf dem Server '%s' für %s getimeoutet. Grund: %s"
+    timeout_dm_notification_no_reason: str = "Du wurdest auf dem Server '%s' für %s getimeoutet."
+    timeout_log_title: str = "📛 Timeout"
+    timeout_log_user: str = "👤 Nutzer"
+    timeout_log_duration: str = "⏱ Dauer"
+    timeout_log_reason: str = "📝 Grund"
+    timeout_log_moderator: str = "👮 Durch"
+    timeout_log_no_reason: str = "Kein Grund angegeben"
+    timeout_invalid_duration: str = "❌ Ungültige Dauer. Nutze z.B. `1m`, `2h`, `3d`."
+    timeout_duration_too_long: str = "❌ Dauer des Timeouts darf maximal 28 Tage betragen."
+    timeout_cant_timeout_self: str = "❌ Du kannst dich nicht selbst timeouten."
+    timeout_cant_timeout_bot: str = "❌ Du kannst den Bot nicht timeouten."
+    timeout_failed: str = "❌ Timeout fehlgeschlagen: %s"
+    setup_timeout_logchannel_desc: str = "Konfiguriert den Log-Channel für Timeouts."
+    setup_no_timeout_logchannel: str = "Es ist kein Log-Channel für Timeouts konfiguriert."
+    setup_timeout_logchannel_not_found: str = "Der konfigurierte Timeout-Log-Channel wurde nicht auf diesem Server gefunden."
+    setup_timeout_logchannel_current: str = "Der aktuelle Timeout-Log-Channel ist %s."
+    setup_timeout_logchannel_set: str = "Der Timeout-Log-Channel wurde auf %s gesetzt."
+    timeout_log_channel_title: str = "Timeout Log Channel"
 
 
 R = get_resources("de")

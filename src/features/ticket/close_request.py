@@ -1,6 +1,6 @@
 import discord
 
-from src.closed import close_ticket
+from .closed import close_ticket
 from src.utils import create_embed, get_member, handle_error, verify_mod_or_admin, logger
 from src.database import db
 from src.res import C, R

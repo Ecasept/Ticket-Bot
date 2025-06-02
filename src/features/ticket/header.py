@@ -3,12 +3,11 @@ Implements the HeaderView for ticket channels, providing UI for closing tickets 
 """
 import discord
 
-from src.close_request import TicketCloseRequestView
-from src.closed import close_ticket
-from src.mod_options import ModOptionsMessage
-from src.utils import create_embed, is_mod_or_admin
+from .close_request import TicketCloseRequestView
+from .closed import close_ticket
+from .mod_options import ModOptionsMessage
+from src.utils import create_embed, is_mod_or_admin, logger, handle_error
 from src.database import db
-from src.utils import logger, handle_error
 from src.res import R
 from src.error import Ce, We
 
