@@ -92,7 +92,7 @@ class ApplicationModal(discord.ui.Modal):
         self.apply_for = discord.ui.InputText(label=R.application_apply_for_label,
                                               placeholder=R.application_apply_for_placeholder, required=True, style=discord.InputTextStyle.short)
         self.application_text = discord.ui.InputText(
-            label=R.application_text_label, placeholder=R.application_text_placeholder, required=True, style=discord.InputTextStyle.long)
+            label=R.application_text_label, placeholder=R.application_text_placeholder, required=True, style=discord.InputTextStyle.long, max_length=900)
         self.add_item(self.age)
         self.add_item(self.apply_for)
         self.add_item(self.application_text)
