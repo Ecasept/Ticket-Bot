@@ -16,7 +16,7 @@ class ModOptionsMessage(discord.ui.View):
     """
 
     def __init__(self, ticket: Ticket, interaction: discord.Interaction):
-        super().__init__()
+        super().__init__(timeout=None)
 
         self.assignee_id = ticket.assignee_id
         self.user_id = ticket.user_id
@@ -25,27 +25,27 @@ class ModOptionsMessage(discord.ui.View):
         if self.assignee_id is None:
             # No assignee
             assign_button = discord.ui.Button(
-                label=R.assign_ticket, style=discord.ButtonStyle.primary, custom_id="assign_ticket",
+                label=R.assign_ticket, style=discord.ButtonStyle.primary,
                 emoji=discord.PartialEmoji(name=R.assign_emoji))
             assign_button.callback = self.assign_ticket
             self.add_item(assign_button)
         elif self.assignee_id == str(interaction.user.id):
             # Assignee is the current user
             unassign_button = discord.ui.Button(
-                label=R.unassign_ticket, style=discord.ButtonStyle.secondary, custom_id="unassign_ticket",
+                label=R.unassign_ticket, style=discord.ButtonStyle.secondary,
                 emoji=discord.PartialEmoji(name=R.unassign_emoji))
             unassign_button.callback = self.unassign_ticket
             self.add_item(unassign_button)
         else:
             # Assignee is someone else
             unassign_button = discord.ui.Button(
-                label=R.unassign_ticket, style=discord.ButtonStyle.secondary, custom_id="unassign_ticket",
+                label=R.unassign_ticket, style=discord.ButtonStyle.secondary,
                 disabled=True, emoji=discord.PartialEmoji(name=R.unassign_emoji))
             self.add_item(unassign_button)
 
         if not ticket.archived and not ticket.close_at:
             noch_fragen_button = discord.ui.Button(
-                label=R.noch_fragen_label, style=discord.ButtonStyle.secondary, custom_id="noch_fragen",
+                label=R.noch_fragen_label, style=discord.ButtonStyle.secondary,
                 emoji=discord.PartialEmoji(name=R.noch_fragen_emoji))
             noch_fragen_button.callback = self.noch_fragen
             self.add_item(noch_fragen_button)
@@ -53,14 +53,14 @@ class ModOptionsMessage(discord.ui.View):
         if self.category == C.cat_application:
             approve_button = discord.ui.Button(
                 row=1,
-                label=R.approve_application, style=discord.ButtonStyle.success, custom_id="approve_ticket",
+                label=R.approve_application, style=discord.ButtonStyle.success,
                 emoji=discord.PartialEmoji(name=R.approve_application_emoji))
             approve_button.callback = self.approve_application
             self.add_item(approve_button)
 
             reject_button = discord.ui.Button(
                 row=1,
-                label=R.reject_application, style=discord.ButtonStyle.danger, custom_id="reject_ticket",
+                label=R.reject_application, style=discord.ButtonStyle.danger,
                 emoji=discord.PartialEmoji(name=R.reject_application_emoji))
             reject_button.callback = self.reject_application
             self.add_item(reject_button)

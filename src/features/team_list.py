@@ -18,7 +18,6 @@ class RoleSelectView(discord.ui.View):
         placeholder=R.team_list_role_select_placeholder,
         min_values=1,
         max_values=25,
-        custom_id="role_select_dropdown"
     )
     async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction) -> None:
         """
@@ -34,7 +33,6 @@ class RoleSelectView(discord.ui.View):
     @discord.ui.button(
         label=R.team_list_submit_button_label,
         style=discord.ButtonStyle.primary,
-        custom_id="submit_roles"
     )
     async def submit_callback(self, button, interaction: discord.Interaction) -> None:
         """

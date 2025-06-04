@@ -193,7 +193,6 @@ def setup_setup_command(bot: discord.Bot):
                 placeholder=R.setup_modroles_select_placeholder,
                 min_values=1,
                 max_values=25,
-                custom_id="modroles_select_dropdown"
             )
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 self.selected_roles = select.values
@@ -202,7 +201,6 @@ def setup_setup_command(bot: discord.Bot):
             @discord.ui.button(
                 label=R.modroles_submit_button_label,
                 style=discord.ButtonStyle.primary,
-                custom_id="submit_modroles"
             )
             async def submit_callback(self, button, interaction: discord.Interaction):
                 if not self.selected_roles:
