@@ -143,8 +143,13 @@ class ResDE:
     approve_application: str = "Bewerbung annehmen"
     approve_application_emoji: str = "✅"
     reject_application: str = "Bewerbung ablehnen"
-    reject_application_emoji: str = "⛔"  # "🚫"  # prohibition sign
-    # Other options could be: "↩️" (return arrow), "📝" (memo), "✖️" (multiplication x), "⛔" (no entry)
+    reject_application_emoji: str = "⛔"
+
+    # Application rejection modal
+    reject_application_modal_title: str = "Bewerbung ablehnen"
+    reject_application_reason_label: str = "Grund für die Ablehnung"
+    reject_application_reason_placeholder: str = "Optional kannst du einen Grund für die Ablehnung angeben."
+    application_rejected_with_reason_msg: str = "Leider wurde deine Bewerbung abgelehnt, %s.\n**Grund:** %s"
 
     close_ticket_request_title: str = "Ticket schließen?"
 

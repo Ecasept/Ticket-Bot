@@ -2,6 +2,8 @@
 Implements the ModOptionsMessage view for moderator actions on tickets, such as assigning, unassigning, approving, or rejecting applications.
 """
 import discord
+
+from .application_reject import reject_application
 from .noch_fragen import create_noch_fragen
 from src.utils import create_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, mention
 from src.database import Ticket, db
@@ -152,26 +154,7 @@ class ModOptionsMessage(discord.ui.View):
             f"Application approved for {user.name} (ID: {user.id})", interaction)
 
     async def reject_application(self, interaction: discord.Interaction):
-        """
-        Reject a user's application.
-        Args:
-            interaction (discord.Interaction): The interaction that triggered the rejection.
-        """
-        # Get the user who submitted the application
-        user, err = get_member(interaction.guild, self.user_id)
-        if err:
-            await handle_error(interaction, err)
-            return
-
-        # Send update message in the ticket channel
-        await interaction.response.defer(ephemeral=True)
-        await interaction.channel.send(
-            embed=create_embed(R.application_rejected_msg %
-                               user.mention, color=C.error_color),
-        )
-
-        logger.info(
-            f"Application rejected for {user.name} (ID: {user.id})", interaction)
+        await reject_application(interaction, self.user_id)
 
     @staticmethod
     async def create(interaction: discord.Interaction) -> tuple[discord.Embed | None, discord.ui.View | None]:
