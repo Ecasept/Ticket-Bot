@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS giveaways (
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS application_bans (
+	user_id INTEGER NOT NULL,
+	guild_id INTEGER NOT NULL,
+	PRIMARY KEY (user_id, guild_id)
+);
+
 -- Indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_tickets_category ON tickets(category);
 CREATE INDEX IF NOT EXISTS idx_tickets_assignee ON tickets(assignee_id);
@@ -35,6 +41,7 @@ CREATE INDEX IF NOT EXISTS idx_constants_guild ON constants(guild_id);
 CREATE INDEX IF NOT EXISTS idx_giveaways_ends_at ON giveaways(ends_at);
 CREATE INDEX IF NOT EXISTS idx_giveaways_ended ON giveaways(ended);
 CREATE INDEX IF NOT EXISTS idx_giveaways_guild ON giveaways(guild_id);
+CREATE INDEX IF NOT EXISTS idx_application_bans_guild ON application_bans(guild_id);
 
 
 

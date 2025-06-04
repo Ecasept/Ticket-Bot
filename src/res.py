@@ -361,6 +361,18 @@ class ResDE:
     setup_timeout_logchannel_set: str = "Der Timeout-Log-Channel wurde auf %s gesetzt."
     timeout_log_channel_title: str = "Timeout Log Channel"
 
+    # Application Ban
+    team_sperre_desc: str = "Sperrt einen Benutzer von der Erstellung von Bewerbungstickets."
+    team_sperre_user_desc: str = "Der Benutzer, der gesperrt werden soll."
+    team_sperre_success: str = "✅ %s wurde von der Erstellung von Bewerbungstickets gesperrt."
+    team_sperre_already_banned: str = "❌ %s ist bereits von der Erstellung von Bewerbungstickets gesperrt."
+
+    team_sperre_unban: str = "Sperre aufheben"
+    team_sperre_unban_emoji: str = "🔓"
+    team_sperre_unban_success: str = "✅ %s wurde von der Sperre für Bewerbungstickets befreit."
+
+    application_banned_message: str = "❌ Du bist von der Erstellung von Bewerbungstickets gesperrt und kannst keine neuen Bewerbungen einreichen."
+
 
 R = get_resources("de")
 C = Constants

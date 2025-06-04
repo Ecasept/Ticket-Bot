@@ -10,7 +10,7 @@ from src.res import C
 import re
 
 
-USER_VERSION = 6
+USER_VERSION = 7
 
 # Register adapter and converter for datetime
 
@@ -485,6 +485,53 @@ class Database:
         self.cursor.execute(query, (current_time,))
         giveaways_data = self.cursor.fetchall()
         return [Giveaway(*giveaway_data) for giveaway_data in giveaways_data]
+
+    # === Application Bans ===
+
+    def ban_user_from_applications(self, user_id: int, guild_id: int):
+        """
+        Ban a user from creating application tickets.
+        Args:
+            user_id (int): Discord user ID to ban.
+            guild_id (int): Guild ID where the ban applies.
+        """
+        self.cursor.execute(
+            "INSERT OR IGNORE INTO application_bans (user_id, guild_id) VALUES (?, ?)",
+            (user_id, guild_id)
+        )
+        self.connection.commit()
+        logger.info(
+            f"User {user_id} banned from applications in guild {guild_id}.")
+
+    def unban_user_from_applications(self, user_id: int, guild_id: int):
+        """
+        Remove a user's ban from creating application tickets.
+        Args:
+            user_id (int): Discord user ID to unban.
+            guild_id (int): Guild ID where the ban applies.
+        """
+        self.cursor.execute(
+            "DELETE FROM application_bans WHERE user_id = ? AND guild_id = ?",
+            (user_id, guild_id)
+        )
+        self.connection.commit()
+        logger.info(
+            f"User {user_id} unbanned from applications in guild {guild_id}.")
+
+    def is_user_banned_from_applications(self, user_id: int, guild_id: int) -> bool:
+        """
+        Check if a user is banned from creating application tickets.
+        Args:
+            user_id (int): Discord user ID to check.
+            guild_id (int): Guild ID to check the ban in.
+        Returns:
+            bool: True if the user is banned, False otherwise.
+        """
+        self.cursor.execute(
+            "SELECT 1 FROM application_bans WHERE user_id = ? AND guild_id = ?",
+            (user_id, guild_id)
+        )
+        return self.cursor.fetchone() is not None
 
 
 db = Database(C.db_file)

@@ -61,7 +61,8 @@ def setup_help_command(bot: discord.Bot):
             "- `/team add <user> <role>` - " + R.team_add_desc,
             "- `/team remove <user> <role>` - " + R.team_remove_desc,
             "- `/team wechsel <user> <von> <zu>` - " + R.team_wechsel_desc,
-            "- `/team list` - " + R.team_list_desc
+            "- `/team list` - " + R.team_list_desc,
+            "- `/team sperre <user>` - " + R.team_sperre_desc
         ]
 
         embed.add_field(

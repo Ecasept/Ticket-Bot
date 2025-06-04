@@ -1,8 +1,31 @@
 from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel
 from src.error import Error, We
+from src.database import db
 import discord
 import re
 from src.res import C, R
+
+
+class ApplicationBannedView(discord.ui.View):
+    def __init__(self, user: discord.Member):
+        super().__init__(timeout=None)
+        self.user = user
+
+    @discord.ui.button(
+        label=R.team_sperre_unban,
+        style=discord.ButtonStyle.danger,
+        emoji=discord.PartialEmoji(name=R.team_sperre_unban_emoji))
+    async def unban(self, button: discord.ui.Button, interaction: discord.Interaction):
+        """
+        Unban the user from creating application tickets.
+        Args:
+            button (discord.ui.Button): The button that was clicked.
+            interaction (discord.Interaction): The interaction context.
+        """
+        db.unban_user_from_applications(self.user.id, interaction.guild.id)
+        await interaction.response.send_message(embed=create_embed(R.team_sperre_unban_success % self.user.mention, color=C.success_color), ephemeral=True)
+        logger.info(
+            f"User {self.user.name} ({self.user.id}) unbanned from creating application tickets", interaction)
 
 
 class RoleSelectView(discord.ui.View):
@@ -377,5 +400,40 @@ def setup_team_list_command(bot: discord.Bot) -> None:
         """
         view = RoleSelectView()
         await ctx.respond(embed=create_embed(R.team_list_select_roles_prompt), view=view, ephemeral=True)
+
+    @team.command(name="sperre", description=R.team_sperre_desc)
+    @discord.default_permissions(administrator=True)
+    @discord.option(
+        "user",
+        description=R.team_sperre_user_desc,
+        type=discord.SlashCommandOptionType.user,
+        required=True
+    )
+    async def team_sperre(ctx: discord.ApplicationContext, user: discord.Member):
+        """
+        Ban a user from creating application tickets.
+        Args:
+            ctx (discord.ApplicationContext): The command context.
+            user (discord.Member): The user to ban from creating applications.
+        """
+        # Check if the user is already banned
+        if db.is_user_banned_from_applications(user.id, ctx.guild.id):
+
+            view = ApplicationBannedView(user)
+            await ctx.respond(embed=create_embed(R.team_sperre_already_banned % user.mention, color=C.warning_color), view=view, ephemeral=True)
+            logger.info(
+                f"User {user.name} ({user.id}) is already banned from creating application tickets", ctx.interaction)
+
+            return
+
+        # Ban the user
+        db.ban_user_from_applications(user.id, ctx.guild.id)
+
+        # Send success message
+        success_message = R.team_sperre_success % user.mention
+        await ctx.respond(embed=create_embed(success_message, color=C.success_color), ephemeral=True)
+
+        logger.info(
+            f"User {user.name} ({user.id}) banned from creating application tickets", ctx.interaction)
 
     bot.add_application_command(team)
