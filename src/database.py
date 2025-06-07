@@ -10,7 +10,7 @@ from src.res import C
 import re
 
 
-USER_VERSION = 7
+USER_VERSION = 8
 
 # Register adapter and converter for datetime
 
@@ -488,20 +488,21 @@ class Database:
 
     # === Application Bans ===
 
-    def ban_user_from_applications(self, user_id: int, guild_id: int):
+    def ban_user_from_applications(self, user_id: int, guild_id: int, ends_at: datetime.datetime | None):
         """
         Ban a user from creating application tickets.
         Args:
             user_id (int): Discord user ID to ban.
             guild_id (int): Guild ID where the ban applies.
+            ends_at (datetime.datetime | None): When the ban ends, or None for permanent ban.
         """
         self.cursor.execute(
-            "INSERT OR IGNORE INTO application_bans (user_id, guild_id) VALUES (?, ?)",
-            (user_id, guild_id)
+            "INSERT INTO application_bans (user_id, guild_id, ends_at) VALUES (?, ?, ?)",
+            (user_id, guild_id, ends_at)
         )
         self.connection.commit()
         logger.info(
-            f"User {user_id} banned from applications in guild {guild_id}.")
+            f"User {user_id} banned from applications in guild {guild_id} until {ends_at}.")
 
     def unban_user_from_applications(self, user_id: int, guild_id: int):
         """
@@ -532,6 +533,20 @@ class Database:
             (user_id, guild_id)
         )
         return self.cursor.fetchone() is not None
+
+    def get_expired_application_bans(self, current_time: datetime.datetime) -> list[tuple[int, int]]:
+        """
+        Get all application bans that have expired.
+        Args:
+            current_time (datetime.datetime): The current time to compare against.
+        Returns:
+            list[tuple[int, int]]: List of tuples containing (user_id, guild_id) for expired bans.
+        """
+        self.cursor.execute(
+            "SELECT user_id, guild_id FROM application_bans WHERE ends_at < ?",
+            (current_time,)
+        )
+        return self.cursor.fetchall()
 
 
 db = Database(C.db_file)

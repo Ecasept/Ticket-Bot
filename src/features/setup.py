@@ -1,6 +1,6 @@
 import discord
 
-from src.utils import error_embed, create_embed, handle_error
+from src.utils import error_embed, create_embed, get_timeout_log_channel, handle_error
 from src.error import We
 from src.database import db
 from src.utils import logger
@@ -272,18 +272,9 @@ def setup_setup_command(bot: discord.Bot):
         guild_id = ctx.guild.id
         if channel is None:
             # Tell the user the current timeout log channel
-            log_channel_id = db.get_constant(C.timeout_log_channel, guild_id)
-            if log_channel_id is None:
-                # No log channel set
-                await handle_error(
-                    ctx.interaction, We(R.setup_no_timeout_logchannel)
-                )
-                return
-            log_channel = ctx.guild.get_channel(int(log_channel_id))
-            if log_channel is None:
-                await handle_error(
-                    ctx.interaction, We(R.setup_timeout_logchannel_not_found)
-                )
+            log_channel, err = await get_timeout_log_channel(ctx.guild)
+            if err:
+                await handle_error(ctx.interaction, err)
                 return
             await ctx.respond(
                 embed=create_embed(R.setup_timeout_logchannel_current %

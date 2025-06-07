@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS giveaways (
 CREATE TABLE IF NOT EXISTS application_bans (
 	user_id INTEGER NOT NULL,
 	guild_id INTEGER NOT NULL,
+	ends_at TIMESTAMP,
 	PRIMARY KEY (user_id, guild_id)
 );
 

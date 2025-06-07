@@ -1,9 +1,11 @@
-from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel
+import datetime
+from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel, parse_duration
 from src.error import Error, We
 from src.database import db
 import discord
 import re
 from src.res import C, R
+from discord.ext import tasks
 
 
 class ApplicationBannedView(discord.ui.View):
@@ -22,8 +24,17 @@ class ApplicationBannedView(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction context.
         """
+        log_channel, err = await get_log_channel(interaction.guild)
+        if err:
+            await handle_error(interaction, err)
+            return
+
         db.unban_user_from_applications(self.user.id, interaction.guild.id)
         await interaction.response.send_message(embed=create_embed(R.team_sperre_unban_success % self.user.mention, color=C.success_color), ephemeral=True)
+        log_message = R.team_sperre_unban_log % (
+            interaction.user.mention, self.user.mention)
+        await log_channel.send(embed=create_embed(log_message, title=R.team_sperre_unban_log_title))
+
         logger.info(
             f"User {self.user.name} ({self.user.id}) unbanned from creating application tickets", interaction)
 
@@ -409,7 +420,14 @@ def setup_team_list_command(bot: discord.Bot) -> None:
         type=discord.SlashCommandOptionType.user,
         required=True
     )
-    async def team_sperre(ctx: discord.ApplicationContext, user: discord.Member):
+    @discord.option(
+        "duration",
+        description=R.team_sperre_duration_desc,
+        type=discord.SlashCommandOptionType.string,
+        required=False,
+        default=None
+    )
+    async def team_sperre(ctx: discord.ApplicationContext, user: discord.Member, duration: str = None):
         """
         Ban a user from creating application tickets.
         Args:
@@ -426,14 +444,48 @@ def setup_team_list_command(bot: discord.Bot) -> None:
 
             return
 
-        # Ban the user
-        db.ban_user_from_applications(user.id, ctx.guild.id)
+        # If a duration is provided, validate it
+        ends_at = None
+        if duration:
+            seconds, err = parse_duration(duration)
+            if err:
+                await handle_error(ctx.interaction, err)
+                return
+            ends_at = datetime.datetime.now(
+                datetime.timezone.utc) + datetime.timedelta(seconds=seconds)
 
-        # Send success message
-        success_message = R.team_sperre_success % user.mention
-        await ctx.respond(embed=create_embed(success_message, color=C.success_color), ephemeral=True)
+        log_channel, err = await get_log_channel(ctx.interaction.guild)
+        if err:
+            await handle_error(ctx.interaction, err)
+            return
+
+        # Ban the user
+        db.ban_user_from_applications(user.id, ctx.guild.id, ends_at)
+
+        if duration:
+            str_duration = str(datetime.timedelta(seconds=seconds))
+            log_message = R.team_sperre_success_log_duration % (
+                user.mention, ctx.author.mention, str_duration)
+        else:
+            log_message = R.team_sperre_success_log % (
+                user.mention, ctx.author.mention)
+        await log_channel.send(embed=create_embed(log_message, title=R.team_sperre_success_title))
+        await ctx.respond(embed=create_embed(log_message, color=C.success_color), ephemeral=True)
 
         logger.info(
             f"User {user.name} ({user.id}) banned from creating application tickets", ctx.interaction)
+
+    @tasks.loop(seconds=C.application_ban_check_interval)
+    async def check_application_bans():
+        """
+        Background task that checks for expired application bans and removes them.
+        """
+        now = datetime.datetime.now(datetime.timezone.utc)
+        expired_bans = db.get_expired_application_bans(now)
+        for (user_id, guild_id) in expired_bans:
+            db.unban_user_from_applications(user_id, guild_id)
+            logger.info(
+                f"Automatically removed expired application ban for user {user_id} in guild {guild_id}")
+    check_application_bans.start()
 
     bot.add_application_command(team)

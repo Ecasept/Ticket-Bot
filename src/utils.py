@@ -139,6 +139,24 @@ async def get_log_channel(guild: discord.Guild) -> Tuple[Optional[discord.TextCh
     return channel, None
 
 
+async def get_timeout_log_channel(guild: discord.Guild) -> Tuple[Optional[discord.TextChannel], Optional[Error]]:
+    """
+    Return the timeout log channel for logging timeout actions.
+    Args:
+        guild (discord.Guild): The Discord guild to search in.
+    Returns:
+        Tuple[Optional[discord.TextChannel], Optional[Error]]: The timeout log channel and an error if not found.
+    """
+    from src.database import db
+    channel_id = db.get_constant(C.timeout_log_channel, guild.id)
+    if channel_id is None:
+        return None, We(R.setup_no_timeout_logchannel)
+    channel = guild.get_channel(int(channel_id))
+    if not isinstance(channel, discord.TextChannel):
+        return None, We(R.setup_timeout_logchannel_not_found)
+    return channel, None
+
+
 def error_embed(msg: str, title: Optional[str] = None) -> discord.Embed:
     """
     Create an error embed with a standardized title and color.

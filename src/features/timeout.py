@@ -1,28 +1,12 @@
 import discord
-from discord.ext import commands
 import datetime
 from src.res import R, C
-from src.utils import create_embed, get_log_channel, handle_error, logger, error_embed, parse_duration
+from src.utils import create_embed, get_timeout_log_channel, handle_error, logger, error_embed, parse_duration
 from src.database import db
 
 
-async def send_timeout_log(interaction: discord.Interaction, user: discord.Member, duration_delta: datetime.timedelta, reason: str | None):
+async def send_timeout_log(interaction: discord.Interaction, user: discord.Member, duration_delta: datetime.timedelta, reason: str | None, log_channel: discord.TextChannel):
     """Sends a log message to the configured timeout log channel."""
-    log_channel_id = db.get_constant(
-        C.timeout_log_channel, interaction.guild.id)
-    if not log_channel_id:
-        await interaction.followup.send(
-            embed=create_embed(R.setup_no_timeout_logchannel, color=C.warning_color), ephemeral=True)
-        logger.warning(f"Timeout log channel not set", interaction)
-        return
-
-    log_channel = interaction.guild.get_channel(int(log_channel_id))
-    if not log_channel or not isinstance(log_channel, discord.TextChannel):
-        await interaction.followup.send(
-            embed=create_embed(R.setup_timeout_logchannel_not_found, color=C.warning_color), ephemeral=True)
-        logger.warning(
-            f"Timeout log channel not found or invalid type", interaction)
-        return
 
     description_lines = [
         f"**{R.timeout_log_user}**: {user.mention}",
@@ -84,6 +68,11 @@ def setup_timeout_commands(bot: discord.Bot):
                 f"{interaction.user.name} tried to timeout the bot", interaction)
             return
 
+        log_channel, err = await get_timeout_log_channel(interaction.guild)
+        if err:
+            await handle_error(interaction, err)
+            return
+
         end = datetime.datetime.now(datetime.timezone.utc) + duration_delta
 
         await user.timeout(end, reason=reason)
@@ -94,4 +83,4 @@ def setup_timeout_commands(bot: discord.Bot):
             f"{interaction.user.name} timed out {user.name} for {duration_delta}. Reason: {reason if reason else 'None'}", interaction)
 
         # Send log message
-        await send_timeout_log(interaction, user, duration_delta, reason)
+        await send_timeout_log(interaction, user, duration_delta, reason, log_channel)

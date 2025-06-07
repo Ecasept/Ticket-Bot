@@ -39,6 +39,7 @@ class Constants:
     # Giveaway settings
     giveaway_check_interval: int = 30  # Seconds between giveaway checks
     giveaway_reaction: str = "🎉"
+    application_ban_check_interval: int = 30
 
     # Embed colors
     embed_color: discord.Color = discord.Color.blue()
@@ -96,7 +97,7 @@ class ResDE:
     close_emoji: str = "🔒"  # not an x because the bg of the button is red
     mod_options_emoji: str = "⚙️"
 
-    invalid_duration: str = "❌ Ungültige Dauer. Nutze z.B. `10s`, `1m`, `2h`."
+    invalid_duration: str = "❌ Ungültige Dauer `%s`. Nutze z.B. `10s`, `1m`, `2h`."
 
     ticket_msg_desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
     ticket_channel_created: str = "Ticket erstellt! %s"
@@ -364,6 +365,7 @@ class ResDE:
     # Application Ban
     team_sperre_desc: str = "Sperrt einen Benutzer von der Erstellung von Bewerbungstickets."
     team_sperre_user_desc: str = "Der Benutzer, der gesperrt werden soll."
+    team_sperre_duration_desc: str = "Dauer der Sperre (z.B. 1d, 2w, 3m). Optional, Standard ist für immer."
     team_sperre_success: str = "✅ %s wurde von der Erstellung von Bewerbungstickets gesperrt."
     team_sperre_already_banned: str = "❌ %s ist bereits von der Erstellung von Bewerbungstickets gesperrt."
 
@@ -372,6 +374,13 @@ class ResDE:
     team_sperre_unban_success: str = "✅ %s wurde von der Sperre für Bewerbungstickets befreit."
 
     application_banned_message: str = "❌ Du bist von der Erstellung von Bewerbungstickets gesperrt und kannst keine neuen Bewerbungen einreichen."
+
+    team_sperre_logging_failed_suffix: str = "\nDer Nutzer wurde trotzdem gesperrt."
+    team_sperre_success_log_duration: str = "%s wurde von %s für `%s` von der Erstellung von Bewerbungstickets gesperrt."
+    team_sperre_success_log: str = "%s wurde von %s von der Erstellung von Bewerbungstickets gesperrt."
+    team_sperre_success_title: str = "Bewerbungssperre"
+    team_sperre_unban_log: str = "%s hat die Sperre von %s für Bewerbungstickets aufgehoben."
+    team_sperre_unban_log_title: str = "Bewerbungssperre aufgehoben"
 
 
 R = get_resources("de")
