@@ -14,7 +14,7 @@ from .features.giveaway import setup_giveaway_command
 from .utils import TOKEN, logger, create_embed
 from .error import We
 from .database import db
-from .features.team_list import setup_team_list_command, TeamListMessage
+from .features.team import setup_team_command, TeamListMessage
 from .help import setup_help_command
 from .res import C, R
 import traceback
@@ -70,7 +70,7 @@ async def ping(ctx: discord.ApplicationContext):
     logger.info("Ping command executed", ctx.interaction)
 
 setup_setup_command(bot)
-setup_team_list_command(bot)
+setup_team_command(bot)
 setup_help_command(bot)
 setup_noch_fragen(bot)
 setup_giveaway_command(bot)

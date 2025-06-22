@@ -19,6 +19,7 @@ class Constants:
     log_channel: str = "log_channel_id"  # Key for the log channel in DB
     # Key for the timeout log channel in DB
     timeout_log_channel: str = "timeout_log_channel_id"
+    welcome_channel_id: str = "welcome_channel_id"
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 
@@ -286,6 +287,14 @@ class ResDE:
     team_remove_role_desc: str = "Die Rolle, die entfernt werden soll."
     team_remove_success_title: str = "Team-Mitglied entfernt"
     team_remove_user_missing_role: str = "Der Benutzer hat diese Rolle nicht."
+
+    team_welcome_desc: str = "Zeigt/Setzt den Willkommens-Channel."
+    team_welcome_channel_desc: str = "Der Channel, in dem neue Team-Mitglieder begrüßt werden sollen."
+    team_welcome_no_channel: str = "Es ist kein Willkommens-Channel konfiguriert."
+    team_welcome_current_channel: str = "Der aktuelle Willkommens-Channel ist %s."
+    team_welcome_channel_set: str = "Der Willkommens-Channel wurde auf %s gesetzt."
+    team_welcome_channel_not_found: str = "Der Willkommens-Channel konnte nicht gefunden werden."
+    welcome_message: str = "Willkommen %s, du bist nun %s."
 
     team_wechsel_desc: str = "Wechselt die Rolle eines Benutzers."
     team_wechsel_user_desc: str = "Der Benutzer, dessen Rolle gewechselt werden soll."

@@ -1,5 +1,5 @@
 import datetime
-from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel, parse_duration
+from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel, parse_duration, get_team_welcome_channel
 from src.error import Error, We
 from src.database import db
 import discord
@@ -258,7 +258,7 @@ class TeamListMessage(discord.ui.View):
         logger.info(f"Team list updated", interaction)
 
 
-def setup_team_list_command(bot: discord.Bot) -> None:
+def setup_team_command(bot: discord.Bot) -> None:
     """
     Setup team management commands for the bot.
     Args:
@@ -300,6 +300,11 @@ def setup_team_list_command(bot: discord.Bot) -> None:
             await log_channel.send(embed=create_embed(log_message, title=R.new_team_member_title))
             # Send a confirmation message to the user
             await ctx.respond(embed=create_embed(log_message, color=C.success_color), ephemeral=True)
+
+            # Send a welcome message to the configured welcome channel
+            welcome_channel, err = await get_team_welcome_channel(ctx.guild)
+            if not err and welcome_channel:
+                await welcome_channel.send(embed=create_embed(R.welcome_message % (user.mention, role.mention), title=R.new_team_member_title))
             logger.info(
                 f"added role {role.name} to {user.name}", ctx.interaction)
 
@@ -474,6 +479,29 @@ def setup_team_list_command(bot: discord.Bot) -> None:
 
         logger.info(
             f"User {user.name} ({user.id}) banned from creating application tickets", ctx.interaction)
+
+    @team.command(name="welcome", description=R.team_welcome_desc)
+    @discord.default_permissions(administrator=True)
+    @discord.option(
+        "channel",
+        description=R.team_welcome_channel_desc,
+        type=discord.SlashCommandOptionType.channel,
+        required=False,
+        default=None,
+        channel_types=[discord.ChannelType.text]
+    )
+    async def team_welcome(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
+        if channel:
+            db.set_constant(C.welcome_channel_id, channel.id, ctx.guild.id)
+            await ctx.respond(embed=create_embed(R.team_welcome_channel_set % channel.mention, color=C.success_color), ephemeral=True)
+            logger.info(
+                f"Welcome channel set to {channel.name} ({channel.id})", ctx.interaction)
+        else:
+            welcome_channel, err = await get_team_welcome_channel(ctx.guild)
+            if err:
+                await handle_error(ctx.interaction, err)
+                return
+            await ctx.respond(embed=create_embed(R.team_welcome_current_channel % welcome_channel.mention), ephemeral=True)
 
     @tasks.loop(seconds=C.application_ban_check_interval)
     async def check_application_bans():
