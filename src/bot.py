@@ -11,7 +11,7 @@ from .features.ticket.closed import ClosedView
 from .features.ticket.panel import PanelView
 from .features.ticket.header import HeaderView
 from .features.giveaway import setup_giveaway_command
-from .utils import TOKEN, logger, create_embed
+from .utils import MODE, TOKEN, logger, create_embed
 from .error import We
 from .database import db
 from .features.team import setup_team_command, TeamListMessage
@@ -29,6 +29,7 @@ bot = discord.Bot(intents=intents)
 async def on_ready():
     logger.info(f"Logged in as {bot.user.name} (ID: {bot.user.id})")
     logger.info(f"Connected to {len(bot.guilds)} guilds:")
+    logger.info(f"Starting in mode: {MODE}")
     for guild in bot.guilds:
         logger.info(f" - {guild.name} (ID: {guild.id})")
     logger.info("------")
@@ -46,17 +47,18 @@ async def on_ready():
     bot.add_view(NochFragenMessage())
 
 
-@bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
-@discord.default_permissions(administrator=True)
-async def create_panel(ctx: discord.ApplicationContext):
-    """
-    Create a new ticket panel in the current channel.
-    Args:
-        ctx (discord.ApplicationContext): The command context.
-    """
-    await ctx.send(embed=create_embed(R.panel_msg, title=R.ticket_panel_title), view=PanelView())
-    await ctx.respond(embed=create_embed(R.ticket_msg_created, color=C.success_color, title=R.ticket_panel_title), ephemeral=True)
-    logger.info("Panel created", ctx.interaction)
+def setup_panel():
+    @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
+    @discord.default_permissions(administrator=True)
+    async def create_panel(ctx: discord.ApplicationContext):
+        """
+        Create a new ticket panel in the current channel.
+        Args:
+            ctx (discord.ApplicationContext): The command context.
+        """
+        await ctx.send(embed=create_embed(R.panel_msg, title=R.ticket_panel_title), view=PanelView())
+        await ctx.respond(embed=create_embed(R.ticket_msg_created, color=C.success_color, title=R.ticket_panel_title), ephemeral=True)
+        logger.info("Panel created", ctx.interaction)
 
 
 @bot.slash_command(name="ping", description=R.ping_desc)
@@ -69,13 +71,16 @@ async def ping(ctx: discord.ApplicationContext):
     await ctx.respond("Pong!")
     logger.info("Ping command executed", ctx.interaction)
 
-setup_setup_command(bot)
-setup_team_command(bot)
-setup_help_command(bot)
-setup_noch_fragen(bot)
-setup_giveaway_command(bot)
-setup_timeout_commands(bot)
+if MODE == "ticket" or MODE == "all":
+    setup_panel()
+    setup_setup_command(bot)
+    setup_noch_fragen(bot)
+    setup_giveaway_command(bot)
+    setup_timeout_commands(bot)
+elif MODE == "team" or MODE == "all":
+    setup_team_command(bot)
 
+setup_help_command(bot)
 
 try:
     if TOKEN is None:
