@@ -3,20 +3,22 @@ Main entry point for the Discord bot. Handles bot events, command registration, 
 """
 import discord
 
-from .features.timeout import setup_timeout_commands
+from .features.ticket_menu.ticket_menu import TicketMenuView
 from .features.ticket.noch_fragen import NochFragenMessage, setup_noch_fragen
-from .features.setup import setup_setup_command
 from .features.ticket.close_request import TicketCloseRequestView
 from .features.ticket.closed import ClosedView
 from .features.ticket.panel import PanelView
 from .features.ticket.header import HeaderView
-from .features.giveaway import setup_giveaway_command
 from .utils import MODE, TOKEN, logger, create_embed
-from .error import We
+from .error import We, Ce
 from .database import db
 from .features.team import setup_team_command, TeamListMessage
 from .help import setup_help_command
 from .res import C, R
+from .features.ticket_menu.ticket_command import setup_ticket_command
+from .features.giveaway.command import setup_giveaway_command
+from .features.timeout.command import setup_timeout_command
+from .features.setup.command import setup_setup_command
 import traceback
 
 intents = discord.Intents.default()
@@ -45,6 +47,7 @@ async def on_ready():
     bot.add_view(ClosedView())
     bot.add_view(TeamListMessage())
     bot.add_view(NochFragenMessage())
+    bot.add_view(TicketMenuView())
 
 
 def setup_panel():
@@ -76,7 +79,8 @@ if MODE == "ticket" or MODE == "all":
     setup_setup_command(bot)
     setup_noch_fragen(bot)
     setup_giveaway_command(bot)
-    setup_timeout_commands(bot)
+    setup_timeout_command(bot)
+    setup_ticket_command(bot)
 elif MODE == "team" or MODE == "all":
     setup_team_command(bot)
 
@@ -93,7 +97,7 @@ try:
 except KeyboardInterrupt:
     logger.info("Bot has been stopped by user.")
 except Exception as e:
-    logger.error(We(f"Failed to run the bot: {traceback.format_exc()}"))
+    logger.error(Ce(f"Failed to run the bot: {traceback.format_exc()}"))
 finally:
     db.close()
     logger.info("Bot has been shut down.")

@@ -30,6 +30,7 @@ def setup_help_command(bot: discord.Bot):
             general_commands = [
                 "- `/ping` - " + R.ping_desc,
                 "- `/help` - " + R.help_desc,
+                "- `/ticket` - " + R.ticket_desc + " *(Administrator)*",
                 "- `/createpanel` - " + R.ticket_msg_desc +
                 " *(Administrator)*",
                 "- `/giveaway` - " + R.giveaway_desc + " *(Administrator)*",

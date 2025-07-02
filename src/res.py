@@ -105,6 +105,21 @@ class ResDE:
     ticket: str = "ticket"
 
     ping_desc: str = "Testet ob der Bot antwortet."
+    ticket_desc: str = "Öffne das Ticket-Menü mit verschiedenen Optionen."
+    
+    # Ticket menu
+    ticket_menu_title: str = "Ticket Menü"
+    ticket_menu_description: str = "Wähle eine Option aus den verfügbaren Ticket-Befehlen:"
+    ticket_menu_giveaway: str = "Giveaway"
+    ticket_menu_timeout: str = "Timeout"
+    ticket_menu_setup: str = "Setup"
+    ticket_menu_giveaway_desc: str = "Starte ein Giveaway"
+    ticket_menu_timeout_desc: str = "Benutzer timeout geben"
+    ticket_menu_setup_desc: str = "Bot-Einstellungen konfigurieren"
+    
+    # Setup button labels
+    setup_set_value: str = "Wert setzen"
+    setup_view_value: str = "Wert anzeigen"
 
     close_ticket: str = "Schließen"
     ticket_closed_msg: str = "Das Ticket wurde von %s geschlossen."
@@ -200,7 +215,13 @@ class ResDE:
     giveaway_duration_extreme: str = "❌ Dauer muss zwischen 10 Sekunden und 30 Tagen liegen."
     giveaway_invalid_winners: str = "❌ Ungültige Gewinner-Anzahl. Muss zwischen 1 und 20 sein."
     giveaway_started: str = "✅ Giveaway wurde gestartet!"
-    giveaway_title: str = "🎉 Giveaway"
+    giveaway_title: str = "🎉 Giveaway: %s"
+    giveaway_description: str = "**%s** wird verlost!\n🏆 **%s** Gewinner werden ausgewählt"
+    giveaway_ends_at: str = "🕐 Endet am"
+    giveaway_role_prize: str = "🎭 Zusätzliche Rolle"
+    giveaway_participation: str = "📝 Teilnahme"
+    giveaway_react_to_participate: str = "Reagiere mit %s um teilzunehmen!"
+    giveaway_footer: str = "Veranstaltet von Benutzer-ID: %s"
     giveaway_prize: str = "**Preis:** %s"
     giveaway_duration: str = "**Dauer:** %s"
     giveaway_role: str = "**Rolle:** %s"
