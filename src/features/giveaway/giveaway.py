@@ -6,7 +6,7 @@ import datetime
 import random
 from src.res import R, C
 from src.utils import create_embed, parse_duration, handle_error, logger, error_embed
-from database.database import db
+from src.database import db
 from src.error import Ce, We
 from discord.ext import tasks
 
@@ -98,7 +98,7 @@ async def create_giveaway(interaction: discord.Interaction, dauer: str, preis: s
     end_time = datetime.datetime.now() + datetime.timedelta(seconds=seconds)
 
     # Store in database
-    db.create_giveaway(
+    db.giveaway.create(
         message_id=message.id,
         channel_id=interaction.channel.id,
         guild_id=interaction.guild.id,
@@ -127,7 +127,7 @@ async def end_giveaway(bot: discord.Bot, giveaway):
         if not channel:
             logger.error(
                 We(f"Channel {giveaway.channel_id} not found for giveaway {giveaway.message_id}"))
-            db.update_giveaway(giveaway.message_id, ended=True)
+            db.giveaway.update(giveaway.message_id, ended=True)
             return
 
         try:
@@ -135,7 +135,7 @@ async def end_giveaway(bot: discord.Bot, giveaway):
         except discord.NotFound:
             logger.error(
                 We(f"Message {giveaway.message_id} not found for giveaway"))
-            db.update_giveaway(giveaway.message_id, ended=True)
+            db.giveaway.update(giveaway.message_id, ended=True)
             return
 
         # Get participants who reacted with the giveaway emoji
@@ -154,7 +154,7 @@ async def end_giveaway(bot: discord.Bot, giveaway):
                     title=R.giveaway_ended_title,
                 )
             )
-            db.update_giveaway(giveaway.message_id, ended=True)
+            db.giveaway.update(giveaway.message_id, ended=True)
             return
 
         # Select winners
@@ -182,14 +182,14 @@ async def end_giveaway(bot: discord.Bot, giveaway):
                             logger.error(We(msg))
 
         # Mark as ended
-        db.update_giveaway(giveaway.message_id, ended=True)
+        db.giveaway.update(giveaway.message_id, ended=True)
         logger.info(
             f"Giveaway {giveaway.message_id} ended with {len(winners)} winners")
 
     except Exception as e:
         logger.error(Ce(f"Error ending giveaway {giveaway.message_id}: {e}"))
         # Still mark as ended to prevent infinite retries
-        db.update_giveaway(giveaway.message_id, ended=True)
+        db.giveaway.update(giveaway.message_id, ended=True)
 
 
 def setup_giveaway_background_task(bot: discord.Bot):
@@ -199,13 +199,13 @@ def setup_giveaway_background_task(bot: discord.Bot):
         bot (discord.Bot): The Discord bot instance.
     """
     @tasks.loop(seconds=C.giveaway_check_interval)
-    async def check_giveaways():
-        """
-        Background task that checks for ended giveaways and processes them.
-        """
+    async def check_ended_giveaways():
+        """Check for ended giveaways and process them."""
         try:
             now = datetime.datetime.now()
-            ended_giveaways = db.get_active_giveaways(now)
+            ended_giveaways = db.giveaway.get_active(now)
+            if ended_giveaways:
+                logger.info(f"Found {len(ended_giveaways)} ended giveaways.")
 
             for giveaway in ended_giveaways:
                 await end_giveaway(bot, giveaway)
@@ -214,4 +214,4 @@ def setup_giveaway_background_task(bot: discord.Bot):
             logger.error(We(f"Error in giveaway check task: {e}"))
 
     # Start the background task
-    check_giveaways.start()
+    check_ended_giveaways.start()

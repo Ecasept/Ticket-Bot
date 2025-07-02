@@ -1,6 +1,6 @@
 import discord
 from src.utils import get_member, get_ticket_category, get_transcript_category, logger, create_embed, handle_error, verify_mod_or_admin
-from database.database import db
+from src.database import db
 from src.res import C, R
 from src.error import Ce, UserNotFoundError, We, Error
 
@@ -36,7 +36,7 @@ class ClosedView(discord.ui.View):
             return
 
         await interaction.channel.delete()
-        db.delete_ticket(str(interaction.channel.id))
+        db.ticket.delete_ticket(str(interaction.channel.id))
         logger.info("ticket deleted", interaction)
 
     @discord.ui.button(label=R.reopen_ticket_button, style=discord.ButtonStyle.secondary, custom_id="reopen_ticket", emoji=discord.PartialEmoji(name=R.reopen_emoji))
@@ -52,7 +52,7 @@ class ClosedView(discord.ui.View):
         if err:
             await handle_error(interaction, err)
             return
-        ticket = db.get_ticket(str(interaction.channel.id))
+        ticket = db.ticket.get(str(interaction.channel.id))
         if ticket is None:
             await handle_error(interaction, Ce(R.ticket_not_found))
             return
@@ -68,7 +68,7 @@ class ClosedView(discord.ui.View):
         await interaction.channel.edit(category=original_category)
 
         # Update database
-        db.update_ticket(str(interaction.channel.id), archived=False)
+        db.ticket.update(str(interaction.channel.id), archived=False)
 
         # Edit the original message to remove buttons
         await interaction.message.edit(view=None)
@@ -94,7 +94,7 @@ async def close_channel(channel: discord.TextChannel) -> Error | None:
         return err
     await channel.edit(category=category)
     # Change permissions
-    ticket = db.get_ticket(str(channel.id))
+    ticket = db.ticket.get(str(channel.id))
     if ticket is None:
         return Ce(R.ticket_not_found)
     user, err = get_member(channel.guild, ticket.user_id)
@@ -124,7 +124,7 @@ async def close_ticket(interaction: discord.Interaction):
         return
 
     # Update database
-    db.update_ticket(str(interaction.channel.id), archived=True, close_at=None)
+    db.ticket.update(str(interaction.channel.id), archived=True, close_at=None)
 
     msg = R.ticket_closed_msg % interaction.user.mention
     # Send message

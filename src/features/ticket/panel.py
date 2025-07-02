@@ -5,7 +5,7 @@ import discord
 
 from .header import HeaderView
 from src.utils import get_mod_roles, get_ticket_category, logger, create_embed, handle_error
-from database.database import db
+from src.database import db
 from src.res import C, R
 from src.error import Ce, We
 
@@ -21,7 +21,7 @@ class PanelView(discord.ui.View):
     @discord.ui.button(label=R.application, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.application_emoji), custom_id="create_application_ticket")
     async def application_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
         # Check if user is banned from creating application tickets
-        if db.is_user_banned_from_applications(interaction.user.id, interaction.guild.id):
+        if db.ab.is_user_banned(interaction.user.id, interaction.guild.id):
             await handle_error(interaction, We(R.application_banned_message))
             return
 
@@ -268,7 +268,7 @@ async def create_new_ticket(interaction: discord.Interaction, user: discord.User
     if channel is None:
         # Error ocurred
         return None
-    db.create_ticket(
+    db.ticket.create(
         str(channel.id),
         category,
         str(user.id),

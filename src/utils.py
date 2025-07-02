@@ -38,7 +38,7 @@ def get_mod_roles(guild: discord.Guild) -> Tuple[Optional[List[discord.Role]], O
         Tuple[Optional[List[discord.Role]], Optional[Error]]: A tuple containing the list of moderator roles (or None) and an error (or None).
     """
     from src.database import db
-    mod_role_ids = db.get_constant(C.mod_roles, guild.id)
+    mod_role_ids = db.constant.get(C.mod_roles, guild.id)
     if mod_role_ids is None:
         return None, We(R.setup_no_modroles)
     try:
@@ -95,7 +95,7 @@ async def get_ticket_category(guild: discord.Guild) -> Tuple[Optional[discord.Ca
         Tuple[Optional[discord.CategoryChannel], Optional[Error]]: A tuple of (category, error). If the category is configured and found, returns (category, None). Otherwise returns (None, error) indicating why it failed.
     """
     from src.database import db
-    category_id = db.get_constant(C.ticket_category, guild.id)
+    category_id = db.constant.get(C.ticket_category, guild.id)
     if category_id is None:
         return None, We(R.setup_no_ticket_category)
     category = guild.get_channel(int(category_id))
@@ -113,7 +113,7 @@ async def get_transcript_category(guild: discord.Guild) -> Tuple[Optional[discor
         Tuple[Optional[discord.CategoryChannel], Optional[Error]]: The transcript category and an error if not found.
     """
     from src.database import db
-    category_id = db.get_constant(C.transcript_category, guild.id)
+    category_id = db.constant.get(C.transcript_category, guild.id)
     if category_id is None:
         return None, We(R.setup_no_transcript_category)
     category = guild.get_channel(int(category_id))
@@ -131,7 +131,7 @@ async def get_log_channel(guild: discord.Guild) -> Tuple[Optional[discord.TextCh
         Tuple[Optional[discord.TextChannel], Optional[Error]]: The log channel and an error if not found.
     """
     from src.database import db
-    channel_id = db.get_constant(C.log_channel, guild.id)
+    channel_id = db.constant.get(C.log_channel, guild.id)
     if channel_id is None:
         return None, We(R.setup_no_logchannel)
     channel = guild.get_channel(int(channel_id))
@@ -149,7 +149,7 @@ async def get_timeout_log_channel(guild: discord.Guild) -> Tuple[Optional[discor
         Tuple[Optional[discord.TextChannel], Optional[Error]]: The timeout log channel and an error if not found.
     """
     from src.database import db
-    channel_id = db.get_constant(C.timeout_log_channel, guild.id)
+    channel_id = db.constant.get(C.timeout_log_channel, guild.id)
     if channel_id is None:
         return None, We(R.setup_no_timeout_logchannel)
     channel = guild.get_channel(int(channel_id))
@@ -167,7 +167,7 @@ async def get_team_welcome_channel(guild: discord.Guild) -> Tuple[Optional[disco
         Tuple[Optional[discord.TextChannel], Optional[Error]]: The welcome channel and an error if not found.
     """
     from src.database import db
-    channel_id = db.get_constant(C.welcome_channel_id, guild.id)
+    channel_id = db.constant.get(C.welcome_channel_id, guild.id)
     if channel_id is None:
         return None, We(R.team_welcome_no_channel)
     channel = guild.get_channel(int(channel_id))

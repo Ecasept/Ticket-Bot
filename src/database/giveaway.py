@@ -1,5 +1,5 @@
 from src.utils import logger
-from database.other import DatabaseError
+from .other import DatabaseError
 import datetime
 
 
@@ -69,8 +69,8 @@ class GiveawayManager:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def create_giveaway(self, message_id: int, channel_id: int, guild_id: int, host_id: int,
-                        prize: str, winner_count: int, role_id: int | None, ends_at: datetime.datetime) -> int:
+    def create(self, message_id: int, channel_id: int, guild_id: int, host_id: int,
+               prize: str, winner_count: int, role_id: int | None, ends_at: datetime.datetime) -> int:
         """
         Create a new giveaway record in the database.
         Args:
@@ -95,7 +95,7 @@ class GiveawayManager:
             f"Giveaway {message_id} created for prize '{prize}' in channel {channel_id}.")
         return message_id
 
-    def get_giveaway(self, message_id: int) -> Giveaway | None:
+    def get(self, message_id: int) -> Giveaway | None:
         """
         Retrieve a giveaway by its message_id.
         Args:
@@ -113,7 +113,7 @@ class GiveawayManager:
         else:
             return None
 
-    def update_giveaway(self, message_id: int, **fields):
+    def update(self, message_id: int, **fields):
         """
         Update one or more fields of a giveaway.
         Args:
@@ -144,7 +144,7 @@ class GiveawayManager:
         field_updates = ", ".join([f"{k}={v}" for k, v in fields.items()])
         logger.info(f"Giveaway {message_id} updated: {field_updates}")
 
-    def get_active_giveaways(self, current_time: datetime.datetime) -> list[Giveaway]:
+    def get_active(self, current_time: datetime.datetime) -> list[Giveaway]:
         """
         Get all giveaways that have ended but haven't been processed yet.
         Args:

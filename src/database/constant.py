@@ -11,7 +11,7 @@ class ConstantManager:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def get_constant(self, key: str, guild: int) -> str | None:
+    def get(self, key: str, guild: int) -> str | None:
         """
         Get a constant value from the database.
         Args:
@@ -28,7 +28,7 @@ class ConstantManager:
         else:
             return None
 
-    def set_constant(self, key: str, value: str, guild: int):
+    def set(self, key: str, value: str, guild: int):
         """
         Set a constant value in the database.
         Args:

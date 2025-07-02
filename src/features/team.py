@@ -1,7 +1,7 @@
 import datetime
 from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel, parse_duration, get_team_welcome_channel
 from src.error import Error, We
-from database.database import db
+from src.database import db
 import discord
 import re
 from src.res import C, R
@@ -29,7 +29,7 @@ class ApplicationBannedView(discord.ui.View):
             await handle_error(interaction, err)
             return
 
-        db.unban_user_from_applications(self.user.id, interaction.guild.id)
+        db.ab.unban_user(self.user.id, interaction.guild.id)
         await interaction.response.send_message(embed=create_embed(R.team_sperre_unban_success % self.user.mention, color=C.success_color), ephemeral=True)
         log_message = R.team_sperre_unban_log % (
             interaction.user.mention, self.user.mention)
@@ -440,7 +440,7 @@ def setup_team_command(bot: discord.Bot) -> None:
             user (discord.Member): The user to ban from creating applications.
         """
         # Check if the user is already banned
-        if db.is_user_banned_from_applications(user.id, ctx.guild.id):
+        if db.ab.is_user_banned(user.id, ctx.guild.id):
 
             view = ApplicationBannedView(user)
             await ctx.respond(embed=create_embed(R.team_sperre_already_banned % user.mention, color=C.warning_color), view=view, ephemeral=True)
@@ -465,7 +465,7 @@ def setup_team_command(bot: discord.Bot) -> None:
             return
 
         # Ban the user
-        db.ban_user_from_applications(user.id, ctx.guild.id, ends_at)
+        db.ab.ban_user(user.id, ctx.guild.id, ends_at)
 
         if duration:
             str_duration = str(datetime.timedelta(seconds=seconds))
@@ -492,7 +492,7 @@ def setup_team_command(bot: discord.Bot) -> None:
     )
     async def team_welcome(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
         if channel:
-            db.set_constant(C.welcome_channel_id, channel.id, ctx.guild.id)
+            db.constant.set(C.welcome_channel_id, channel.id, ctx.guild.id)
             await ctx.respond(embed=create_embed(R.team_welcome_channel_set % channel.mention, color=C.success_color), ephemeral=True)
             logger.info(
                 f"Welcome channel set to {channel.name} ({channel.id})", ctx.interaction)
@@ -509,9 +509,9 @@ def setup_team_command(bot: discord.Bot) -> None:
         Background task that checks for expired application bans and removes them.
         """
         now = datetime.datetime.now(datetime.timezone.utc)
-        expired_bans = db.get_expired_application_bans(now)
+        expired_bans = db.ab.get_expired(now)
         for (user_id, guild_id) in expired_bans:
-            db.unban_user_from_applications(user_id, guild_id)
+            db.ab.unban_user(user_id, guild_id)
             logger.info(
                 f"Automatically removed expired application ban for user {user_id} in guild {guild_id}")
     check_application_bans.start()

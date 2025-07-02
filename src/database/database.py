@@ -5,10 +5,10 @@ Provides the Database class for CRUD operations on tickets.
 import sqlite3
 import os
 import datetime
-from database.application_ban import ApplicationBanManager
-from database.constant import ConstantManager
-from database.giveaway import GiveawayManager
-from database.ticket import TicketManager
+from .application_ban import ApplicationBanManager
+from .constant import ConstantManager
+from .giveaway import GiveawayManager
+from .ticket import TicketManager
 from src.utils import logger
 from src.res import C
 import re
@@ -173,6 +173,3 @@ class Database:
         self.ticket = TicketManager(self.connection)
         self.constant = ConstantManager(self.connection)
         self.ab = ApplicationBanManager(self.connection)
-
-
-db = Database(C.db_file)

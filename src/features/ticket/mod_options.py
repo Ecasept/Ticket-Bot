@@ -6,7 +6,8 @@ import discord
 from .application_reject import reject_application
 from .noch_fragen import create_noch_fragen
 from src.utils import create_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, mention
-from database.database import Ticket, db
+from src.database import db
+from src.database.ticket import Ticket
 from src.utils import logger, format_date
 from src.res import C, R
 from src.error import Ce, We
@@ -87,7 +88,7 @@ class ModOptionsMessage(discord.ui.View):
         new_assigned_id = str(interaction.user.id)
 
         # Update ticket in database
-        db.update_ticket(str(interaction.channel.id),
+        db.ticket.update(str(interaction.channel.id),
                          assignee_id=new_assigned_id)
 
         # Send update message in the ticket channel
@@ -114,7 +115,7 @@ class ModOptionsMessage(discord.ui.View):
         await interaction.response.defer(ephemeral=True)
 
         # Update ticket in database
-        db.update_ticket(str(interaction.channel.id), assignee_id=None)
+        db.ticket.update(str(interaction.channel.id), assignee_id=None)
 
         # Send update message in the ticket channel
         await interaction.channel.send(
@@ -166,7 +167,7 @@ class ModOptionsMessage(discord.ui.View):
             tuple[discord.Embed | None, discord.ui.View | None]: The message and view for the mod options.
         """
 
-        ticket = db.get_ticket(str(interaction.channel.id))
+        ticket = db.ticket.get(str(interaction.channel.id))
         if ticket is None:
             err = Ce(R.ticket_not_found_msg)
             logger.error(err, interaction)

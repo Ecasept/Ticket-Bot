@@ -1,7 +1,7 @@
 import discord
 from discord.ext import tasks
 from .closed import ClosedView, close_channel, close_ticket
-from database.database import db
+from src.database import db
 from src.utils import create_embed, logger, handle_error
 import datetime
 from src.res import C, R
@@ -39,7 +39,7 @@ class NochFragenMessage(discord.ui.View):
             interaction (discord.Interaction): The interaction context.
         """
 
-        if (ticket := db.get_ticket(interaction.channel.id)) is None:
+        if (ticket := db.ticket.get(interaction.channel.id)) is None:
             await handle_error(interaction, Ce(R.ticket_not_found))
             return
         if ticket.user_id != str(interaction.user.id):
@@ -66,7 +66,7 @@ class NochFragenMessage(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction context.
         """
-        if (ticket := db.get_ticket(interaction.channel.id)) is None:
+        if (ticket := db.ticket.get(interaction.channel.id)) is None:
             await handle_error(interaction, Ce(R.ticket_not_found))
             return
         if ticket.user_id != str(interaction.user.id):
@@ -82,7 +82,7 @@ class NochFragenMessage(discord.ui.View):
         await interaction.channel.send(
             embed=create_embed(R.noch_fragen_cancel_msg % interaction.user.mention, color=C.success_color))
 
-        db.update_ticket(interaction.channel.id, close_at=None)
+        db.ticket.update(interaction.channel.id, close_at=None)
         logger.info("cancelled noch fragen after user request", interaction)
 
 
@@ -95,7 +95,7 @@ async def create_noch_fragen(interaction: discord.Interaction):
     embed, view = NochFragenMessage.create(interaction)
     now = datetime.datetime.now()
     close_time = now + datetime.timedelta(hours=C.ticket_close_time)
-    db.update_ticket(interaction.channel.id, close_at=close_time)
+    db.ticket.update(interaction.channel.id, close_at=close_time)
     await interaction.channel.send(
         embed=embed,
         view=view,
@@ -115,7 +115,7 @@ def setup_noch_fragen(bot: discord.Bot):
         Background task that automatically closes overdue tickets.
         """
         now = datetime.datetime.now()
-        overdue_ids = db.get_overdue_tickets(now)
+        overdue_ids = db.ticket.get_overdue(now)
         for id in overdue_ids:
             channel = bot.get_channel(int(id))
             if channel is None:
@@ -127,7 +127,7 @@ def setup_noch_fragen(bot: discord.Bot):
                 continue  # Skip database update if closing channel failed
 
             # If close_channel was successful
-            db.update_ticket(id, close_at=None, archived=True)
+            db.ticket.update(id, close_at=None, archived=True)
             embed, view = ClosedView.create(R.noch_fragen_closed_msg)
             await channel.send(
                 embed=embed,

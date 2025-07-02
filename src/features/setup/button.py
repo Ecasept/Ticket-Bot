@@ -4,9 +4,9 @@ Setup button interface for the ticket menu.
 import discord
 from src.res import R, C
 from src.utils import create_embed, logger
-from database.database import db
+from src.database import db
 from src.features.setup.setup import (
-    setup_tickets, setup_transcript, setup_logchannel, 
+    setup_tickets, setup_transcript, setup_logchannel,
     setup_timeout_logchannel, show_modroles
 )
 
@@ -32,7 +32,7 @@ class SetupOptionView(discord.ui.View):
             await setup_timeout_logchannel(interaction)
         elif self.option == "modroles":
             await show_modroles(interaction)
-        
+
         logger.info(f"Viewed setup option {self.option}", interaction)
 
     @discord.ui.button(
@@ -51,7 +51,7 @@ class SetupOptionView(discord.ui.View):
             await self._set_timeout_logchannel(interaction)
         elif self.option == "modroles":
             await self._set_modroles(interaction)
-        
+
         logger.info(f"Setting setup option {self.option}", interaction)
 
     async def _set_tickets(self, interaction: discord.Interaction):
@@ -70,7 +70,8 @@ class SetupOptionView(discord.ui.View):
 
         view = CategorySelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle eine Kategorie für Tickets:", title="Tickets Kategorie setzen"),
+            embed=create_embed("Wähle eine Kategorie für Tickets:",
+                               title="Tickets Kategorie setzen"),
             view=view,
             ephemeral=True
         )
@@ -91,7 +92,8 @@ class SetupOptionView(discord.ui.View):
 
         view = CategorySelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle eine Kategorie für Transcripts:", title="Transcript Kategorie setzen"),
+            embed=create_embed(
+                "Wähle eine Kategorie für Transcripts:", title="Transcript Kategorie setzen"),
             view=view,
             ephemeral=True
         )
@@ -112,7 +114,8 @@ class SetupOptionView(discord.ui.View):
 
         view = ChannelSelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle einen Log-Channel:", title="Log Channel setzen"),
+            embed=create_embed("Wähle einen Log-Channel:",
+                               title="Log Channel setzen"),
             view=view,
             ephemeral=True
         )
@@ -133,7 +136,8 @@ class SetupOptionView(discord.ui.View):
 
         view = ChannelSelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle einen Timeout Log-Channel:", title="Timeout Log Channel setzen"),
+            embed=create_embed("Wähle einen Timeout Log-Channel:",
+                               title="Timeout Log Channel setzen"),
             view=view,
             ephemeral=True
         )
@@ -163,18 +167,21 @@ class SetupOptionView(discord.ui.View):
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
-                db.set_constant(C.mod_roles, ",".join(role_ids), interaction.guild.id)
-                roles_mentions = ", ".join([role.mention for role in self.selected_roles])
+                db.constant.set(C.mod_roles, ",".join(
+                    role_ids), interaction.guild.id)
+                roles_mentions = ", ".join(
+                    [role.mention for role in self.selected_roles])
                 await interaction.response.edit_message(
                     embed=create_embed(R.setup_modroles_set % roles_mentions,
-                                     color=C.success_color, title=R.mod_roles_title),
+                                       color=C.success_color, title=R.mod_roles_title),
                     view=None
                 )
                 self.stop()
 
         view = ModRolesSelectView()
         await interaction.response.send_message(
-            embed=create_embed(R.setup_modroles_select_prompt, title=R.mod_roles_title),
+            embed=create_embed(R.setup_modroles_select_prompt,
+                               title=R.mod_roles_title),
             view=view,
             ephemeral=True
         )
@@ -194,7 +201,7 @@ class SetupSelectView(discord.ui.View):
                 emoji="🎫"
             ),
             discord.SelectOption(
-                label="Transcript Kategorie", 
+                label="Transcript Kategorie",
                 description="Kategorie für Transcripts setzen/anzeigen",
                 value="transcript",
                 emoji="📜"
@@ -207,7 +214,7 @@ class SetupSelectView(discord.ui.View):
             ),
             discord.SelectOption(
                 label="Timeout Log Channel",
-                description="Timeout Log Channel setzen/anzeigen", 
+                description="Timeout Log Channel setzen/anzeigen",
                 value="timeout_logchannel",
                 emoji="⏰"
             ),
@@ -221,16 +228,16 @@ class SetupSelectView(discord.ui.View):
     )
     async def setup_select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
         option = select.values[0]
-        
+
         # Show the new interface with Set Value and View Value buttons
         option_names = {
             "tickets": "Tickets Kategorie",
-            "transcript": "Transcript Kategorie", 
+            "transcript": "Transcript Kategorie",
             "logchannel": "Log Channel",
             "timeout_logchannel": "Timeout Log Channel",
             "modroles": "Moderator Rollen"
         }
-        
+
         embed = create_embed(
             f"Was möchtest du mit **{option_names[option]}** machen?",
             title="Setup Option",
@@ -238,7 +245,7 @@ class SetupSelectView(discord.ui.View):
         )
         view = SetupOptionView(option)
         await interaction.response.edit_message(embed=embed, view=view)
-        
+
         logger.info(f"Setup option {option} selected", interaction)
 
 

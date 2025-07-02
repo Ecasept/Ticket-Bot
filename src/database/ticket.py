@@ -1,6 +1,5 @@
 import datetime
-from database.database import Ticket
-from database.other import DatabaseError
+from .other import DatabaseError
 from src.utils import logger
 
 
@@ -60,7 +59,7 @@ class TicketManager:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def create_ticket(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool = False, close_at: datetime.datetime | None = None) -> str:
+    def create(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool = False, close_at: datetime.datetime | None = None) -> str:
         """
         Create a new ticket record in the database.
         Args:
@@ -82,7 +81,7 @@ class TicketManager:
             f"Ticket {channel_id} created with category {category}, user {user_id}, assignee {assignee_id}, archived status {archived}, and close_at {close_at}.")
         return channel_id
 
-    def get_ticket(self, channel_id: str) -> Ticket | None:
+    def get(self, channel_id: str) -> Ticket | None:
         """
         Retrieve a ticket by its channel_id.
         Args:
@@ -98,7 +97,7 @@ class TicketManager:
         else:
             return None
 
-    def update_ticket(self, channel_id: str, **fields):
+    def update(self, channel_id: str, **fields):
         """
         Update one or more fields of a ticket.
         Args:
@@ -128,7 +127,7 @@ class TicketManager:
         field_updates = ", ".join([f"{k}={v}" for k, v in fields.items()])
         logger.info(f"Ticket {channel_id} updated: {field_updates}")
 
-    def delete_ticket(self, channel_id: str):
+    def delete(self, channel_id: str):
         """
         Delete a ticket by its channel_id.
         Args:
@@ -140,7 +139,7 @@ class TicketManager:
         self.connection.commit()
         logger.info(f"Ticket {channel_id} deleted.")
 
-    def get_overdue_tickets(self, time: datetime.datetime) -> list[str]:
+    def get_overdue(self, time: datetime.datetime) -> list[str]:
         """
         Finds tickets where `close_at` is less than `now` and `archived` is `FALSE`,
         and returns their channel_ids.

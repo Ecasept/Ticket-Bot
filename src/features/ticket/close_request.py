@@ -2,7 +2,7 @@ import discord
 
 from .closed import close_ticket
 from src.utils import create_embed, get_member, handle_error, verify_mod_or_admin, logger
-from database.database import db
+from src.database import db
 from src.res import C, R
 from src.error import Ce, We
 
@@ -49,7 +49,7 @@ class TicketCloseRequestView(discord.ui.View):
             button (discord.ui.Button): The button that was clicked.
             interaction (discord.Interaction): The interaction that triggered the button click.
         """
-        ticket = db.get_ticket(str(interaction.channel.id))
+        ticket = db.ticket.get(str(interaction.channel.id))
         if not ticket:
             await handle_error(interaction, Ce(R.ticket_not_found))
             return
