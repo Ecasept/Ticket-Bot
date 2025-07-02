@@ -4,7 +4,7 @@ Setup button interface for the ticket menu.
 import discord
 from src.res import R, C
 from src.utils import create_embed, logger
-from src.database import db
+from database.database import db
 from src.features.setup.setup import (
     setup_tickets, setup_transcript, setup_logchannel, 
     setup_timeout_logchannel, show_modroles

@@ -1,7 +1,7 @@
 import datetime
 from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel, parse_duration, get_team_welcome_channel
 from src.error import Error, We
-from src.database import db
+from database.database import db
 import discord
 import re
 from src.res import C, R

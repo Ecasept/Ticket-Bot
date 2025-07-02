@@ -1,7 +1,7 @@
 import discord
 from discord.ext import tasks
 from .closed import ClosedView, close_channel, close_ticket
-from src.database import db
+from database.database import db
 from src.utils import create_embed, logger, handle_error
 import datetime
 from src.res import C, R

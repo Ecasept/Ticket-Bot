@@ -4,7 +4,7 @@ Setup slash command - separated from functionality.
 import discord
 from src.res import R, C
 from src.utils import create_embed, handle_error, logger, error_embed, get_timeout_log_channel
-from src.database import db
+from database.database import db
 from src.error import We
 from src.features.setup.setup import (
     setup_tickets, setup_transcript, setup_logchannel, 

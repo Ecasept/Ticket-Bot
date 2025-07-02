@@ -6,7 +6,7 @@ import discord
 from .application_reject import reject_application
 from .noch_fragen import create_noch_fragen
 from src.utils import create_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, mention
-from src.database import Ticket, db
+from database.database import Ticket, db
 from src.utils import logger, format_date
 from src.res import C, R
 from src.error import Ce, We

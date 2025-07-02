@@ -6,7 +6,7 @@ import datetime
 import random
 from src.res import R, C
 from src.utils import create_embed, parse_duration, handle_error, logger, error_embed
-from src.database import db
+from database.database import db
 from src.error import Ce, We
 from discord.ext import tasks
 

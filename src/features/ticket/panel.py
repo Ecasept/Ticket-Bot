@@ -5,7 +5,7 @@ import discord
 
 from .header import HeaderView
 from src.utils import get_mod_roles, get_ticket_category, logger, create_embed, handle_error
-from src.database import db
+from database.database import db
 from src.res import C, R
 from src.error import Ce, We
 

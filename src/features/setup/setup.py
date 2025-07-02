@@ -4,7 +4,7 @@ Setup functionality module - core logic separated from command interface.
 import discord
 from src.res import R, C
 from src.utils import create_embed, handle_error, logger, error_embed, get_timeout_log_channel
-from src.database import db
+from database.database import db
 from src.error import We
 
 

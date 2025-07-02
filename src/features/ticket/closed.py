@@ -1,6 +1,6 @@
 import discord
 from src.utils import get_member, get_ticket_category, get_transcript_category, logger, create_embed, handle_error, verify_mod_or_admin
-from src.database import db
+from database.database import db
 from src.res import C, R
 from src.error import Ce, UserNotFoundError, We, Error
 
