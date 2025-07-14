@@ -35,6 +35,7 @@ def setup_help_command(bot: discord.Bot):
                 " *(Administrator)*",
                 "- `/giveaway` - " + R.giveaway_desc + " *(Administrator)*",
                 "- `/timeout` - " + R.timeout_command_desc + " *(Moderator)*",
+                "- `/category` - Kategorie Management *(Administrator)*",
             ]
 
             embed.add_field(
