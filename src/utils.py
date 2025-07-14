@@ -15,7 +15,7 @@ dotenv.load_dotenv()
 
 logger = Logger("bot.log")
 TOKEN = os.getenv("DISCORD_TOKEN")
-MODE = os.getenv("MODE")
+MODE = "all"  # os.getenv("MODE")
 
 
 def format_date(date: datetime.datetime) -> str:
