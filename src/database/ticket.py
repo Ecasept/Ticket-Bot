@@ -9,7 +9,7 @@ class Ticket:
 
     Args:
         channel_id (str): The Discord channel ID for the ticket (must be a valid integer string).
-        category (str): The ticket category ('application', 'report', or 'support').
+        category_id (int | None): The ticket category ID, or None for tickets without categories.
         user_id (str): The Discord user ID who created the ticket (must be a valid integer string).
         assignee_id (str | None): The Discord user ID of the assigned moderator, or None if unassigned.
         archived (bool): Whether the ticket is archived/closed.
@@ -20,15 +20,15 @@ class Ticket:
         DatabaseError: If any field has an invalid format.
     """
 
-    def __init__(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool, created_at: datetime.datetime, close_at: datetime.datetime | None):
+    def __init__(self, channel_id: str, category_id: int | None, user_id: str, assignee_id: str | None, archived: bool, created_at: datetime.datetime, close_at: datetime.datetime | None):
         def is_string_digit(s: str) -> bool:
             """Check if a string is a digit."""
             return isinstance(s, str) and s.isdigit()
 
         if not is_string_digit(channel_id):
             raise DatabaseError(f"Invalid channel_id: {channel_id}")
-        if category not in ["application", "report", "support"]:
-            raise DatabaseError(f"Invalid category: {category}")
+        if category_id is not None and not isinstance(category_id, int):
+            raise DatabaseError(f"Invalid category_id: {category_id}")
         if not is_string_digit(user_id):
             raise DatabaseError(f"Invalid user_id: {user_id}")
         if not is_string_digit(assignee_id) and assignee_id is not None:
@@ -40,7 +40,7 @@ class Ticket:
         if not (isinstance(close_at, datetime.datetime) or close_at is None):
             raise DatabaseError(f"Invalid close_at: {close_at}")
         self.channel_id = channel_id
-        self.category = category
+        self.category_id = category_id
         self.user_id = user_id
         self.assignee_id = assignee_id
         self.archived = archived
@@ -59,12 +59,12 @@ class TicketManager:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def create(self, channel_id: str, category: str, user_id: str, assignee_id: str | None, archived: bool = False, close_at: datetime.datetime | None = None) -> str:
+    def create(self, channel_id: str, category_id: int | None, user_id: str, assignee_id: str | None, archived: bool = False, close_at: datetime.datetime | None = None) -> str:
         """
         Create a new ticket record in the database.
         Args:
             channel_id (str): Discord channel ID for the ticket.
-            category (str): Ticket category ('application' or 'report').
+            category_id (int | None): Ticket category ID, or None for tickets without categories.
             user_id (str): ID of the user who created the ticket.
             assignee_id (str | None): ID of the user assigned to the ticket.
             archived (bool): Whether the ticket is archived or not. Defaults to False.
@@ -73,12 +73,12 @@ class TicketManager:
             str: The channel_id of the created ticket.
         """
         self.cursor.execute(
-            "INSERT INTO tickets (channel_id, category, user_id, assignee_id, archived, close_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (channel_id, category, user_id, assignee_id, archived, close_at)
+            "INSERT INTO tickets (channel_id, category_id, user_id, assignee_id, archived, close_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (channel_id, category_id, user_id, assignee_id, archived, close_at)
         )
         self.connection.commit()
         logger.info(
-            f"Ticket {channel_id} created with category {category}, user {user_id}, assignee {assignee_id}, archived status {archived}, and close_at {close_at}.")
+            f"Ticket {channel_id} created with category_id {category_id}, user {user_id}, assignee {assignee_id}, archived status {archived}, and close_at {close_at}.")
         return channel_id
 
     def get(self, channel_id: str) -> Ticket | None:
@@ -90,7 +90,7 @@ class TicketManager:
             Ticket | None: Ticket data if found, else None.
         """
         self.cursor.execute(
-            "SELECT channel_id, category, user_id, assignee_id, archived, created_at, close_at FROM tickets WHERE channel_id = ?", (channel_id,))
+            "SELECT channel_id, category_id, user_id, assignee_id, archived, created_at, close_at FROM tickets WHERE channel_id = ?", (channel_id,))
         ticket_data = self.cursor.fetchone()
         if ticket_data:
             return Ticket(*ticket_data)

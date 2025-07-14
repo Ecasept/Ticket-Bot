@@ -314,3 +314,18 @@ def format_duration(seconds: int) -> str:
         if remaining_hours == 0:
             return f"{days}d"
         return f"{days}d {remaining_hours}h"
+
+
+def get_category_name(category_id: int) -> str:
+    """
+    Get the name of a category by its ID.
+
+    Args:
+        category_id (int): The ID of the category.
+
+    Returns:
+        str: The name of the category, or "Unbekannt" if not found.
+    """
+    from src.database import db
+    category = db.tc.get_category(category_id)
+    return category.name if category else "Unbekannt"

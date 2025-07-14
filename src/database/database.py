@@ -9,12 +9,13 @@ from .application_ban import ApplicationBanManager
 from .constant import ConstantManager
 from .giveaway import GiveawayManager
 from .ticket import TicketManager
+from .ticket_category import TicketCategoryManager
 from src.utils import logger
 from src.res import C
 import re
 
 
-USER_VERSION = 8
+USER_VERSION = 9
 
 # Register adapter and converter for datetime
 
@@ -68,6 +69,7 @@ class Database:
     ticket: TicketManager | None = None
     constant: ConstantManager | None = None
     ab: ApplicationBanManager | None = None
+    tc: TicketCategoryManager | None = None
 
     def _migrate(self, backup: bool, from_version: int = None):
         """
@@ -173,3 +175,4 @@ class Database:
         self.ticket = TicketManager(self.connection)
         self.constant = ConstantManager(self.connection)
         self.ab = ApplicationBanManager(self.connection)
+        self.tc = TicketCategoryManager(self.connection)

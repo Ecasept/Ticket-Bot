@@ -35,6 +35,28 @@ CREATE TABLE IF NOT EXISTS application_bans (
 	PRIMARY KEY (user_id, guild_id)
 );
 
+CREATE TABLE IF NOT EXISTS ticket_categories (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	name TEXT NOT NULL,
+	emoji TEXT NOT NULL,
+	description TEXT NOT NULL,
+	guild_id INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ticket_category_roles (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	category_id INTEGER NOT NULL,
+	role_id INTEGER NOT NULL,
+	FOREIGN KEY (category_id) REFERENCES ticket_categories(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS ticket_category_questions (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	category_id INTEGER NOT NULL,
+	question TEXT NOT NULL,
+	FOREIGN KEY (category_id) REFERENCES ticket_categories(id) ON DELETE CASCADE
+);
+
 -- Indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_tickets_category ON tickets(category);
 CREATE INDEX IF NOT EXISTS idx_tickets_assignee ON tickets(assignee_id);
@@ -43,7 +65,8 @@ CREATE INDEX IF NOT EXISTS idx_giveaways_ends_at ON giveaways(ends_at);
 CREATE INDEX IF NOT EXISTS idx_giveaways_ended ON giveaways(ended);
 CREATE INDEX IF NOT EXISTS idx_giveaways_guild ON giveaways(guild_id);
 CREATE INDEX IF NOT EXISTS idx_application_bans_guild ON application_bans(guild_id);
-
+CREATE INDEX IF NOT EXISTS idx_ticket_categories_id ON ticket_categories(id);
+CREATE INDEX IF NOT EXISTS idx_ticket_category_questions_category ON ticket_category_questions(category_id);
 
 
 

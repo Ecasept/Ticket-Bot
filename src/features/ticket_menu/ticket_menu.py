@@ -7,6 +7,7 @@ from src.utils import create_embed, logger
 from src.features.giveaway.button import GiveawayButton
 from src.features.timeout.button import TimeoutButton
 from src.features.setup.button import SetupButton
+from src.features.category.menu import CategoryButton
 
 
 class TicketMenuView(discord.ui.View):
@@ -17,6 +18,7 @@ class TicketMenuView(discord.ui.View):
         self.add_item(GiveawayButton())
         self.add_item(TimeoutButton())
         self.add_item(SetupButton())
+        self.add_item(CategoryButton())
 
 
 def create_ticket_menu_embed():
@@ -46,6 +48,12 @@ def create_ticket_menu_embed():
     embed.add_field(
         name="⚙️ " + R.ticket_menu_setup,
         value=R.ticket_menu_setup_desc,
+        inline=True
+    )
+    
+    embed.add_field(
+        name="📂 Kategorien",
+        value="Verwalte benutzerdefinierte Ticket-Kategorien",
         inline=True
     )
     

@@ -3,11 +3,14 @@ Implements the PanelView and ticket creation logic for the Discord bot, includin
 """
 import discord
 
+from src.database.ticket_category import TicketCategory
+
 from .header import HeaderView
 from src.utils import get_mod_roles, get_ticket_category, logger, create_embed, handle_error
 from src.database import db
 from src.res import C, R
 from src.error import Ce, We
+from src.features.category.questions import CategoryQuestionsModal
 
 
 class PanelView(discord.ui.View):
@@ -18,128 +21,147 @@ class PanelView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label=R.application, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.application_emoji), custom_id="create_application_ticket")
-    async def application_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
-        # Check if user is banned from creating application tickets
-        if db.ab.is_user_banned(interaction.user.id, interaction.guild.id):
-            await handle_error(interaction, We(R.application_banned_message))
-            return
+    async def init(self, interaction: discord.Interaction | None = None):
+        categories = []
+        err = None
+        if interaction is None:
+            # This is the initialization for the persistent view
+            # Just add a mock category
+            categories = [
+                TicketCategory(
+                    id=0,
+                    name="Test Kategorie",
+                    emoji="🎫",
+                    description="Dies ist eine Testkategorie",
+                    guild_id=0
+                )
+            ]
+        else:
+            categories = db.tc.get_categories_for_guild(interaction.guild.id)
 
-        info = await self.get_application_info(interaction)
-        if info is None:
-            return
-        channel = await create_new_ticket(interaction, interaction.user, C.cat_application, info)
-        if channel is None:
-            return
-        msg = R.ticket_channel_created % channel.mention
-        await interaction.followup.send(
-            embed=create_embed(msg, color=C.success_color), ephemeral=True)
+        if not categories:
+            # No categories available - user has no access or none configured
+            return False
 
-    @discord.ui.button(label=R.report, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.report_emoji), custom_id="create_report_ticket")
-    async def report_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        channel = await create_new_ticket(interaction, interaction.user, C.cat_report)
-        if channel is None:
-            return
-        msg = R.ticket_channel_created % channel.mention
-        await interaction.followup.send(
-            embed=create_embed(msg, color=C.success_color), ephemeral=True)
+        # Create dropdown menu for categories
+        dropdown = await self._create_category_dropdown(categories, interaction)
+        if dropdown:
+            self.add_item(dropdown)
+        else:
+            # No categories to show
+            await handle_error(interaction, We("Keine verfügbaren Ticket-Kategorien gefunden."))
 
-    @discord.ui.button(label=R.support, style=discord.ButtonStyle.secondary, emoji=discord.PartialEmoji(name=R.support_emoji), custom_id="create_support_ticket")
-    async def support_callback(self, button: discord.ui.Button, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True)
-        channel = await create_new_ticket(interaction, interaction.user, C.cat_support)
-        if channel is None:
-            return
-        msg = R.ticket_channel_created % channel.mention
-        await interaction.followup.send(
-            embed=create_embed(msg, color=C.success_color), ephemeral=True)
+    async def _create_category_dropdown(self, categories, interaction: discord.Interaction):
+        """Create a dropdown menu for category selection."""
+        options = []
 
-    async def get_application_info(self, interaction: discord.Interaction) -> dict | None:
-        """
-        Show a modal to the user to get their application information.
-        Args:
-            interaction (discord.Interaction): The Discord interaction.
-        Returns:
-            dict: A dictionary containing the user's application information.
-            None: If the user cancels the modal.
-        """
-        modal = ApplicationModal()
-        await interaction.response.send_modal(modal)
-        logger.info("Application modal opened", interaction)
-        await modal.wait()
-        if modal.age is None or modal.apply_for is None or modal.application_text is None:
-            # User cancelled or closed the modal
-            # Doesn't work currently as modal.wait() just won't ever return
-            # if the modal is cancelled
-            await interaction.respond(
-                embed=create_embed(R.application_cancelled,
-                                   color=C.warning_color),
-                ephemeral=True
-            )
+        for category in categories[:25]:  # Discord limit for select options
+
+            emoji = category.emoji.strip()
+            if emoji.startswith(":") and emoji.endswith(":"):
+                emoji = discord.utils.get(
+                    interaction.guild.emojis, name=emoji[1:-1])
+            else:
+                emoji = discord.PartialEmoji.from_str(emoji)
+
+            options.append(discord.SelectOption(
+                label=category.name,
+                value=str(category.id),
+                description=category.description[:100] if category.description else "Keine Beschreibung",
+                emoji=emoji
+            ))
+
+        if not options:
             return None
-        return {
-            "age": modal.age.value,
-            "apply_for": modal.apply_for.value,
-            "application_text": modal.application_text.value
-        }
+
+        select = discord.ui.Select(
+            placeholder="Wähle eine Ticket-Kategorie...",
+            options=options,
+            custom_id="category_select"
+        )
+
+        async def callback(select_interaction: discord.Interaction):
+            category_id = int(select_interaction.data["values"][0])
+            await self.handle_category_selection(select_interaction, category_id)
+
+        select.callback = callback
+        return select
+
+    async def handle_category_selection(self, interaction: discord.Interaction, category_id: int):
+        """Handle ticket creation for a selected category."""
+        try:
+            # Get category details
+            category = db.tc.get_category(category_id)
+            if not category:
+                await handle_error(interaction, We("Kategorie nicht gefunden"))
+                return
+
+            # Check if user can use this category
+            user_role_ids = [role.id for role in interaction.user.roles]
+            if not db.tc.user_can_use_category(category_id, user_role_ids):
+                await handle_error(interaction, We("Du hast keine Berechtigung, diese Kategorie zu verwenden"))
+                return
+
+            # Check for questions
+            questions = db.tc.get_questions(category_id)
+
+            if questions:
+                # Show modal with questions
+                modal = CategoryQuestionsModal(category, questions)
+                await interaction.response.send_modal(modal)
+                await modal.wait()
+
+                if modal.answers is None:
+                    return  # User cancelled
+
+                # Create ticket with answers
+                formatted_answers = modal.get_formatted_answers()
+                channel = await create_new_ticket(interaction, interaction.user, category_id, question_answers=formatted_answers)
+            else:
+                # Create ticket directly
+                await interaction.response.defer(ephemeral=True)
+                channel = await create_new_ticket(interaction, interaction.user, category_id)
+
+            if channel is None:
+                return
+
+            msg = R.ticket_channel_created % channel.mention
+            if interaction.response.is_done():
+                await interaction.followup.send(
+                    embed=create_embed(msg, color=C.success_color), ephemeral=True)
+            else:
+                await interaction.response.send_message(
+                    embed=create_embed(msg, color=C.success_color), ephemeral=True)
+
+        except Exception as e:
+            logger.error(f"Error handling category selection: {e}")
+            await handle_error(interaction, Ce(f"Fehler beim Erstellen des Tickets: {e}"))
 
 
-class ApplicationModal(discord.ui.Modal):
-    """
-    A modal for collecting additional information from the user when creating an application ticket.
-    """
-
-    def __init__(self):
-        super().__init__(title=R.application)
-        self.age = discord.ui.InputText(
-            label=R.application_age_label, placeholder=R.application_age_placeholder, required=True, style=discord.InputTextStyle.short)
-        self.apply_for = discord.ui.InputText(label=R.application_apply_for_label,
-                                              placeholder=R.application_apply_for_placeholder, required=True, style=discord.InputTextStyle.short)
-        self.application_text = discord.ui.InputText(
-            label=R.application_text_label, placeholder=R.application_text_placeholder, required=True, style=discord.InputTextStyle.long, max_length=900)
-        self.add_item(self.age)
-        self.add_item(self.apply_for)
-        self.add_item(self.application_text)
-
-    async def callback(self, interaction: discord.Interaction):
-        # Acknowledge the interaction
-        await interaction.response.defer(ephemeral=True)
-        # The modal data will be accessed later via the modal instance properties
-
-    async def on_error(self, interaction: discord.Interaction, error: Exception):
-        """
-        Handle errors that occur in the ApplicationModal.
-        Args:
-            interaction (discord.Interaction): The interaction that caused the error.
-            error (Exception): The exception that occurred.
-        """
-        err = Ce(f"Error in ApplicationModal: {error}")
-        logger.error(err, interaction)
-        await handle_error(interaction, err)
-
-
-def generate_channel_name(user: discord.User, category: str) -> str:
+def generate_channel_name(user: discord.User, category_name: str) -> str:
     """
     Generate a unique channel name for a ticket based on the user and category.
     Args:
         user (discord.User): The user creating the ticket.
-        category (str): The ticket category.
+        category_name (str): The ticket category name.
     Returns:
         str: The generated channel name.
     """
-    match category:
-        case C.cat_application:
-            prefix = R.application_prefix
-        case C.cat_report:
-            prefix = R.report_prefix
-        case C.cat_support:
-            prefix = R.support_prefix
-        case _:
-            err = Ce(
-                f"Invalid category {category} for channel name generation.")
-            logger.error(err)
-            prefix = R.support_prefix
+    # Convert category name to a safe prefix
+    replacements = {
+        " ": "-", "ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"
+    }
+    prefix = category_name.lower()
+    for old, new in replacements.items():
+        prefix = prefix.replace(old, new)
+
+    # Remove any non-alphanumeric characters except hyphens
+    import re
+    prefix = re.sub(r'[^a-z0-9\-]', '', prefix)
+
+    # Fallback prefixes for known categories
+    if not prefix:
+        prefix = "ticket"
 
     channel_name = f"{prefix}-{user.name}"
     i = 1
@@ -153,13 +175,13 @@ def generate_channel_name(user: discord.User, category: str) -> str:
     return channel_name
 
 
-async def create_ticket_channel(interaction: discord.Interaction, user: discord.User, category: str) -> discord.TextChannel | None:
+async def create_ticket_channel(interaction: discord.Interaction, user: discord.User, category_id: int) -> discord.TextChannel | None:
     """
     Create a new text channel for the ticket in the support category.
     Args:
         interaction (discord.Interaction): The Discord interaction.
         user (discord.User): The user creating the ticket.
-        category (str): The ticket category.
+        category_id (int): The ticket category ID.
     Returns:
         discord.TextChannel: The created ticket channel.
         None: If the ticket category is not found or an error occurs.
@@ -169,7 +191,11 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
         await handle_error(interaction, err)
         return None
 
-    channel_name = generate_channel_name(user, category)
+    # Get category name for channel naming
+    category = db.tc.get_category(category_id)
+    category_name = category.name if category else "ticket"
+
+    channel_name = generate_channel_name(user, category_name)
 
     mod_roles, err = get_mod_roles(interaction.guild)
     if err:
@@ -196,45 +222,36 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
     return channel
 
 
-async def init_ticket_channel(interaction: discord.Interaction, user: discord.User, channel: discord.TextChannel, category: str, info: dict | None = None):
+async def init_ticket_channel(interaction: discord.Interaction, user: discord.User, channel: discord.TextChannel, category_id: int, question_answers: str | None = None):
     """
     Initialize the ticket channel with a header message and view.
     Args:
         interaction (discord.Interaction): The Discord interaction.
         user (discord.User): The user who created the ticket.
         channel (discord.TextChannel): The ticket channel.
-        category (str): The ticket category.
-        info (dict | None): Additional information for the ticket (e.g., application details).
+        category_id (int): The ticket category ID.
+        question_answers (str | None): Formatted answers to category questions.
     """
     view = HeaderView()
-    match category:
-        case C.cat_application:
-            msg = R.header_msg_application
-            title = R.header_title_application
-        case C.cat_report:
-            msg = R.header_msg_report
-            title = R.header_title_report
-        case C.cat_support:
-            msg = R.header_msg_support
-            title = R.header_title_support
-        case _:
-            logger.error(Ce(f"Invalid category {category} for ticket channel initialization, "
-                            f"using support as default."), interaction)
-            msg = R.header_msg_support
-            title = R.header_title_support
+
+    # Get category details
+    category = db.tc.get_category(category_id)
+    title = f"{category.emoji} {category.name}"
+    msg = f"Willkommen {user.mention}! {category.description}"
+
     embed = discord.Embed(
         title=title,
-        description=msg % user.mention,
+        description=msg,
         color=C.embed_color,
     )
 
-    if category == C.cat_application and info is not None:
-        embed.add_field(name=R.application_age_label,
-                        value=info.get("age"), inline=False)
-        embed.add_field(name=R.application_apply_for_label,
-                        value=info.get("apply_for"), inline=False)
-        embed.add_field(name=R.application_text_label,
-                        value=info.get("application_text"), inline=False)
+    # Add category question answers if present
+    if question_answers:
+        embed.add_field(
+            name="Antworten",
+            value=question_answers,
+            inline=False
+        )
 
     embed.set_footer(text=R.header_footer % str(channel.id))
     embed.set_author(
@@ -252,27 +269,60 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
         f"Ticket channel #{channel.name} (ID: {channel.id}) initialized", interaction)
 
 
-async def create_new_ticket(interaction: discord.Interaction, user: discord.User, category: str, info: dict | None = None) -> discord.TextChannel | None:
+async def create_new_ticket(interaction: discord.Interaction, user: discord.User, category_id: int, question_answers: str | None = None) -> discord.TextChannel | None:
     """
     Create a new ticket: channel, database entry, and header message.
     Args:
         interaction (discord.Interaction): The Discord interaction.
         user (discord.User): The user creating the ticket.
-        category (str): The ticket category.
-        info (dict | None): Additional information for the ticket (e.g., application details).
+        category_id (int): The ticket category ID.
+        question_answers (str | None): Formatted answers to category questions.
     Returns:
         discord.TextChannel: The created ticket channel.
         None: If an error occurs during ticket creation.
     """
-    channel = await create_ticket_channel(interaction, user, category)
+    channel = await create_ticket_channel(interaction, user, category_id)
     if channel is None:
-        # Error ocurred
+        # Error occurred
         return None
     db.ticket.create(
         str(channel.id),
-        category,
+        category_id,
         str(user.id),
         None
     )
-    await init_ticket_channel(interaction, user, channel, category, info)
+    await init_ticket_channel(interaction, user, channel, category_id, question_answers)
     return channel
+
+
+async def create_panel_view(guild_id: int, interaction: discord.Interaction | None) -> tuple[PanelView, We | Ce | None]:
+    """
+    Create a panel view with dynamic category dropdown selection.
+    Only shows categories that the user has permission to access.
+
+    Args:
+        guild_id (int): The Discord guild ID.
+
+    Returns:
+        tuple: (PanelView, Error) - The panel view and any error that occurred.
+    """
+    try:
+        # Check if guild has any categories
+        categories = db.tc.get_categories_for_guild(guild_id)
+
+        if not categories:
+            return None, We(
+                "Keine Ticket-Kategorien gefunden!\n\n"
+                "Erstelle zuerst Kategorien mit `/category create`, "
+                "bevor du ein Panel erstellst."
+            )
+
+        # Create the persistent panel view with dynamic dropdown menu
+        panel_view = PanelView()
+        await panel_view.init(interaction)
+
+        return panel_view, None
+
+    except Exception as e:
+        logger.error(f"Error creating panel view: {e}")
+        return None, Ce(f"Fehler beim Erstellen der Panel-Ansicht: {e}")

@@ -5,7 +5,7 @@ import discord
 
 from .application_reject import reject_application
 from .noch_fragen import create_noch_fragen
-from src.utils import create_embed, error_to_embed, get_member, is_mod_or_admin, handle_error, mention
+from src.utils import create_embed, error_to_embed, get_category_name, get_member, is_mod_or_admin, handle_error, mention
 from src.database import db
 from src.database.ticket import Ticket
 from src.utils import logger, format_date
@@ -23,7 +23,7 @@ class ModOptionsMessage(discord.ui.View):
 
         self.assignee_id = ticket.assignee_id
         self.user_id = ticket.user_id
-        self.category = ticket.category
+        self.category = get_category_name(ticket.category_id)
 
         if self.assignee_id is None:
             # No assignee
@@ -53,7 +53,7 @@ class ModOptionsMessage(discord.ui.View):
             noch_fragen_button.callback = self.noch_fragen
             self.add_item(noch_fragen_button)
 
-        if self.category == C.cat_application:
+        if False:
             approve_button = discord.ui.Button(
                 row=1,
                 label=R.approve_application, style=discord.ButtonStyle.success,
@@ -185,7 +185,7 @@ class ModOptionsMessage(discord.ui.View):
         assignee_id = ticket.assignee_id
         user_id = ticket.user_id
         archived = ticket.archived
-        category = ticket.category
+        category = get_category_name(ticket.category_id)
         created_at = ticket.created_at
 
         if assignee_id is None:
@@ -204,21 +204,9 @@ class ModOptionsMessage(discord.ui.View):
             color=C.embed_color
         )
         # Add fields based on ticket category
-        category_display_name = ""
-        match category:
-            case C.cat_application:
-                category_display_name = R.application
-            case C.cat_report:
-                category_display_name = R.report
-            case C.cat_support:
-                category_display_name = R.support
-            case _:
-                logger.error(
-                    Ce(f"Unknown category {category}, defaulting to support"), interaction)
-                category_display_name = R.support
         embed.add_field(
             name=R.mod_options_category,
-            value=category_display_name,
+            value=category,
             inline=True
         )
         embed.add_field(

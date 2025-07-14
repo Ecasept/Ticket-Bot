@@ -8,6 +8,7 @@ from .features.ticket.noch_fragen import NochFragenMessage, setup_noch_fragen
 from .features.ticket.close_request import TicketCloseRequestView
 from .features.ticket.closed import ClosedView
 from .features.ticket.panel import PanelView
+from .features.ticket.panel_command import setup_panel_command
 from .features.ticket.header import HeaderView
 from .utils import MODE, TOKEN, logger, create_embed
 from .error import We, Ce
@@ -19,6 +20,7 @@ from .features.ticket_menu.ticket_command import setup_ticket_command
 from .features.giveaway.command import setup_giveaway_command
 from .features.timeout.command import setup_timeout_command
 from .features.setup.command import setup_setup_command
+from .features.category.command import setup_category_command
 import traceback
 
 intents = discord.Intents.default()
@@ -41,27 +43,15 @@ async def on_ready():
 
     # Register views as persistent
     # This is required to make them work after a restart
-    bot.add_view(PanelView())
+    pv = PanelView()
+    await pv.init(None)
+    bot.add_view(pv)
     bot.add_view(HeaderView())
     bot.add_view(TicketCloseRequestView())
     bot.add_view(ClosedView())
     bot.add_view(TeamListMessage())
     bot.add_view(NochFragenMessage())
     bot.add_view(TicketMenuView())
-
-
-def setup_panel():
-    @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
-    @discord.default_permissions(administrator=True)
-    async def create_panel(ctx: discord.ApplicationContext):
-        """
-        Create a new ticket panel in the current channel.
-        Args:
-            ctx (discord.ApplicationContext): The command context.
-        """
-        await ctx.send(embed=create_embed(R.panel_msg, title=R.ticket_panel_title), view=PanelView())
-        await ctx.respond(embed=create_embed(R.ticket_msg_created, color=C.success_color, title=R.ticket_panel_title), ephemeral=True)
-        logger.info("Panel created", ctx.interaction)
 
 
 @bot.slash_command(name="ping", description=R.ping_desc)
@@ -75,12 +65,13 @@ async def ping(ctx: discord.ApplicationContext):
     logger.info("Ping command executed", ctx.interaction)
 
 if MODE == "ticket" or MODE == "all":
-    setup_panel()
+    setup_panel_command(bot)
     setup_setup_command(bot)
     setup_noch_fragen(bot)
     setup_giveaway_command(bot)
     setup_timeout_command(bot)
     setup_ticket_command(bot)
+    setup_category_command(bot)
 elif MODE == "team" or MODE == "all":
     setup_team_command(bot)
 
