@@ -13,7 +13,9 @@ from .features.ticket.header import HeaderView
 from .utils import MODE, TOKEN, logger, create_embed
 from .error import We, Ce
 from .database import db
-from .features.team import setup_team_command, TeamListMessage
+from .features.team import TeamListMessage, setup_team_command
+from .features.banlist.command import setup_banlist_command, update_banlist
+from .features.shared.list_display import ListDisplayView
 from .help import setup_help_command
 from .res import C, R
 from .features.ticket_menu.ticket_command import setup_ticket_command
@@ -49,7 +51,10 @@ async def on_ready():
     bot.add_view(HeaderView())
     bot.add_view(TicketCloseRequestView())
     bot.add_view(ClosedView())
-    bot.add_view(TeamListMessage())
+    bot.add_view(ListDisplayView(
+        "update_team_list", TeamListMessage.update_team_list))
+    bot.add_view(ListDisplayView(
+        "update_banlist", update_banlist))
     bot.add_view(NochFragenMessage())
     bot.add_view(TicketMenuView())
 
@@ -64,17 +69,15 @@ async def ping(ctx: discord.ApplicationContext):
     await ctx.respond("Pong!")
     logger.info("Ping command executed", ctx.interaction)
 
-if MODE == "ticket" or MODE == "all":
-    setup_panel_command(bot)
-    setup_setup_command(bot)
-    setup_noch_fragen(bot)
-    setup_giveaway_command(bot)
-    setup_timeout_command(bot)
-    setup_ticket_command(bot)
-    setup_category_command(bot)
-elif MODE == "team" or MODE == "all":
-    setup_team_command(bot)
-
+setup_panel_command(bot)
+setup_setup_command(bot)
+setup_noch_fragen(bot)
+setup_giveaway_command(bot)
+setup_timeout_command(bot)
+setup_ticket_command(bot)
+setup_category_command(bot)
+setup_team_command(bot)
+setup_banlist_command(bot)
 setup_help_command(bot)
 
 try:

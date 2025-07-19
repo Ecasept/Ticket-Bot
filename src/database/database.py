@@ -10,12 +10,13 @@ from .constant import ConstantManager
 from .giveaway import GiveawayManager
 from .ticket import TicketManager
 from .ticket_category import TicketCategoryManager
+from .banlist import BanlistManager
 from src.utils import logger
 from src.res import C
 import re
 
 
-USER_VERSION = 9
+USER_VERSION = 10
 
 # Register adapter and converter for datetime
 
@@ -70,6 +71,7 @@ class Database:
     constant: ConstantManager | None = None
     ab: ApplicationBanManager | None = None
     tc: TicketCategoryManager | None = None
+    banlist: BanlistManager | None = None
 
     def _migrate(self, backup: bool, from_version: int = None):
         """
@@ -176,3 +178,4 @@ class Database:
         self.constant = ConstantManager(self.connection)
         self.ab = ApplicationBanManager(self.connection)
         self.tc = TicketCategoryManager(self.connection)
+        self.banlist = BanlistManager(self.connection)

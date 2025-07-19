@@ -106,7 +106,7 @@ class ResDE:
 
     ping_desc: str = "Testet ob der Bot antwortet."
     ticket_desc: str = "Öffne das Ticket-Menü mit verschiedenen Optionen."
-    
+
     # Ticket menu
     ticket_menu_title: str = "Ticket Menü"
     ticket_menu_description: str = "Wähle eine Option aus den verfügbaren Ticket-Befehlen:"
@@ -116,7 +116,7 @@ class ResDE:
     ticket_menu_giveaway_desc: str = "Starte ein Giveaway"
     ticket_menu_timeout_desc: str = "Benutzer timeout geben"
     ticket_menu_setup_desc: str = "Bot-Einstellungen konfigurieren"
-    
+
     # Setup button labels
     setup_set_value: str = "Wert setzen"
     setup_view_value: str = "Wert anzeigen"
@@ -291,7 +291,6 @@ class ResDE:
     team_list_upate_emoji: str = "🔄"
     team_list_select_at_least_one_role: str = "Bitte wähle mindestens eine Rolle aus."
     team_list_old_version: str = "Diese Team-Liste wurde mit einer älteren Version des Bots erstellt. Bitte lösche sie und erstelle eine neue."
-    team_list_too_long: str = "Die Team-Liste ist zu lang, um sie in einem Embed anzuzeigen. Bitte wähle weniger Rollen aus."
     status_online: str = "🟢"
     status_idle: str = "🟡"
     status_dnd: str = "⛔"
@@ -411,6 +410,29 @@ class ResDE:
     team_sperre_success_title: str = "Bewerbungssperre"
     team_sperre_unban_log: str = "%s hat die Sperre von %s für Bewerbungstickets aufgehoben."
     team_sperre_unban_log_title: str = "Bewerbungssperre aufgehoben"
+
+    # Banlist
+    banlist_group_desc: str = "Verwaltet die Banliste."
+    banlist_show_desc: str = "Zeigt die aktuelle Banliste an."
+    banlist_add_desc: str = "Fügt einen Benutzer zur Banliste hinzu."
+    banlist_remove_desc: str = "Entfernt einen Benutzer von der Banliste."
+    banlist_add_name_desc: str = "Der Name des zu bannenden Benutzers."
+    banlist_add_reason_desc: str = "Der Grund für den Bann."
+    banlist_add_banned_by_desc: str = "Wer hat den Benutzer gebannt."
+    banlist_add_length_desc: str = "Die Dauer des Banns."
+    banlist_remove_name_desc: str = "Der Name des zu entbannenden Benutzers."
+    banlist_embed_title: str = "Banliste"
+    banlist_no_bans: str = "Die Banliste ist leer."
+    banlist_add_success: str = "✅ %s wurde zur Banliste hinzugefügt."
+    banlist_add_failed: str = "❌ Konnte %s nicht zur Banliste hinzufügen: %s"
+    banlist_remove_success: str = "✅ %s wurde von der Banliste entfernt."
+    banlist_remove_failed: str = "❌ Konnte %s nicht von der Banliste entfernen: %s"
+    banlist_already_banned: str = "❌ %s ist bereits auf der Banliste."
+    banlist_not_banned: str = "❌ %s ist nicht auf der Banliste."
+    banlist_item_banned_by_for: str = "Gebannt von **%s** für **%s**"
+    banlist_item_reason: str = "Grund: %s"
+    list_too_long: str = "Die Liste ist zu lang, um sie in einem Embed anzuzeigen."
+    update_button_label: str = "Aktualisieren"
 
 
 R = get_resources("de")

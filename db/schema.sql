@@ -68,5 +68,16 @@ CREATE INDEX IF NOT EXISTS idx_application_bans_guild ON application_bans(guild_
 CREATE INDEX IF NOT EXISTS idx_ticket_categories_id ON ticket_categories(id);
 CREATE INDEX IF NOT EXISTS idx_ticket_category_questions_category ON ticket_category_questions(category_id);
 
+CREATE TABLE IF NOT EXISTS banlist_bans (
+    name TEXT NOT NULL,
+    guild_id INTEGER NOT NULL,
+    reason TEXT,
+    banned_by TEXT,
+    length TEXT,
+    PRIMARY KEY (name, guild_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_banlist_bans_guild_id ON banlist_bans(guild_id);
+
 
 

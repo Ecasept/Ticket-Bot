@@ -6,6 +6,7 @@ import discord
 import re
 from src.res import C, R
 from discord.ext import tasks
+from src.features.shared.list_display import ListDisplayView, create_list_embeds
 
 
 class ApplicationBannedView(discord.ui.View):
@@ -95,32 +96,45 @@ class RoleSelectView(discord.ui.View):
             f"Showing team list for roles: {', '.join([r.name for r in self.selected_roles])}", interaction)
 
 
-class TeamListMessage(discord.ui.View):
+class TeamListMessage:
     """
-    View for displaying and updating team lists showing members of selected roles.
+    Helper class for creating team list messages.
     """
 
     @staticmethod
-    def create(roles: list[discord.Role]) -> tuple[list[discord.Embed] | Error, discord.ui.View]:
+    def generate_text(roles: list[discord.Role]) -> list[tuple[str, str]]:
         """
-        Factory method to create team list embeds and view.
-        Args:
-            roles (list[discord.Role]): List of roles to display.
-        Returns:
-            tuple[list[discord.Embed] | Error, discord.ui.View]: The embeds (or an error) and view.
+        Generates the list of items for the team list embed.
         """
-        embeds_or_err = TeamListMessage.create_embeds(roles)
-        view = TeamListMessage()
-        return embeds_or_err, view
+        # Sort roles by position (highest first)
+        sorted_roles = sorted(
+            roles, key=lambda r: r.position, reverse=True)
+
+        # Create a mapping of roles to members
+        sorted_role_member_map: dict[discord.Role, list[discord.Member]] = {}
+        for role in sorted_roles:
+            sorted_role_member_map[role] = sorted(
+                role.members, key=lambda m: m.name)
+
+        items = []
+        for role, members in sorted_role_member_map.items():
+            title = f"**{role.mention} ({len(members)})**"
+            if members:
+                text = []
+                for member in members:
+                    status = TeamListMessage.status_to_str(member.status)
+                    if member.is_on_mobile():
+                        status += R.status_mobile
+                    text.append(f"- {member.mention} {status} ({member.name})")
+                items.append((title, "\n".join(text)))
+            else:
+                items.append((title, R.team_list_no_members_found))
+        return items
 
     @staticmethod
     def status_to_str(status: discord.Status) -> str:
         """
         Converts a discord.Status object to a string.
-        Args:
-            status (discord.Status): The status to convert.
-        Returns:
-            str: The string representation of the status.
         """
         if status == discord.Status.online:
             return R.status_online
@@ -134,105 +148,10 @@ class TeamListMessage(discord.ui.View):
             return R.status_unknown
 
     @staticmethod
-    def _split_message(message: str) -> tuple[list[str], None] | tuple[None, We]:
-        """Splits a message into chunks that fit within the embed description limit."""
-        split = []
-        i = 0
-        max_len = C.embed_desc_max_length - 10  # -10 to be safe
-        while i < len(message):
-            # Find the last newline within the max length
-            if i + max_len >= len(message):
-                # The remaining part fits in one chunk
-                next_index = len(message)
-            else:
-                next_index = message.rfind("\n", i, i + max_len)
-                if next_index == -1:
-                    # No newline found, message is too long
-                    return None, We(R.team_list_too_long)
-                next_index = i + max_len
-            split.append(message[i:next_index])
-            i = next_index + 1
-        if len(split) > C.max_embeds:
-            return None, We(R.team_list_too_long)
-        if sum(len(s) for s in split) > C.embed_total_max_length:
-            return None, We(R.team_list_too_long)
-
-        return split, None
-
-    @staticmethod
-    def create_embeds(roles: list[discord.Role]) -> list[discord.Embed] | Error:
+    async def update_team_list(interaction: discord.Interaction):
         """
-        Create a list of embeds showing team members for the given roles.
-
-        Formats each role with its members, displaying their mention, status, and name.
-        If the content is too large, it will be split into multiple embeds.
-
-        Args:
-            roles (list[discord.Role]): List of roles to display.
-
-        Returns:
-            list[discord.Embed] | Error: The formatted embeds, or an Error if content is too large.
+        Updates the team list message.
         """
-        # Sort roles by position (highest first)
-        sorted_roles = sorted(
-            roles, key=lambda r: r.position, reverse=True)
-
-        # Create a mapping of roles to members
-        sorted_role_member_map: dict[discord.Role, list[discord.Member]] = {}
-        for role in sorted_roles:
-            sorted_role_member_map[role] = []
-            for member in role.members:
-                sorted_role_member_map[role].append(member)
-
-        message = []
-
-        # Create embed
-        for (role, members) in sorted_role_member_map.items():
-            title = f"**{role.mention} ({len(members)})**"
-            if len(members) > 0:
-                text = []
-                for member in members:
-                    mention = member.mention
-                    name = member.name
-                    status = TeamListMessage.status_to_str(member.status)
-                    if member.is_on_mobile():
-                        status += R.status_mobile
-                    msg = f"- {mention} {status} ({name})"
-                    text.append(msg)
-                text = "\n".join(text)
-                message.append((title, text))
-            else:
-                message.append((title, R.team_list_no_members_found))
-
-        message = "\n\n".join(
-            [f"{title}\n{text}" for (title, text) in message])
-        split, err = TeamListMessage._split_message(message)
-        if err:
-            return err
-        embeds = [discord.Embed(
-            title=R.team_list_embed_title if i == 0 else None,
-            description=desc,
-            color=C.embed_color
-        ) for i, desc in enumerate(split)]
-
-        return embeds
-
-    def __init__(self):
-        super().__init__(timeout=None)
-
-    @discord.ui.button(
-        label=R.team_list_update_button_label,
-        style=discord.ButtonStyle.secondary,
-        custom_id="update_team_list",
-        emoji=discord.PartialEmoji(name=R.team_list_upate_emoji))
-    async def update(self, button: discord.ui.Button, interaction: discord.Interaction):
-        """
-        Updates the team list message with the current members of the selected roles.
-        Args:
-            button (discord.ui.Button): The button that was clicked.
-            interaction (discord.Interaction): The interaction that triggered the button click.
-        """
-        # Old version used fields
         if len(interaction.message.embeds[0].fields) > 0:
             await handle_error(interaction, We(R.team_list_old_version))
             return
@@ -250,12 +169,31 @@ class TeamListMessage(discord.ui.View):
                     logger.error(
                         We(f"Role with ID {role_id} not found in guild"), interaction)
 
-        embeds_or_err = TeamListMessage.create_embeds(roles)
+        items = TeamListMessage.generate_text(roles)
+        embeds_or_err = create_list_embeds(
+            R.team_list_embed_title, items, R.team_list_no_members_found)
+
         if isinstance(embeds_or_err, Error):
             await handle_error(interaction, embeds_or_err)
             return
         await interaction.response.edit_message(embeds=embeds_or_err)
         logger.info(f"Team list updated", interaction)
+
+    @staticmethod
+    def create(roles: list[discord.Role]) -> tuple[list[discord.Embed] | Error, discord.ui.View]:
+        """
+        Factory method to create team list embeds and view.
+        """
+        items = TeamListMessage.generate_text(roles)
+        embeds_or_err = create_list_embeds(
+            R.team_list_embed_title, items, R.team_list_no_members_found)
+
+        if isinstance(embeds_or_err, Error):
+            return embeds_or_err, None
+
+        view = ListDisplayView(custom_id="update_team_list",
+                               update_callback=TeamListMessage.update_team_list)
+        return embeds_or_err, view
 
 
 def setup_team_command(bot: discord.Bot) -> None:
