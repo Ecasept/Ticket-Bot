@@ -20,7 +20,7 @@ class BanlistManager:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def add_ban(self, name: str, guild_id: int, reason: str, banned_by: str, length: str):
+    def add_ban(self, name: str, guild_id: int, reason: str, banned_by: str, length: str, image_url: str = None):
         """
         Adds a ban to the database.
 
@@ -30,10 +30,11 @@ class BanlistManager:
             reason (str): The reason for the ban.
             banned_by (str): The user who issued the ban.
             length (str): The length of the ban.
+            image_url (str, optional): The URL of an image associated with the ban.
         """
         self.cursor.execute(
-            "INSERT INTO banlist_bans (name, guild_id, reason, banned_by, length) VALUES (?, ?, ?, ?, ?)",
-            (name, guild_id, reason, banned_by, length)
+            "INSERT INTO banlist_bans (name, guild_id, reason, banned_by, length, image_url) VALUES (?, ?, ?, ?, ?, ?)",
+            (name, guild_id, reason, banned_by, length, image_url)
         )
         self.connection.commit()
 
@@ -68,7 +69,7 @@ class BanlistManager:
         )
         return self.cursor.fetchone() is not None
 
-    def get_bans(self, guild_id: int) -> List[Tuple[str, str, str, str]]:
+    def get_bans(self, guild_id: int) -> List[Tuple[str, str, str, str, str]]:
         """
         Gets all bans for a specific guild.
 
@@ -76,11 +77,29 @@ class BanlistManager:
             guild_id (int): The ID of the guild.
 
         Returns:
-            List[Tuple[str, str, str, str]]: A list of tuples, where each tuple
-            contains the name, reason, banned_by, and length of a ban.
+            List[Tuple[str, str, str, str, str]]: A list of tuples, where each tuple
+            contains the name, reason, banned_by, length, and image_url of a ban.
         """
         self.cursor.execute(
-            "SELECT name, reason, banned_by, length FROM banlist_bans WHERE guild_id = ?",
+            "SELECT name, reason, banned_by, length, image_url FROM banlist_bans WHERE guild_id = ?",
             (guild_id,)
         )
         return self.cursor.fetchall()
+
+    def get_ban(self, name: str, guild_id: int) -> Tuple[str, str, str, str, str] | None:
+        """
+        Gets a specific ban for a user in a guild.
+
+        Args:
+            name (str): The name of the banned user.
+            guild_id (int): The ID of the guild.
+
+        Returns:
+            Tuple[str, str, str, str, str] | None: A tuple containing the name, reason, 
+            banned_by, length, and image_url of the ban, or None if not found.
+        """
+        self.cursor.execute(
+            "SELECT name, reason, banned_by, length, image_url FROM banlist_bans WHERE name = ? AND guild_id = ?",
+            (name, guild_id)
+        )
+        return self.cursor.fetchone()

@@ -434,6 +434,14 @@ class ResDE:
     list_too_long: str = "Die Liste ist zu lang, um sie in einem Embed anzuzeigen."
     update_button_label: str = "Aktualisieren"
 
+    banlist_add_image_desc: str = "URL zu einem Bild (optional)"
+    banlist_showimg_desc: str = "Zeigt das Bild eines gebannten Benutzers an."
+    banlist_showimg_name_desc: str = "Der Name des gebannten Benutzers."
+    banlist_no_image: str = "❌ %s hat kein Bild hinterlegt."
+    banlist_image_indicator: str = " + Bild"
+    banlist_invalid_url: str = "❌ Die angegebene URL ist ungültig. Bitte gib eine gültige HTTP/HTTPS-URL an."
+    banlist_showimg_embed_title = "Bild von %s"
+
 
 R = get_resources("de")
 C = Constants

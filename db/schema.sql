@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS banlist_bans (
     reason TEXT,
     banned_by TEXT,
     length TEXT,
+    image_url TEXT,
     PRIMARY KEY (name, guild_id)
 );
 

@@ -16,7 +16,7 @@ from src.res import C
 import re
 
 
-USER_VERSION = 10
+USER_VERSION = 11
 
 # Register adapter and converter for datetime
 

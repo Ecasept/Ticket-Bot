@@ -5,7 +5,7 @@ import discord
 from src.database import db
 from src.error import Error, We
 from src.res import R, C
-from src.utils import handle_error, create_embed, logger
+from src.utils import handle_error, create_embed, logger, is_valid_url
 from src.features.shared.list_display import ListDisplayView, create_list_embeds
 
 
@@ -15,8 +15,10 @@ def get_banlist_items(guild_id: int) -> list[tuple[str, str]]:
     """
     bans = db.banlist.get_bans(guild_id)
     items = []
-    for name, reason, banned_by, length in bans:
+    for name, reason, banned_by, length, image_url in bans:
         title = f"**{name}**"
+        if image_url:
+            title += R.banlist_image_indicator
         content = f"- {R.banlist_item_banned_by_for % (banned_by, length)}\n- {R.banlist_item_reason % reason}"
         items.append((title, content))
     return items
@@ -67,7 +69,8 @@ def setup_banlist_command(bot: discord.Bot):
     @discord.option("reason", description=R.banlist_add_reason_desc, required=True)
     @discord.option("banned_by", description=R.banlist_add_banned_by_desc, required=True)
     @discord.option("length", description=R.banlist_add_length_desc, required=True)
-    async def add(ctx: discord.ApplicationContext, name: str, reason: str, banned_by: str, length: str):
+    @discord.option("image_url", description=R.banlist_add_image_desc, required=False)
+    async def add(ctx: discord.ApplicationContext, name: str, reason: str, banned_by: str, length: str, image_url: str = None):
         """
         Adds a user to the banlist.
         """
@@ -75,7 +78,13 @@ def setup_banlist_command(bot: discord.Bot):
             await handle_error(ctx.interaction, We(R.banlist_already_banned % name))
             return
 
-        db.banlist.add_ban(name, ctx.guild.id, reason, banned_by, length)
+        # Validate image URL if provided
+        if image_url and not is_valid_url(image_url):
+            await handle_error(ctx.interaction, We(R.banlist_invalid_url))
+            return
+
+        db.banlist.add_ban(name, ctx.guild.id, reason,
+                           banned_by, length, image_url)
         await ctx.respond(embed=create_embed(R.banlist_add_success % name, color=C.success_color), ephemeral=True)
         logger.info(f"Added {name} to banlist", ctx.interaction)
 
@@ -92,5 +101,29 @@ def setup_banlist_command(bot: discord.Bot):
         db.banlist.remove_ban(name, ctx.guild.id)
         await ctx.respond(embed=create_embed(R.banlist_remove_success % name, color=C.success_color), ephemeral=True)
         logger.info(f"Removed {name} from banlist", ctx.interaction)
+
+    @banlist.command(name="showimg", description=R.banlist_showimg_desc)
+    @discord.option("name", description=R.banlist_showimg_name_desc, required=True)
+    async def showimg(ctx: discord.ApplicationContext, name: str):
+        """
+        Shows the image of a banned user.
+        """
+        if not db.banlist.is_banned(name, ctx.guild.id):
+            await handle_error(ctx.interaction, We(R.banlist_not_banned % name))
+            return
+
+        ban_data = db.banlist.get_ban(name, ctx.guild.id)
+        image_url = ban_data[4]
+
+        if not image_url:
+            await handle_error(ctx.interaction, We(R.banlist_no_image % name))
+            return
+
+        embed = create_embed(
+            title=R.banlist_showimg_embed_title % name,
+            color=C.embed_color
+        )
+        embed.set_image(url=image_url)
+        await ctx.respond(embed=embed)
 
     bot.add_application_command(banlist)

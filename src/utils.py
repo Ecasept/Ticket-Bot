@@ -10,6 +10,7 @@ from src.error import Error, InvalidDurationError, UserNotFoundError, We, Ce
 from src.res import C, R
 import os
 from typing import Tuple, Optional, List
+from urllib.parse import urlparse
 
 dotenv.load_dotenv()
 
@@ -188,11 +189,11 @@ def error_embed(msg: str, title: Optional[str] = None) -> discord.Embed:
     return create_embed(msg, color=C.error_color, title=title or R.error_title)
 
 
-def create_embed(message: str, color: discord.Color = C.embed_color, title: Optional[str] = None) -> discord.Embed:
+def create_embed(message: Optional[str] = None, color: discord.Color = C.embed_color, title: Optional[str] = None) -> discord.Embed:
     """
     Create a Discord embed.
     Args:
-        message (str): The main message for the embed.
+        message (str, optional): The main message for the embed. Defaults to None.
         color (discord.Color, optional): The color of the embed. Defaults to C.embed_color.
         title (str, optional): The title of the embed. Defaults to None.
     Returns:
@@ -329,3 +330,18 @@ def get_category_name(category_id: int) -> str:
     from src.database import db
     category = db.tc.get_category(category_id)
     return category.name if category else "Unbekannt"
+
+
+def is_valid_url(url: str) -> bool:
+    """
+    Validate if a string is a valid HTTP/HTTPS URL.
+    Args:
+        url (str): The URL string to validate.
+    Returns:
+        bool: True if the URL is valid, False otherwise.
+    """
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc]) and result.scheme in ['http', 'https']
+    except Exception:
+        return False
