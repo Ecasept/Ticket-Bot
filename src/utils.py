@@ -234,7 +234,7 @@ async def verify_mod_or_admin(interaction: discord.Interaction, no_perms_err: Er
     Verify if the user has moderator or administrator permissions.
     Args:
         interaction (discord.Interaction): The interaction context.
-        no_permission_msg (str): The message to send if the user does not have permission.
+        no_perms_err (Error): The error to send if the user does not have permission.
     Returns:
         bool: True if the user has permission, False otherwise.
         Any kind of error handling (logging, sending messages) will be done within this function,
