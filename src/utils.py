@@ -378,6 +378,10 @@ def get_guild_resources(guild_id: int):
         guild_id (int): The guild ID.
     Returns:
         ResDE | ResEN: The resource class for the guild's language.
+    
+    Note: This should be used instead of the static R import for guild-specific 
+    language support. Parts of the bot still using static R will continue to 
+    work with the default German language.
     """
     from src.res import get_resources
     language = get_guild_language(guild_id)

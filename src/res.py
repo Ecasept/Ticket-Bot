@@ -647,6 +647,9 @@ class ResEN:
     timeout_success: str = "✅ %s has been timed out for %s. Reason: %s"
     timeout_success_no_reason: str = "✅ %s has been timed out for %s."
 
+    # Additional strings that may be needed for full functionality
+    createpanel_desc: str = "Create a ticket panel for users"
+
 
 R = get_resources("de")
 C = Constants
