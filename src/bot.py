@@ -23,6 +23,7 @@ from .features.giveaway.command import setup_giveaway_command
 from .features.timeout.command import setup_timeout_command
 from .features.setup.command import setup_setup_command
 from .features.category.command import setup_category_command
+from .features.lang.command import setup_lang_command
 import traceback
 
 intents = discord.Intents.default()
@@ -76,6 +77,7 @@ setup_giveaway_command(bot)
 setup_timeout_command(bot)
 setup_ticket_command(bot)
 setup_category_command(bot)
+setup_lang_command(bot)
 setup_team_command(bot)
 setup_banlist_command(bot)
 setup_help_command(bot)

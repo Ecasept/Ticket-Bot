@@ -345,3 +345,40 @@ def is_valid_url(url: str) -> bool:
         return all([result.scheme, result.netloc]) and result.scheme in ['http', 'https']
     except Exception:
         return False
+
+
+def get_guild_language(guild_id: int) -> str:
+    """
+    Get the language setting for a guild.
+    Args:
+        guild_id (int): The guild ID.
+    Returns:
+        str: The language code (defaults to 'de' if not set).
+    """
+    from src.database import db
+    language = db.constant.get(C.guild_language, guild_id)
+    return language if language else "de"
+
+
+def set_guild_language(guild_id: int, language: str):
+    """
+    Set the language setting for a guild.
+    Args:
+        guild_id (int): The guild ID.
+        language (str): The language code.
+    """
+    from src.database import db
+    db.constant.set(C.guild_language, language, guild_id)
+
+
+def get_guild_resources(guild_id: int):
+    """
+    Get the resource class for a specific guild based on its language setting.
+    Args:
+        guild_id (int): The guild ID.
+    Returns:
+        ResDE | ResEN: The resource class for the guild's language.
+    """
+    from src.res import get_resources
+    language = get_guild_language(guild_id)
+    return get_resources(language)

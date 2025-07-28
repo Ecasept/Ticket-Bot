@@ -20,6 +20,7 @@ class Constants:
     # Key for the timeout log channel in DB
     timeout_log_channel: str = "timeout_log_channel_id"
     welcome_channel_id: str = "welcome_channel_id"
+    guild_language: str = "guild_language"  # Key for guild language setting
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 
@@ -58,14 +59,16 @@ def get_resources(lang: str):
     """
     Return the resource class for the specified language.
     Args:
-        lang (str): Language code (e.g., 'de').
+        lang (str): Language code (e.g., 'de', 'en').
     Returns:
-        ResDE: The resource class for German.
+        ResDE | ResEN: The resource class for the specified language.
     Raises:
         ValueError: If the language is not supported.
     """
     if lang == "de":
         return ResDE()
+    elif lang == "en":
+        return ResEN()
     else:
         raise ValueError(f"Language '{lang}' not supported.")
 
@@ -441,6 +444,208 @@ class ResDE:
     banlist_image_indicator: str = " + Bild"
     banlist_invalid_url: str = "❌ Die angegebene URL ist ungültig. Bitte gib eine gültige HTTP/HTTPS-URL an."
     banlist_showimg_embed_title = "Bild von %s"
+
+    # Language command
+    lang_desc: str = "Wechsle die Bot-Sprache für diesen Server."
+    lang_option_desc: str = "Wähle die Sprache"
+    lang_set_success: str = "✅ Sprache auf Deutsch für diesen Server gesetzt."
+    lang_current: str = "Aktuelle Sprache: Deutsch"
+    lang_german: str = "Deutsch"
+    lang_english: str = "Englisch"
+
+
+@dataclass
+class ResEN:
+    """
+    English string resources for the bot's UI and messages.
+    """
+    bot_activity: str = "listening to /help"
+
+    error_title: str = "Error"
+    error_occurred: str = "An error occurred: %s"
+
+    user_id_invalid: str = "The user ID is invalid."
+    user_not_found: str = "User <@%s> could not be found on the server."
+
+    panel_msg: str = "Choose a category to create a ticket."
+    create_ticket_button: str = "Create Ticket"
+    ticket_msg_created: str = "Users can use the button below to create tickets!"
+    ticket_panel_title: str = "Ticket Support"
+
+    application_emoji: str = "📝"
+    support_emoji: str = "🛠️"
+    report_emoji: str = "🚨"
+
+    delete_emoji: str = "⛔"
+    reopen_emoji: str = "🔄"
+
+    close_emoji: str = "🔒"
+    mod_options_emoji: str = "⚙️"
+
+    invalid_duration: str = "❌ Invalid duration `%s`. Use e.g. `10s`, `1m`, `2h`."
+
+    ticket_msg_desc: str = "Create a message with a button to create a ticket."
+    ticket_channel_created: str = "Ticket created! %s"
+    ticket: str = "ticket"
+
+    ping_desc: str = "Tests if the bot responds."
+    ticket_desc: str = "Open the ticket menu with various options."
+
+    # Ticket menu
+    ticket_menu_title: str = "Ticket Menu"
+    ticket_menu_description: str = "Choose an option from the available ticket commands:"
+    ticket_menu_giveaway: str = "Giveaway"
+    ticket_menu_timeout: str = "Timeout"
+    ticket_menu_setup: str = "Setup"
+    ticket_menu_giveaway_desc: str = "Start a giveaway"
+    ticket_menu_timeout_desc: str = "Give user a timeout"
+    ticket_menu_setup_desc: str = "Configure bot settings"
+
+    # Setup button labels
+    setup_set_value: str = "Set Value"
+    setup_view_value: str = "View Value"
+
+    close_ticket: str = "Close"
+    ticket_closed_msg: str = "The ticket was closed by %s."
+
+    ticket_category_title: str = "Create a Ticket"
+    ticket_category_placeholder: str = "Choose a category"
+
+    application: str = "Application"
+    report: str = "Report"
+    support: str = "Support"
+    application_prefix: str = "application"
+    report_prefix: str = "report"
+    support_prefix: str = "support"
+    application_desc: str = "Submit new application"
+    report_desc: str = "Report a user"
+    support_desc: str = "Help with general questions"
+
+    choose_category: str = "Choose a category for your ticket."
+
+    assign_ticket: str = "Accept"
+    assign_emoji: str = "📥"
+    unassign_ticket: str = "Release"
+    unassign_emoji: str = "📤"
+
+    mod_options_title: str = "Mod Options"
+    mod_options_no_permission: str = "You don't have permission to use these options."
+    mod_options_user: str = "Creator"
+    mod_options_assignee: str = "Assigned to"
+    mod_options_unassigned: str = "Unassigned"
+    mod_options_category: str = "Category"
+    mod_options_created_at: str = "Created at"
+    mod_options_archived: str = "Archived"
+    mod_options_archived_yes: str = "Yes"
+    mod_options_archived_no: str = "No"
+    noch_fragen_label: str = "Any Questions?"
+    noch_fragen_emoji: str = "❓"
+
+    approve_application: str = "Accept Application"
+    approve_application_emoji: str = "✅"
+    reject_application: str = "Reject Application"
+    reject_application_emoji: str = "⛔"
+
+    # Application rejection modal
+    reject_application_modal_title: str = "Reject Application"
+    reject_application_reason_label: str = "Reason for rejection"
+    reject_application_reason_placeholder: str = "Optionally provide a reason for the rejection."
+    application_rejected_with_reason_msg: str = "Unfortunately your application was rejected, %s.\n**Reason:** %s"
+
+    close_ticket_request_title: str = "Close ticket?"
+
+    header_msg_application: str = "Welcome to the ticket, %s! Here you can submit your application"
+    header_msg_report: str = "Welcome to the ticket, %s! Here you can report someone"
+    header_msg_support: str = "Welcome to the ticket, %s! Here you can make your support request"
+    header_title_support: str = "Ticket Support"
+    header_title_application: str = "Application"
+    header_title_report: str = "Report"
+    header_footer: str = "Ticket ID: %s"
+
+    ticket_not_found_msg: str = "Ticket not found. Please create a new ticket."
+
+    application_approved_msg: str = "Congratulations, %s! Your application was accepted."
+    application_rejected_msg: str = "Unfortunately your application was rejected, %s."
+
+    continue_button: str = "Continue"
+
+    ticket_not_found: str = "This ticket could not be found in the database."
+    ticket_already_closed: str = "This ticket is already closed."
+    ticket_close_no_permission: str = "You don't have permission to close this ticket."
+
+    ticket_close_request_msg: str = "%s wants to close this ticket."
+    ticket_close_request_accept: str = "Accept"
+    ticket_close_request_decline: str = "Decline"
+    ticket_close_request_declined_msg: str = "%s, your request to close the ticket was declined."
+    ticket_close_request_decline_no_permission: str = "You don't have permission to decline this request."
+    ticket_close_request_accept_no_permission: str = "You don't have permission to accept this request."
+
+    delete_ticket_button: str = "Delete"
+    reopen_ticket_button: str = "Reopen"
+    ticket_delete_no_permission: str = "You don't have permission to delete this ticket."
+    ticket_reopen_no_permission: str = "You don't have permission to reopen this ticket."
+    ticket_reopened_msg: str = "The ticket was reopened by %s."
+
+    ticket_assigned_msg: str = "The ticket was assigned to %s."
+    ticket_unassigned_msg: str = "The ticket was released."
+
+    # Language command
+    lang_desc: str = "Switch the bot language for this server."
+    lang_option_desc: str = "Choose the language"
+    lang_set_success: str = "✅ Language set to English for this server."
+    lang_current: str = "Current language: English"
+    lang_german: str = "German"
+    lang_english: str = "English"
+
+    # Setup command 
+    setup_title: str = "Setup"
+    setup_subcommand_desc = "Configure the bot."
+
+    # Setup tickets
+    setup_tickets_desc = "The category where tickets should be created."
+    setup_no_ticket_category = "No category for tickets is currently set."
+    setup_tickets_current_category = "The current ticket category is %s."
+    setup_tickets_set_category = "The ticket category has been set to %s."
+    setup_ticket_category_not_found = "The category for tickets could not be found. Please ensure the category exists and the bot has permission to see it."
+
+    # Setup transcript
+    setup_transcript_desc = "The category where transcripts/old tickets should be stored."
+    setup_no_transcript_category = "No category for transcripts is currently set."
+    setup_transcript_current_category = "The current transcript category is %s."
+    setup_transcript_set_category = "The transcript category has been set to %s."
+    setup_transcript_category_not_found = "The category for transcripts could not be found. Please ensure the category exists and the bot has permission to see it."
+
+    # Setup mod roles
+    setup_modroles_desc: str = "Configure moderator roles (multiple selectable)."
+    setup_modroles_select_prompt: str = "Please select the moderator roles."
+    setup_modroles_select_placeholder: str = "Select moderator roles"
+    setup_modroles_set: str = "Moderator roles have been set to %s."
+    setup_modroles_none_selected: str = "Please select at least one role."
+    setup_modroles_current: str = "Current moderator roles are: %s."
+    setup_no_modroles: str = "No moderator roles are configured."
+    setup_modroles_not_found: str = "One or more configured moderator roles could not be found on the server."
+    setup_modroles_invalid: str = "One or more selected mod roles are invalid."
+
+    # Help command  
+    help_desc: str = "Shows all available bot commands."
+    help_title: str = "🤖 Bot Help"
+    help_description: str = "Here are all available commands for this bot:"
+    help_general_commands: str = "📋 **General Commands**"
+    help_setup_commands: str = "⚙️ **Setup Commands** (Administrator required)"
+    help_team_commands: str = "👥 **Team Commands** (Administrator required)"
+    help_tutorial_title: str = "🚀 **Getting Started**"
+    help_tutorial_text: str = f"**Setup sequence:**\n1️⃣ `/setup tickets` - Set category for new tickets\n2️⃣ `/setup transcript` - Set category for closed tickets\n3️⃣ `/setup modroles` - Select moderator roles\n4️⃣ `/setup logchannel` - Log channel for team actions *(optional)*\n5️⃣ `/createpanel` - Create ticket panel for users\n\n✨ **Tip:** Question not answered? Create a ticket on our [support server]({Constants.support_guild_invite_link})!"
+    help_footer: str = f"{Constants.bot_name} - Tickets & more"
+
+    # Giveaway strings (basic ones)
+    giveaway_desc: str = "Start a giveaway with automatic winner selection."
+    giveaway_started: str = "✅ Giveaway started!"
+    giveaway_title: str = "🎉 Giveaway: %s"
+
+    # Timeout strings (basic ones)  
+    timeout_command_desc: str = "Timeout a user for a specified duration."
+    timeout_success: str = "✅ %s has been timed out for %s. Reason: %s"
+    timeout_success_no_reason: str = "✅ %s has been timed out for %s."
 
 
 R = get_resources("de")
