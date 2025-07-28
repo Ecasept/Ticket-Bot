@@ -2,8 +2,8 @@
 Help command module for the Discord bot. Provides an overview of all available commands.
 """
 import discord
-from src.utils import MODE, logger
-from src.res import C, R
+from src.utils import MODE, logger, get_guild_resources
+from src.res import C
 
 
 def setup_help_command(bot: discord.Bot):
@@ -13,13 +13,16 @@ def setup_help_command(bot: discord.Bot):
         bot (discord.Bot): The Discord bot instance.
     """
 
-    @bot.slash_command(name="help", description=R.help_desc)
+    @bot.slash_command(name="help", description="Shows all available bot commands")
     async def help_command(ctx: discord.ApplicationContext):
         """
         Display all available bot commands in an organized embed.
         Args:
             ctx (discord.ApplicationContext): The interaction context.
         """
+        # Get guild-specific resources
+        R = get_guild_resources(ctx.guild.id)
+        
         embed = discord.Embed(
             title=R.help_title,
             description=R.help_description,
@@ -36,6 +39,7 @@ def setup_help_command(bot: discord.Bot):
                 "- `/giveaway` - " + R.giveaway_desc + " *(Administrator)*",
                 "- `/timeout` - " + R.timeout_command_desc + " *(Moderator)*",
                 "- `/category` - Kategorie Management *(Administrator)*",
+                "- `/lang [language]` - " + R.lang_desc + " *(Administrator)*",
             ]
 
             embed.add_field(
