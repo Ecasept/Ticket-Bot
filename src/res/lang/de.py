@@ -517,6 +517,7 @@ class ResDE:
                     option_name_logchannel: str = "Log Channel"
                     option_name_timeout_logchannel: str = "Timeout Log Channel"
                     option_name_modroles: str = "Moderator Rollen"
+                    option_name_language: str = "Server Sprache"
                 option_view = OptionView()
 
                 @dataclass
@@ -524,6 +525,13 @@ class ResDE:
                     embed_desc: str = "Wähle eine Setup-Option aus dem Dropdown-Menü:"
                     embed_title: str = "Bot Setup"
                 select_view = SelectView()
+
+            @dataclass
+            class Language:
+                set_success: str = "Die Sprache wurde auf %s gesetzt."
+                current: str = "Die aktuelle Sprache ist %s."
+                unknown: str = "Fehler: Unbekannte Sprache"
+            language = Language()
             button = Button()
         setup = Setup()
 
@@ -870,6 +878,18 @@ class ResDE:
                 name: str = "modroles"
                 desc: str = "Konfiguriert die Moderator-Rollen (mehrere auswählbar)."
             modroles = Modroles()
+
+            @dataclass
+            class Language:
+                name: str = "language"
+                desc: str = "Ändert die Sprache des Bots für diesen Server."
+
+                @dataclass
+                class Option:
+                    language: str = "sprache"
+                    language_desc: str = "Die zu verwendende Sprache."
+                option = Option()
+            language = Language()
         setup = Setup()
 
         @dataclass

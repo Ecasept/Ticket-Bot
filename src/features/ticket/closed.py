@@ -38,7 +38,7 @@ class ClosedView(LateView):
             return
 
         await interaction.channel.delete()
-        db.ticket.delete_ticket(str(interaction.channel.id))
+        db.ticket.delete(str(interaction.channel.id))
         logger.info("ticket deleted", interaction)
 
     @late(lambda: button(label=R.reopen_ticket_button, style=discord.ButtonStyle.secondary, custom_id="reopen_ticket", emoji=discord.PartialEmoji(name=R.reopen_emoji)))

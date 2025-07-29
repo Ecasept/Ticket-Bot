@@ -27,7 +27,7 @@ def setup_help_command(bot: discord.Bot):
             ctx (discord.ApplicationContext): The interaction context.
         """
         # The command names change based on locale name so here we want resource strings for the user locale
-        R.initlocale(ctx.locale)
+        await R.initlocale(ctx.locale)
         embed = discord.Embed(
             title=R.help_title,
             description=R.help_description,

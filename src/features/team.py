@@ -70,6 +70,10 @@ class RoleSelectView(LateView):
         # Acknowledge the interaction to prevent "Interaction failed"
         await interaction.response.defer()
 
+    @late(lambda: button(
+        label=R.team_list_submit_button_label,
+        style=discord.ButtonStyle.primary,
+    ))
     async def submit_callback(self, button, interaction: discord.Interaction) -> None:
         """
         Callback for submit button.
@@ -483,7 +487,7 @@ def setup_team_command(bot: discord.Bot) -> None:
     )
     async def team_welcome(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
         if channel:
-            db.constant.set(C.welcome_channel_id, channel.id, ctx.guild.id)
+            db.constant.set(C.DBKey.welcome_channel_id, channel.id, ctx.guild.id)
             await ctx.respond(embed=create_embed(R.team_welcome_channel_set % channel.mention, color=C.success_color), ephemeral=True)
             logger.info(
                 f"Welcome channel set to {channel.name} ({channel.id})", ctx.interaction)

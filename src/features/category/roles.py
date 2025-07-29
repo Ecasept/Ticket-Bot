@@ -3,9 +3,10 @@ Role permission management for ticket categories.
 Handles role-based access control for categories.
 """
 import discord
+from src.constants import C
 from src.res import R
-from src.res.utils import LateView, late, role_select
-from src.utils import create_embed, get_role, handle_error
+from src.res.utils import LateView, button, late, role_select
+from src.utils import create_embed, handle_error
 from src.database import db
 from src.error import Ce
 

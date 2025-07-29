@@ -3,6 +3,7 @@ Giveaway button interface for the ticket menu.
 """
 import discord
 from src.res import R
+from src.constants import C
 from src.res.utils import LateView, late, select, role_select, button
 from src.utils import create_embed, logger
 from src.features.giveaway.giveaway import create_giveaway
@@ -58,11 +59,16 @@ class GiveawayConfigView(LateView):
     @late(lambda: select(
         placeholder=R.giveaway_winner_count_select_placeholder,
         options=[
-            discord.SelectOption(label=R.giveaway_winner_1_label, value="1", emoji="🥇"),
-            discord.SelectOption(label=R.giveaway_winner_2_label, value="2", emoji="🥈"),
-            discord.SelectOption(label=R.giveaway_winner_3_label, value="3", emoji="🥉"),
-            discord.SelectOption(label=R.giveaway_winner_5_label, value="5", emoji="🏆"),
-            discord.SelectOption(label=R.giveaway_winner_10_label, value="10", emoji="🎊")
+            discord.SelectOption(
+                label=R.giveaway_winner_1_label, value="1", emoji="🥇"),
+            discord.SelectOption(
+                label=R.giveaway_winner_2_label, value="2", emoji="🥈"),
+            discord.SelectOption(
+                label=R.giveaway_winner_3_label, value="3", emoji="🥉"),
+            discord.SelectOption(
+                label=R.giveaway_winner_5_label, value="5", emoji="🏆"),
+            discord.SelectOption(
+                label=R.giveaway_winner_10_label, value="10", emoji="🎊")
         ]
     ))
     async def winner_count_select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):

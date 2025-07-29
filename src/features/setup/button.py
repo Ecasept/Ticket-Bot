@@ -2,13 +2,14 @@
 Setup button interface for the ticket menu.
 """
 import discord
-from src.res import R
+from src.res import R, lang_info
+from src.res.utils import LateView, late, button, select, role_select, channel_select
 from src.constants import C
 from src.utils import create_embed, logger
 from src.database import db
 from src.features.setup.setup import (
     setup_tickets, setup_transcript, setup_logchannel,
-    setup_timeout_logchannel, show_modroles
+    setup_timeout_logchannel, show_modroles, setup_language
 )
 from src.res.utils import LateView, late, button, channel_select, role_select, select
 
@@ -34,6 +35,8 @@ class SetupOptionView(LateView):
             await setup_timeout_logchannel(interaction)
         elif self.option == "modroles":
             await show_modroles(interaction)
+        elif self.option == "language":
+            await setup_language(interaction)
 
         logger.info(f"Viewed setup option {self.option}", interaction)
 
@@ -53,6 +56,8 @@ class SetupOptionView(LateView):
             await self._set_timeout_logchannel(interaction)
         elif self.option == "modroles":
             await self._set_modroles(interaction)
+        elif self.option == "language":
+            await self._set_language(interaction)
 
         logger.info(f"Setting setup option {self.option}", interaction)
 
@@ -169,7 +174,7 @@ class SetupOptionView(LateView):
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
-                db.constant.set(C.mod_roles, ",".join(
+                db.constant.set(C.DBKey.mod_roles, ",".join(
                     role_ids), interaction.guild.id)
                 roles_mentions = ", ".join(
                     [role.mention for role in self.selected_roles])
@@ -188,6 +193,34 @@ class SetupOptionView(LateView):
             ephemeral=True
         )
 
+    async def _set_language(self, interaction: discord.Interaction):
+        class LanguageSelectView(LateView):
+            def __init__(self):
+                super().__init__(timeout=120)
+
+            @late(lambda: select(
+                placeholder=R.command.setup.language.option.language_desc,
+                options=[
+                    discord.SelectOption(
+                        label=item["native_name"],
+                        value=item["code"],
+                        emoji=item["emoji"],
+                    ) for item in lang_info
+                ]
+            ))
+            async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
+                language = select.values[0]
+                await setup_language(interaction, language)
+                self.stop()
+
+        view = LanguageSelectView()
+        await interaction.response.send_message(
+            embed=create_embed(R.command.setup.language.option.language_desc,
+                               title=R.command.setup.language.name),
+            view=view,
+            ephemeral=True
+        )
+
 
 class SetupSelectView(LateView):
     def __init__(self):
@@ -197,34 +230,40 @@ class SetupSelectView(LateView):
         placeholder=R.setup_select_option_placeholder,
         options=[
             discord.SelectOption(
-                label=R.setup_option_tickets_label,
-                description=R.setup_option_tickets_desc,
+                label=R.feature.setup.button.option_view.option_name_tickets,
+                description=R.command.setup.tickets.desc,
                 value="tickets",
                 emoji="🎫"
             ),
             discord.SelectOption(
-                label=R.setup_option_transcript_label,
-                description=R.setup_option_transcript_desc,
+                label=R.feature.setup.button.option_view.option_name_transcript,
+                description=R.command.setup.transcript.desc,
                 value="transcript",
                 emoji="📜"
             ),
             discord.SelectOption(
-                label=R.setup_option_logchannel_label,
-                description=R.setup_option_logchannel_desc,
+                label=R.feature.setup.button.option_view.option_name_logchannel,
+                description=R.command.setup.logchannel.desc,
                 value="logchannel",
                 emoji="📝"
             ),
             discord.SelectOption(
-                label=R.setup_option_timeout_logchannel_label,
-                description=R.setup_option_timeout_logchannel_desc,
+                label=R.feature.setup.button.option_view.option_name_timeout_logchannel,
+                description=R.command.setup.timeoutlogchannel.desc,
                 value="timeout_logchannel",
                 emoji="⏰"
             ),
             discord.SelectOption(
-                label=R.setup_option_modroles_label,
-                description=R.setup_option_modroles_desc,
+                label=R.feature.setup.button.option_view.option_name_modroles,
+                description=R.command.setup.modroles.desc,
                 value="modroles",
                 emoji="👮"
+            ),
+            discord.SelectOption(
+                label=R.feature.setup.button.option_view.option_name_language,
+                description=R.command.setup.language.desc,
+                value="language",
+                emoji="🌐"
             )
         ]
     ))
@@ -237,7 +276,8 @@ class SetupSelectView(LateView):
             "transcript": R.feature.setup.button.option_view.option_name_transcript,
             "logchannel": R.feature.setup.button.option_view.option_name_logchannel,
             "timeout_logchannel": R.feature.setup.button.option_view.option_name_timeout_logchannel,
-            "modroles": R.feature.setup.button.option_view.option_name_modroles
+            "modroles": R.feature.setup.button.option_view.option_name_modroles,
+            "language": R.feature.setup.button.option_view.option_name_language
         }
 
         embed = create_embed(

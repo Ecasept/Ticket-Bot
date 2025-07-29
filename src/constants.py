@@ -20,12 +20,12 @@ class Constants:
         mod_roles: str = "mod_role_ids"
         log_channel: str = "log_channel_id"
         locale: str = "lang"
+        timeout_log_channel: str = "timeout_log_channel_id"
+        welcome_channel_id: str = "welcome_channel_id"
 
     support_role_name: str = "Support"
 
     # Key for the timeout log channel in DB
-    timeout_log_channel: str = "timeout_log_channel_id"
-    welcome_channel_id: str = "welcome_channel_id"
     db_file: str = "db/tickets.db"
     db_schema_file: str = "db/schema.sql"
 

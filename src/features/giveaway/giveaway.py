@@ -209,7 +209,7 @@ def setup_giveaway_background_task(bot: discord.Bot):
                 logger.info(f"Found {len(ended_giveaways)} ended giveaways.")
 
             for giveaway in ended_giveaways:
-                R.init(giveaway.guild_id)
+                await R.init(giveaway.guild_id)
                 await end_giveaway(bot, giveaway)
 
         except Exception as e:

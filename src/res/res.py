@@ -16,6 +16,14 @@ locale_mapping = {
     # "en-US": ResEN,
 }
 
+lang_info = [
+    {
+        "code": "de",
+        "native_name": "Deutsch",
+        "emoji": "🇩🇪",
+    }
+]
+
 DEFAULT_LANG = "de"
 
 

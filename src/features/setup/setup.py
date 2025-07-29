@@ -2,7 +2,7 @@
 Setup functionality module - core logic separated from command interface.
 """
 import discord
-from src.res import R
+from src.res import R, DEFAULT_LANG, lang_info
 from src.constants import C
 from src.utils import create_embed, handle_error, logger, error_embed, get_timeout_log_channel
 from src.database import db
@@ -40,7 +40,8 @@ async def setup_tickets(interaction: discord.Interaction, category: discord.Cate
         return
 
     # Set the category in the database
-    db.constant.set(C.ticket_category, str(category.id), interaction.guild.id)
+    db.constant.set(C.DBKey.ticket_category, str(
+        category.id), interaction.guild.id)
     await interaction.response.send_message(
         embed=create_embed(R.setup_tickets_set_category %
                            category.mention, color=C.success_color, title=R.setup_title),
@@ -83,7 +84,7 @@ async def setup_transcript(interaction: discord.Interaction, category: discord.C
         return
 
     # Set the category in the database
-    db.constant.set(C.transcript_category, str(
+    db.constant.set(C.DBKey.transcript_category, str(
         category.id), interaction.guild.id)
     await interaction.response.send_message(
         embed=create_embed(R.setup_transcript_set_category %
@@ -124,7 +125,7 @@ async def setup_logchannel(interaction: discord.Interaction, channel: discord.Te
         return
 
     # Set the log channel in the database
-    db.constant.set(C.log_channel, str(channel.id), interaction.guild.id)
+    db.constant.set(C.DBKey.log_channel, str(channel.id), interaction.guild.id)
     await interaction.response.send_message(
         embed=create_embed(R.setup_logchannel_set % channel.mention,
                            color=C.success_color, title=R.log_channel_title),
@@ -156,7 +157,7 @@ async def setup_timeout_logchannel(interaction: discord.Interaction, channel: di
         return
 
     # Set the log channel in the database
-    db.constant.set(C.timeout_log_channel, str(channel.id), guild_id)
+    db.constant.set(C.DBKey.timeout_log_channel, str(channel.id), guild_id)
     await interaction.response.send_message(
         embed=create_embed(R.setup_timeout_logchannel_set % channel.mention,
                            color=C.success_color, title=R.timeout_log_channel_title),
@@ -192,3 +193,42 @@ async def show_modroles(interaction: discord.Interaction):
     else:
         await interaction.response.send_message(embed=create_embed(R.setup_no_modroles, color=C.warning_color, title=R.mod_roles_title), ephemeral=True)
         logger.error(We(R.setup_no_modroles), interaction)
+
+
+def get_native_name(locale: str) -> str:
+    """
+    Get the native name of a language by its locale code.
+    Args:
+        locale (str): The locale code (e.g., 'en', 'fr').
+    Returns:
+        str: The native name of the language.
+    """
+    item = next((x for x in lang_info if x["code"] == locale), None)
+    return item["native_name"] if item else R.feature.setup.language.unknown
+
+
+async def setup_language(interaction: discord.Interaction, language: str = None):
+    """
+    Set or view the guild language.
+    Args:
+        interaction (discord.Interaction): The interaction context.
+        language (str): The language to set (optional).
+    """
+    if language:
+        db.constant.set(C.DBKey.locale, language, interaction.guild.id)
+        # Switch to the new language
+        await R.init(interaction.guild.id)
+        lang = get_native_name(language)
+        await interaction.response.send_message(embed=create_embed(R.feature.setup.language.set_success % lang, color=C.success_color), ephemeral=True)
+        logger.info(
+            f"Language set to {language}",
+            interaction)
+    else:
+        locale = db.constant.get(
+            C.DBKey.locale, interaction.guild.id) or DEFAULT_LANG
+
+        lang = get_native_name(locale)
+
+        await interaction.response.send_message(embed=create_embed(R.feature.setup.language.current % lang), ephemeral=True)
+        logger.info(
+            f"Told user current language: {locale}", interaction)

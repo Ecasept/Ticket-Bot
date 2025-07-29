@@ -59,8 +59,8 @@ def select(
     row: int | None = None,
 ):
     return with_callback_factory(
-        select_menu=discord.ui.Select(
-            type=select_type,
+        discord.ui.Select(
+            select_type=select_type,
             placeholder=placeholder,
             custom_id=custom_id,
             min_values=min_values,
@@ -81,8 +81,10 @@ def role_select(
     disabled: bool = False,
     row: int | None = None,
 ):
+
     return with_callback_factory(
-        discord.ui.RoleSelect(
+        discord.ui.Select(
+            select_type=discord.ComponentType.role_select,
             placeholder=placeholder,
             custom_id=custom_id,
             min_values=min_values,
@@ -103,7 +105,8 @@ def channel_select(
     row: int | None = None,
 ):
     return with_callback_factory(
-        discord.ui.ChannelSelect(
+        discord.ui.Select(
+            select_type=discord.ComponentType.channel_select,
             placeholder=placeholder,
             custom_id=custom_id,
             min_values=min_values,
@@ -124,7 +127,8 @@ def user_select(
     row: int | None = None,
 ):
     return with_callback_factory(
-        discord.ui.UserSelect(
+        discord.ui.Select(
+            select_type=discord.ComponentType.user_select,
             placeholder=placeholder,
             custom_id=custom_id,
             min_values=min_values,

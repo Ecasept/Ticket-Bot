@@ -3,7 +3,7 @@ Timeout button interface for the ticket menu.
 """
 import discord
 from src.res import R
-from src.res.utils import late, button, select, LateView
+from src.res.utils import late, button, select, LateView, user_select
 from src.constants import C
 from src.utils import create_embed, logger
 from src.features.timeout.timeout import timeout_user
@@ -72,30 +72,33 @@ class TimeoutSelectView(LateView):
     async def execute_timeout_callback(self, button, interaction: discord.Interaction):
         if not self.selected_user:
             await interaction.response.send_message(
-                embed=create_embed(R.timeout_select_user_error, color=C.error_color),
+                embed=create_embed(
+                    R.timeout_select_user_error, color=C.error_color),
                 ephemeral=True
             )
             return
-        
+
         if not self.selected_duration:
             await interaction.response.send_message(
-                embed=create_embed(R.timeout_select_duration_error, color=C.error_color),
+                embed=create_embed(
+                    R.timeout_select_duration_error, color=C.error_color),
                 ephemeral=True
             )
             return
-        
+
         # Convert user to member if needed
         if isinstance(self.selected_user, discord.User):
             member = interaction.guild.get_member(self.selected_user.id)
             if not member:
                 await interaction.response.send_message(
-                    embed=create_embed(R.timeout_user_not_on_server, color=C.error_color),
+                    embed=create_embed(
+                        R.timeout_user_not_on_server, color=C.error_color),
                     ephemeral=True
                 )
                 return
         else:
             member = self.selected_user
-        
+
         await timeout_user(interaction, member, self.selected_duration, self.reason)
         self.stop()
 

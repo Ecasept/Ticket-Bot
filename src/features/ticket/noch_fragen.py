@@ -123,7 +123,7 @@ def setup_noch_fragen(bot: discord.Bot):
             if channel is None:
                 logger.error(We(f"Channel {id} not found, skipping deletion."))
                 continue  # Continue to next id if channel not found
-            R.init(channel.guild.id)
+            await R.init(channel.guild.id)
             err = await close_channel(channel)
             if err:
                 logger.error(err)

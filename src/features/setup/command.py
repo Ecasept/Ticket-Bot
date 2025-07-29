@@ -2,14 +2,14 @@
 Setup slash command - separated from functionality.
 """
 import discord
-from src.res import R, RD, RL
+from src.res import R, RD, RL, lang_info, late, button, select, role_select, LateView
 from src.constants import C
 from src.utils import create_embed, handle_error, logger, error_embed, get_timeout_log_channel
 from src.database import db
 from src.error import We
 from src.features.setup.setup import (
     setup_tickets, setup_transcript, setup_logchannel,
-    setup_timeout_logchannel
+    setup_timeout_logchannel, setup_language
 )
 
 
@@ -120,7 +120,7 @@ def setup_setup_command(bot: discord.Bot):
         Args:
             ctx (discord.ApplicationContext): The command context.
         """
-        class ModRolesSelectView(discord.ui.View):
+        class ModRolesSelectView(LateView):
             def __init__(self):
                 super().__init__(timeout=120)
                 self.selected_roles = []
@@ -146,7 +146,7 @@ def setup_setup_command(bot: discord.Bot):
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
-                db.constant.set(C.mod_roles, ",".join(role_ids), ctx.guild.id)
+                db.constant.set(C.DBKey.mod_roles, ",".join(role_ids), ctx.guild.id)
                 roles_mentions = ", ".join(
                     [role.mention for role in self.selected_roles])
                 await interaction.response.edit_message(
@@ -186,5 +186,24 @@ def setup_setup_command(bot: discord.Bot):
             ephemeral=True
         )
         logger.info("Opened mod roles set dialog", ctx.interaction)
+
+    @setup.command(
+        name=RD.command.setup.language.name,
+        name_localizations=RL.command.setup.language.name,
+        description=RD.command.setup.language.desc,
+        description_localizations=RL.command.setup.language.desc
+    )
+    @discord.default_permissions(administrator=True)
+    @discord.option(
+        name=RD.command.setup.language.option.language,
+        name_localizations=RL.command.setup.language.option.language,
+        description=RD.command.setup.language.option.language_desc,
+        description_localizations=RL.command.setup.language.option.language_desc,
+        required=False,
+        default=None,
+        choices=[item["code"] for item in lang_info]
+    )
+    async def setup_language_command(ctx: discord.ApplicationContext, language: str = None):
+        await setup_language(ctx.interaction, language)
 
     bot.add_application_command(setup)
