@@ -2,82 +2,84 @@
 Timeout button interface for the ticket menu.
 """
 import discord
-from src.res import R, C
+from src.res import R
+from src.res.utils import late, button, select, LateView
+from src.constants import C
 from src.utils import create_embed, logger
 from src.features.timeout.timeout import timeout_user
 
 
-class TimeoutSelectView(discord.ui.View):
+class TimeoutSelectView(LateView):
     def __init__(self):
         super().__init__(timeout=300)
         self.selected_user = None
         self.selected_duration = None
         self.reason = None
 
-    @discord.ui.user_select(
-        placeholder="Wähle einen Benutzer zum Timeout",
+    @late(lambda: user_select(
+        placeholder=R.timeout_user_select_placeholder,
         min_values=1,
         max_values=1,
-    )
+    ))
     async def user_select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
         self.selected_user = select.values[0]
         await interaction.response.defer()
 
-    @discord.ui.select(
-        placeholder="Wähle eine Timeout-Dauer",
+    @late(lambda: select(
+        placeholder=R.timeout_duration_select_placeholder,
         options=[
             discord.SelectOption(
-                label="30 Sekunden",
-                description="Kurzer Timeout",
+                label=R.timeout_30s_label,
+                description=R.timeout_30s_desc,
                 value="30s",
                 emoji="⏱️"
             ),
             discord.SelectOption(
-                label="5 Minuten",
-                description="Standard Timeout",
+                label=R.timeout_5m_label,
+                description=R.timeout_5m_desc,
                 value="5m",
                 emoji="⏰"
             ),
             discord.SelectOption(
-                label="1 Stunde",
-                description="Längerer Timeout",
+                label=R.timeout_1h_label,
+                description=R.timeout_1h_desc,
                 value="1h",
                 emoji="🕐"
             ),
             discord.SelectOption(
-                label="1 Tag",
-                description="Täglicher Timeout",
+                label=R.timeout_1d_label,
+                description=R.timeout_1d_desc,
                 value="1d",
                 emoji="📅"
             ),
             discord.SelectOption(
-                label="1 Woche",
-                description="Wöchentlicher Timeout",
+                label=R.timeout_1w_label,
+                description=R.timeout_1w_desc,
                 value="1w",
                 emoji="📆"
             )
         ]
-    )
+    ))
     async def duration_select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
         self.selected_duration = select.values[0]
         await interaction.response.defer()
 
-    @discord.ui.button(
-        label="Timeout ausführen",
+    @late(lambda: button(
+        label=R.timeout_execute_button,
         style=discord.ButtonStyle.danger,
         emoji="⏰"
-    )
+    ))
     async def execute_timeout_callback(self, button, interaction: discord.Interaction):
         if not self.selected_user:
             await interaction.response.send_message(
-                embed=create_embed("❌ Bitte wähle einen Benutzer aus.", color=C.error_color),
+                embed=create_embed(R.timeout_select_user_error, color=C.error_color),
                 ephemeral=True
             )
             return
         
         if not self.selected_duration:
             await interaction.response.send_message(
-                embed=create_embed("❌ Bitte wähle eine Timeout-Dauer aus.", color=C.error_color),
+                embed=create_embed(R.timeout_select_duration_error, color=C.error_color),
                 ephemeral=True
             )
             return
@@ -87,7 +89,7 @@ class TimeoutSelectView(discord.ui.View):
             member = interaction.guild.get_member(self.selected_user.id)
             if not member:
                 await interaction.response.send_message(
-                    embed=create_embed("❌ Benutzer ist nicht auf diesem Server.", color=C.error_color),
+                    embed=create_embed(R.timeout_user_not_on_server, color=C.error_color),
                     ephemeral=True
                 )
                 return
@@ -97,14 +99,14 @@ class TimeoutSelectView(discord.ui.View):
         await timeout_user(interaction, member, self.selected_duration, self.reason)
         self.stop()
 
-    @discord.ui.button(
-        label="Abbrechen",
+    @late(lambda: button(
+        label=R.timeout_cancel_button,
         style=discord.ButtonStyle.secondary,
         emoji="❌"
-    )
+    ))
     async def cancel_callback(self, button, interaction: discord.Interaction):
         await interaction.response.edit_message(
-            embed=create_embed("Timeout abgebrochen.", color=C.warning_color),
+            embed=create_embed(R.timeout_cancelled, color=C.warning_color),
             view=None
         )
         self.stop()
@@ -121,8 +123,8 @@ class TimeoutButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         embed = create_embed(
-            "Wähle einen Benutzer und eine Timeout-Dauer aus den Dropdown-Menüs:",
-            title="Benutzer Timeout",
+            R.timeout_interface_description,
+            title=R.timeout_interface_title,
             color=C.embed_color
         )
         view = TimeoutSelectView()

@@ -3,7 +3,8 @@ Timeout functionality module - core logic separated from command interface.
 """
 import discord
 import datetime
-from src.res import R, C
+from src.res import R
+from src.constants import C
 from src.utils import create_embed, get_timeout_log_channel, handle_error, logger, error_embed, parse_duration
 
 

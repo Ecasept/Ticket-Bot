@@ -4,7 +4,8 @@ Giveaway functionality module - core logic separated from command interface.
 import discord
 import datetime
 import random
-from src.res import R, C
+from src.res import R
+from src.constants import C
 from src.utils import create_embed, parse_duration, handle_error, logger, error_embed
 from src.database import db
 from src.error import Ce, We
@@ -174,7 +175,7 @@ async def end_giveaway(bot: discord.Bot, giveaway):
                     member = guild.get_member(winner.id)
                     if member:
                         try:
-                            await member.add_roles(role, reason="Giveaway gewonnen")
+                            await member.add_roles(role, reason=R.feature.giveaway.role_award_reason)
                         except discord.Forbidden:
                             msg = R.giveaway_role_perms_error % (
                                 role.mention, winner.mention)
@@ -208,6 +209,7 @@ def setup_giveaway_background_task(bot: discord.Bot):
                 logger.info(f"Found {len(ended_giveaways)} ended giveaways.")
 
             for giveaway in ended_giveaways:
+                R.init(giveaway.guild_id)
                 await end_giveaway(bot, giveaway)
 
         except Exception as e:

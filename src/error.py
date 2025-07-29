@@ -6,7 +6,9 @@ import traceback
 class Error:
     """Base class for errors."""
 
-    def __init__(self, message: str, title: str = R.error_title, show_traceback: bool = False):
+    def __init__(self, message: str, title: str = None, show_traceback: bool = False):
+        if title is None:
+            title = R.error_title
         self.message = message
         self.title = title
         self.show_traceback = show_traceback
@@ -34,18 +36,24 @@ class CriticalError(Error):
         title (str): The title for the error embed. Defaults to R.error_title.
     """
 
-    def __init__(self, message: str, title: str = R.error_title):
+    def __init__(self, message: str, title: str = None):
+        if title is None:
+            title = R.error_title
         super().__init__(message, title, show_traceback=True)
 
 
 class UserNotFoundError(Error):
-    def __init__(self, user_id: int, title: str = R.error_title):
+    def __init__(self, user_id: int, title: str = None):
+        if title is None:
+            title = R.error_title
         message = R.user_not_found % user_id
         super().__init__(message, title, show_traceback=False)
 
 
 class InvalidDurationError(Error):
-    def __init__(self, duration: str, title: str = R.error_title):
+    def __init__(self, duration: str, title: str = None):
+        if title is None:
+            title = R.error_title
         message = R.invalid_duration % duration
         super().__init__(message, title, show_traceback=False)
 
@@ -59,7 +67,9 @@ class WarningError(Error):
         title (str): The title for the warning embed. Defaults to R.error_title.
     """
 
-    def __init__(self, message: str, title: str = R.error_title):
+    def __init__(self, message: str, title: str = None):
+        if title is None:
+            title = R.error_title
         super().__init__(message, title, show_traceback=False)
 
 

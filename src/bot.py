@@ -17,7 +17,7 @@ from .features.team import TeamListMessage, setup_team_command
 from .features.banlist.command import setup_banlist_command, update_banlist
 from .features.shared.list_display import ListDisplayView
 from .help import setup_help_command
-from .res import C, R
+from .res import R, RD, RL
 from .features.ticket_menu.ticket_command import setup_ticket_command
 from .features.giveaway.command import setup_giveaway_command
 from .features.timeout.command import setup_timeout_command
@@ -28,7 +28,16 @@ import traceback
 intents = discord.Intents.default()
 intents.members = True
 intents.presences = True
-bot = discord.Bot(intents=intents)
+
+
+class CustomBot(discord.Bot):
+    async def on_interaction(self, interaction: discord.Interaction):
+        # Initialize resources for the guild
+        await R.init(interaction.guild_id)
+        return await super().on_interaction(interaction)
+
+
+bot = CustomBot(intents=intents)
 
 
 @bot.event
@@ -40,6 +49,8 @@ async def on_ready():
         logger.info(f" - {guild.name} (ID: {guild.id})")
     logger.info("------")
 
+    # We don't call R.init here because it requires a guild_id
+    # so R defaults to the default language.
     activity = discord.Game(name=R.bot_activity)
     await bot.change_presence(activity=activity)
 
@@ -59,14 +70,22 @@ async def on_ready():
     bot.add_view(TicketMenuView())
 
 
-@bot.slash_command(name="ping", description=R.ping_desc)
+@bot.slash_command(
+    name=RD.command.ping.name,
+    name_localizations=RL.command.ping.name,
+    description=RD.command.ping.desc,
+    description_localizations=RL.command.ping.desc
+)
 async def ping(ctx: discord.ApplicationContext):
+    import asyncio
+    await asyncio.sleep(3)
+
     """
     Simple ping command to test bot responsiveness.
     Args:
         ctx (discord.ApplicationContext): The command context.
     """
-    await ctx.respond("Pong!")
+    await ctx.respond(R.ping_response)
     logger.info("Ping command executed", ctx.interaction)
 
 setup_panel_command(bot)

@@ -2,7 +2,8 @@
 Setup slash command - separated from functionality.
 """
 import discord
-from src.res import R, C
+from src.res import R, RD, RL
+from src.constants import C
 from src.utils import create_embed, handle_error, logger, error_embed, get_timeout_log_channel
 from src.database import db
 from src.error import We
@@ -19,15 +20,25 @@ def setup_setup_command(bot: discord.Bot):
         bot (discord.Bot): The Discord bot instance.
     """
     setup = discord.SlashCommandGroup(
-        "setup",
-        R.setup_subcommand_desc,
+        name=RD.command.setup.name,
+        name_localizations=RL.command.setup.name,
+        description=RD.command.setup.desc,
+        description_localizations=RL.command.setup.desc,
         default_member_permissions=discord.Permissions(administrator=True)
     )
 
-    @setup.command(name="tickets", description=R.setup_tickets_desc)
+    @setup.command(
+        name=RD.command.setup.tickets.name,
+        name_localizations=RL.command.setup.tickets.name,
+        description=RD.command.setup.tickets.desc,
+        description_localizations=RL.command.setup.tickets.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "category",
+        name=RD.command.setup.tickets.option.category,
+        name_localizations=RL.command.setup.tickets.option.category,
+        description=RD.command.setup.tickets.option.category_desc,
+        description_localizations=RL.command.setup.tickets.option.category_desc,
         required=False,
         default=None,
         type=discord.SlashCommandOptionType.channel,
@@ -36,10 +47,18 @@ def setup_setup_command(bot: discord.Bot):
     async def setup_tickets_command(ctx: discord.ApplicationContext, category: discord.CategoryChannel = None):
         await setup_tickets(ctx.interaction, category)
 
-    @setup.command(name="transcript", description=R.setup_transcript_desc)
+    @setup.command(
+        name=RD.command.setup.transcript.name,
+        name_localizations=RL.command.setup.transcript.name,
+        description=RD.command.setup.transcript.desc,
+        description_localizations=RL.command.setup.transcript.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "category",
+        name=RD.command.setup.transcript.option.category,
+        name_localizations=RL.command.setup.transcript.option.category,
+        description=RD.command.setup.transcript.option.category_desc,
+        description_localizations=RL.command.setup.transcript.option.category_desc,
         required=False,
         default=None,
         type=discord.SlashCommandOptionType.channel,
@@ -48,11 +67,18 @@ def setup_setup_command(bot: discord.Bot):
     async def setup_transcript_command(ctx: discord.ApplicationContext, category: discord.CategoryChannel = None):
         await setup_transcript(ctx.interaction, category)
 
-    @setup.command(name="logchannel", description=R.setup_logchannel_desc)
+    @setup.command(
+        name=RD.command.setup.logchannel.name,
+        name_localizations=RL.command.setup.logchannel.name,
+        description=RD.command.setup.logchannel.desc,
+        description_localizations=RL.command.setup.logchannel.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "channel",
-        description=R.setup_logchannel_desc,
+        name=RD.command.setup.logchannel.option.channel,
+        name_localizations=RL.command.setup.logchannel.option.channel,
+        description=RD.command.setup.logchannel.option.channel_desc,
+        description_localizations=RL.command.setup.logchannel.option.channel_desc,
         required=False,
         default=None,
         type=discord.SlashCommandOptionType.channel,
@@ -61,11 +87,18 @@ def setup_setup_command(bot: discord.Bot):
     async def setup_logchannel_command(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
         await setup_logchannel(ctx.interaction, channel)
 
-    @setup.command(name="timeoutlogchannel", description=R.setup_timeout_logchannel_desc)
+    @setup.command(
+        name=RD.command.setup.timeoutlogchannel.name,
+        name_localizations=RL.command.setup.timeoutlogchannel.name,
+        description=RD.command.setup.timeoutlogchannel.desc,
+        description_localizations=RL.command.setup.timeoutlogchannel.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "channel",
-        description=R.setup_timeout_logchannel_desc,
+        name=RD.command.setup.timeoutlogchannel.option.channel,
+        name_localizations=RL.command.setup.timeoutlogchannel.option.channel,
+        description=RD.command.setup.timeoutlogchannel.option.channel_desc,
+        description_localizations=RL.command.setup.timeoutlogchannel.option.channel_desc,
         required=False,
         default=None,
         type=discord.SlashCommandOptionType.channel,
@@ -74,7 +107,12 @@ def setup_setup_command(bot: discord.Bot):
     async def setup_timeout_logchannel_command(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
         await setup_timeout_logchannel(ctx.interaction, channel)
 
-    @setup.command(name="modroles", description=R.setup_modroles_desc)
+    @setup.command(
+        name=RD.command.setup.modroles.name,
+        name_localizations=RL.command.setup.modroles.name,
+        description=RD.command.setup.modroles.desc,
+        description_localizations=RL.command.setup.modroles.desc
+    )
     @discord.default_permissions(administrator=True)
     async def setup_modroles_command(ctx: discord.ApplicationContext):
         """
@@ -87,19 +125,19 @@ def setup_setup_command(bot: discord.Bot):
                 super().__init__(timeout=120)
                 self.selected_roles = []
 
-            @discord.ui.role_select(
+            @late(lambda: role_select(
                 placeholder=R.setup_modroles_select_placeholder,
                 min_values=1,
                 max_values=25,
-            )
+            ))
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 self.selected_roles = select.values
                 await interaction.response.defer()
 
-            @discord.ui.button(
+            @late(lambda: button(
                 label=R.modroles_submit_button_label,
                 style=discord.ButtonStyle.primary,
-            )
+            ))
             async def submit_callback(self, button, interaction: discord.Interaction):
                 if not self.selected_roles:
                     await interaction.response.send_message(embed=create_embed(R.setup_modroles_none_selected, color=C.error_color), ephemeral=True)
@@ -122,7 +160,7 @@ def setup_setup_command(bot: discord.Bot):
                 self.stop()
 
         # Show current mod roles if set
-        mod_role_ids = db.constant.get(C.mod_roles, ctx.guild.id)
+        mod_role_ids = db.constant.get(C.DBKey.mod_roles, ctx.guild.id)
         if mod_role_ids:
             role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
             roles = [ctx.guild.get_role(rid) for rid in role_ids]

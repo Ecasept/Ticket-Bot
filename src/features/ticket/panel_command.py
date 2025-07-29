@@ -2,7 +2,8 @@
 Panel command for creating ticket panels.
 """
 import discord
-from src.res import R, C
+from src.res import R, RD, RL
+from src.constants import C
 from src.utils import create_embed, handle_error, logger
 from src.error import We, Ce
 from src.features.ticket.panel import create_panel_view
@@ -15,7 +16,12 @@ def setup_panel_command(bot: discord.Bot):
         bot (discord.Bot): The Discord bot instance.
     """
 
-    @bot.slash_command(name="createpanel", description=R.ticket_msg_desc)
+    @bot.slash_command(
+        name=RD.command.createpanel.name,
+        name_localizations=RL.command.createpanel.name,
+        description=RD.command.createpanel.desc,
+        description_localizations=RL.command.createpanel.desc
+    )
     @discord.default_permissions(administrator=True)
     async def create_panel(ctx: discord.ApplicationContext):
         """

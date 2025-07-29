@@ -1,11 +1,13 @@
 import discord
 from src.utils import get_member, get_ticket_category, get_transcript_category, logger, create_embed, handle_error, verify_mod_or_admin
 from src.database import db
-from src.res import C, R
+from src.constants import C
+from src.res import R
 from src.error import Ce, UserNotFoundError, We, Error
+from src.res.utils import LateView, late, button
 
 
-class ClosedView(discord.ui.View):
+class ClosedView(LateView):
     def __init__(self):
         super().__init__(timeout=None)
 
@@ -22,7 +24,7 @@ class ClosedView(discord.ui.View):
         embed = create_embed(message, color=C.error_color)
         return embed, view
 
-    @discord.ui.button(label=R.delete_ticket_button, style=discord.ButtonStyle.secondary, custom_id="delete_ticket", emoji=discord.PartialEmoji(name=R.delete_emoji))
+    @late(lambda: button(label=R.delete_ticket_button, style=discord.ButtonStyle.secondary, custom_id="delete_ticket", emoji=discord.PartialEmoji(name=R.delete_emoji)))
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Deletes the ticket channel.
@@ -39,7 +41,7 @@ class ClosedView(discord.ui.View):
         db.ticket.delete_ticket(str(interaction.channel.id))
         logger.info("ticket deleted", interaction)
 
-    @discord.ui.button(label=R.reopen_ticket_button, style=discord.ButtonStyle.secondary, custom_id="reopen_ticket", emoji=discord.PartialEmoji(name=R.reopen_emoji))
+    @late(lambda: button(label=R.reopen_ticket_button, style=discord.ButtonStyle.secondary, custom_id="reopen_ticket", emoji=discord.PartialEmoji(name=R.reopen_emoji)))
     async def reopen(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Reopens the ticket.

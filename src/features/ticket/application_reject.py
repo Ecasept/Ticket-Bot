@@ -1,6 +1,7 @@
 import discord
 from src.utils import get_member, handle_error, create_embed, logger
-from src.res import R, C
+from src.res import R
+from src.constants import C
 
 
 class ApplicationRejectModal(discord.ui.Modal):

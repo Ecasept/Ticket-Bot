@@ -1,13 +1,16 @@
 import discord
 
+
 from .closed import close_ticket
 from src.utils import create_embed, get_member, handle_error, verify_mod_or_admin, logger
 from src.database import db
-from src.res import C, R
+from src.constants import C
+from src.res import R
 from src.error import Ce, We
+from src.res.utils import LateView, late, button
 
 
-class TicketCloseRequestView(discord.ui.View):
+class TicketCloseRequestView(LateView):
     @staticmethod
     def create(interaction: discord.Interaction) -> tuple[str, discord.ui.View]:
         """
@@ -24,7 +27,7 @@ class TicketCloseRequestView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
-    @discord.ui.button(label=R.ticket_close_request_accept, style=discord.ButtonStyle.success, custom_id="accept_close_request")
+    @late(lambda: button(label=R.ticket_close_request_accept, style=discord.ButtonStyle.success, custom_id="accept_close_request"))
     async def accept(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Accepts the ticket close request.
@@ -41,7 +44,7 @@ class TicketCloseRequestView(discord.ui.View):
         await close_ticket(interaction)
         logger.info(f"close request accepted", interaction)
 
-    @discord.ui.button(label=R.ticket_close_request_decline, style=discord.ButtonStyle.danger, custom_id="decline_close_request")
+    @late(lambda: button(label=R.ticket_close_request_decline, style=discord.ButtonStyle.danger, custom_id="decline_close_request"))
     async def decline(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Declines the ticket close request.

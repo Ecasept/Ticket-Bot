@@ -3,7 +3,9 @@ Category menu interface for the ticket system.
 Main menu for category management functionality.
 """
 import discord
-from src.res import R, C
+from src.res import R
+from src.res.utils import late, button, LateView
+from src.constants import C
 from src.utils import create_embed, handle_error, logger
 from src.database import db
 from src.error import Ce, We
@@ -18,7 +20,7 @@ class CategoryButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
             style=discord.ButtonStyle.secondary,
-            label="Kategorien",
+            label=R.feature.category.menu.button_label,
             emoji="📂",
             custom_id="category_management"
         )
@@ -28,8 +30,8 @@ class CategoryButton(discord.ui.Button):
         # Show category management menu
         view = CategoryManagementView()
         embed = create_embed(
-            "Wähle eine Aktion für die Kategorie-Verwaltung:",
-            title="📂 Kategorie-Verwaltung"
+            R.feature.category.menu.description,
+            title=R.feature.category.menu.title
         )
 
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
@@ -37,24 +39,24 @@ class CategoryButton(discord.ui.Button):
             f"Category management menu shown to {interaction.user}", interaction)
 
 
-class CategoryManagementView(discord.ui.View):
+class CategoryManagementView(LateView):
     """Main view for category management options."""
 
     def __init__(self):
         super().__init__(timeout=300)
 
-    @discord.ui.button(label="Neue Kategorie", style=discord.ButtonStyle.primary, emoji="➕")
+    @late(lambda: button(label=R.category_new, style=discord.ButtonStyle.primary, emoji="➕"))
     async def create_category_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         """Handle create category button."""
         # Use shared handler that includes modal creation
         await handle_create_category(interaction)
 
-    @discord.ui.button(label="Kategorie bearbeiten", style=discord.ButtonStyle.secondary, emoji="✏️")
+    @late(lambda: button(label=R.category_edit, style=discord.ButtonStyle.secondary, emoji="✏️"))
     async def edit_category_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         """Handle edit category button."""
         await handle_edit_categories(interaction)
 
-    @discord.ui.button(label="Kategorie löschen", style=discord.ButtonStyle.danger, emoji="🗑️")
+    @late(lambda: button(label=R.category_delete, style=discord.ButtonStyle.danger, emoji="🗑️"))
     async def remove_category_button(self, button: discord.ui.Button, interaction: discord.Interaction):
         """Handle remove category button."""
         await handle_remove_category(interaction)

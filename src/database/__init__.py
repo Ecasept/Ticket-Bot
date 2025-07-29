@@ -1,5 +1,5 @@
 from .database import Database
-from src.res import C
+from src.constants import C
 
 
 db = Database(C.db_file)

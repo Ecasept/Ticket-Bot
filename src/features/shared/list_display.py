@@ -3,7 +3,8 @@ This module provides a generalized way to display lists of items in embeds,
 handling message splitting and providing an update button.
 """
 import discord
-from src.res import C, R
+from src.res import R
+from src.constants import C
 from src.error import Error, We
 from typing import List, Tuple, Callable, Awaitable
 

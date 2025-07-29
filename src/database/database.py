@@ -12,7 +12,7 @@ from .ticket import TicketManager
 from .ticket_category import TicketCategoryManager
 from .banlist import BanlistManager
 from src.utils import logger
-from src.res import C
+from src.constants import C
 import re
 
 

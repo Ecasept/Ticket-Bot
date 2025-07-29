@@ -4,7 +4,8 @@ This module contains the commands for the banlist feature.
 import discord
 from src.database import db
 from src.error import Error, We
-from src.res import R, C
+from src.res import R, RD, RL
+from src.constants import C
 from src.utils import handle_error, create_embed, logger, is_valid_url
 from src.features.shared.list_display import ListDisplayView, create_list_embeds
 
@@ -43,12 +44,19 @@ def setup_banlist_command(bot: discord.Bot):
     Sets up the banlist command group.
     """
     banlist = discord.SlashCommandGroup(
-        "banlist",
-        R.banlist_group_desc,
+        name=RD.command.banlist.name,
+        name_localizations=RL.command.banlist.name,
+        description=RD.command.banlist.desc,
+        description_localizations=RL.command.banlist.desc,
         default_member_permissions=discord.Permissions(moderate_members=True)
     )
 
-    @banlist.command(name="show", description=R.banlist_show_desc)
+    @banlist.command(
+        name=RD.command.banlist.show.name,
+        name_localizations=RL.command.banlist.show.name,
+        description=RD.command.banlist.show.desc,
+        description_localizations=RL.command.banlist.show.desc
+    )
     async def show(ctx: discord.ApplicationContext):
         """
         Displays the banlist.
@@ -64,12 +72,47 @@ def setup_banlist_command(bot: discord.Bot):
                                update_callback=update_banlist)
         await ctx.respond(embeds=embeds_or_err, view=view)
 
-    @banlist.command(name="add", description=R.banlist_add_desc)
-    @discord.option("name", description=R.banlist_add_name_desc, required=True)
-    @discord.option("reason", description=R.banlist_add_reason_desc, required=True)
-    @discord.option("banned_by", description=R.banlist_add_banned_by_desc, required=True)
-    @discord.option("length", description=R.banlist_add_length_desc, required=True)
-    @discord.option("image_url", description=R.banlist_add_image_desc, required=False)
+    @banlist.command(
+        name=RD.command.banlist.add.name,
+        name_localizations=RL.command.banlist.add.name,
+        description=RD.command.banlist.add.desc,
+        description_localizations=RL.command.banlist.add.desc
+    )
+    @discord.option(
+        name=RD.command.banlist.add.option.name,
+        name_localizations=RL.command.banlist.add.option.name,
+        description=RD.command.banlist.add.option.name_desc,
+        description_localizations=RL.command.banlist.add.option.name_desc,
+        required=True
+    )
+    @discord.option(
+        name=RD.command.banlist.add.option.reason,
+        name_localizations=RL.command.banlist.add.option.reason,
+        description=RD.command.banlist.add.option.reason_desc,
+        description_localizations=RL.command.banlist.add.option.reason_desc,
+        required=True
+    )
+    @discord.option(
+        name=RD.command.banlist.add.option.banned_by,
+        name_localizations=RL.command.banlist.add.option.banned_by,
+        description=RD.command.banlist.add.option.banned_by_desc,
+        description_localizations=RL.command.banlist.add.option.banned_by_desc,
+        required=True
+    )
+    @discord.option(
+        name=RD.command.banlist.add.option.length,
+        name_localizations=RL.command.banlist.add.option.length,
+        description=RD.command.banlist.add.option.length_desc,
+        description_localizations=RL.command.banlist.add.option.length_desc,
+        required=True
+    )
+    @discord.option(
+        name=RD.command.banlist.add.option.image_url,
+        name_localizations=RL.command.banlist.add.option.image_url,
+        description=RD.command.banlist.add.option.image_desc,
+        description_localizations=RL.command.banlist.add.option.image_desc,
+        required=False
+    )
     async def add(ctx: discord.ApplicationContext, name: str, reason: str, banned_by: str, length: str, image_url: str = None):
         """
         Adds a user to the banlist.
@@ -88,8 +131,19 @@ def setup_banlist_command(bot: discord.Bot):
         await ctx.respond(embed=create_embed(R.banlist_add_success % name, color=C.success_color), ephemeral=True)
         logger.info(f"Added {name} to banlist", ctx.interaction)
 
-    @banlist.command(name="remove", description=R.banlist_remove_desc)
-    @discord.option("name", description=R.banlist_remove_name_desc, required=True)
+    @banlist.command(
+        name=RD.command.banlist.remove.name,
+        name_localizations=RL.command.banlist.remove.name,
+        description=RD.command.banlist.remove.desc,
+        description_localizations=RL.command.banlist.remove.desc
+    )
+    @discord.option(
+        name=RD.command.banlist.remove.option.name,
+        name_localizations=RL.command.banlist.remove.option.name,
+        description=RD.command.banlist.remove.option.name_desc,
+        description_localizations=RL.command.banlist.remove.option.name_desc,
+        required=True
+    )
     async def remove(ctx: discord.ApplicationContext, name: str):
         """
         Removes a user from the banlist.
@@ -102,8 +156,19 @@ def setup_banlist_command(bot: discord.Bot):
         await ctx.respond(embed=create_embed(R.banlist_remove_success % name, color=C.success_color), ephemeral=True)
         logger.info(f"Removed {name} from banlist", ctx.interaction)
 
-    @banlist.command(name="showimg", description=R.banlist_showimg_desc)
-    @discord.option("name", description=R.banlist_showimg_name_desc, required=True)
+    @banlist.command(
+        name=RD.command.banlist.showimg.name,
+        name_localizations=RL.command.banlist.showimg.name,
+        description=RD.command.banlist.showimg.desc,
+        description_localizations=RL.command.banlist.showimg.desc
+    )
+    @discord.option(
+        name=RD.command.banlist.showimg.option.name,
+        name_localizations=RL.command.banlist.showimg.option.name,
+        description=RD.command.banlist.showimg.option.name_desc,
+        description_localizations=RL.command.banlist.showimg.option.name_desc,
+        required=True
+    )
     async def showimg(ctx: discord.ApplicationContext, name: str):
         """
         Shows the image of a banned user.

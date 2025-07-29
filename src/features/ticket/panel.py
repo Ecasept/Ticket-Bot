@@ -8,7 +8,8 @@ from src.database.ticket_category import TicketCategory
 from .header import HeaderView
 from src.utils import get_mod_roles, get_ticket_category, logger, create_embed, handle_error
 from src.database import db
-from src.res import C, R
+from src.constants import C
+from src.res import R
 from src.error import Ce, We
 from src.features.category.questions import CategoryQuestionsModal
 
@@ -30,9 +31,9 @@ class PanelView(discord.ui.View):
             categories = [
                 TicketCategory(
                     id=0,
-                    name="Test Kategorie",
+                    name=R.feature.panel.test_category_name,
                     emoji="🎫",
-                    description="Dies ist eine Testkategorie",
+                    description=R.feature.panel.test_category_description,
                     guild_id=0
                 )
             ]
@@ -49,7 +50,7 @@ class PanelView(discord.ui.View):
             self.add_item(dropdown)
         else:
             # No categories to show
-            await handle_error(interaction, We("Keine verfügbaren Ticket-Kategorien gefunden."))
+            await handle_error(interaction, We(R.feature.panel.no_categories_found))
 
     async def _create_category_dropdown(self, categories, interaction: discord.Interaction):
         """Create a dropdown menu for category selection."""
@@ -67,7 +68,7 @@ class PanelView(discord.ui.View):
             options.append(discord.SelectOption(
                 label=category.name,
                 value=str(category.id),
-                description=category.description[:100] if category.description else "Keine Beschreibung",
+                description=category.description[:100] if category.description else R.feature.panel.no_description,
                 emoji=emoji
             ))
 
@@ -75,7 +76,7 @@ class PanelView(discord.ui.View):
             return None
 
         select = discord.ui.Select(
-            placeholder="Wähle eine Ticket-Kategorie...",
+            placeholder=R.ticket_category_select_placeholder,
             options=options,
             custom_id="category_select"
         )
@@ -93,13 +94,13 @@ class PanelView(discord.ui.View):
             # Get category details
             category = db.tc.get_category(category_id)
             if not category:
-                await handle_error(interaction, We("Kategorie nicht gefunden"))
+                await handle_error(interaction, We(R.feature.panel.category_not_found))
                 return
 
             # Check if user can use this category
             user_role_ids = [role.id for role in interaction.user.roles]
             if not db.tc.user_can_use_category(category_id, user_role_ids):
-                await handle_error(interaction, We("Du hast keine Berechtigung, diese Kategorie zu verwenden"))
+                await handle_error(interaction, We(R.feature.panel.no_permission))
                 return
 
             # Check for questions
@@ -135,7 +136,7 @@ class PanelView(discord.ui.View):
 
         except Exception as e:
             logger.error(f"Error handling category selection: {e}")
-            await handle_error(interaction, Ce(f"Fehler beim Erstellen des Tickets: {e}"))
+            await handle_error(interaction, Ce(R.feature.panel.error_creating_ticket % e))
 
 
 def generate_channel_name(user: discord.User, category_name: str) -> str:
@@ -161,7 +162,7 @@ def generate_channel_name(user: discord.User, category_name: str) -> str:
 
     # Fallback prefixes for known categories
     if not prefix:
-        prefix = "ticket"
+        prefix = R.feature.panel.default_category_name
 
     channel_name = f"{prefix}-{user.name}"
     i = 1
@@ -193,7 +194,7 @@ async def create_ticket_channel(interaction: discord.Interaction, user: discord.
 
     # Get category name for channel naming
     category = db.tc.get_category(category_id)
-    category_name = category.name if category else "ticket"
+    category_name = category.name if category else R.feature.panel.default_category_name
 
     channel_name = generate_channel_name(user, category_name)
 
@@ -237,7 +238,7 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
     # Get category details
     category = db.tc.get_category(category_id)
     title = f"{category.emoji} {category.name}"
-    msg = f"Willkommen {user.mention}! {category.description}"
+    msg = R.feature.panel.welcome_message % (user.mention, category.description)
 
     embed = discord.Embed(
         title=title,
@@ -248,7 +249,7 @@ async def init_ticket_channel(interaction: discord.Interaction, user: discord.Us
     # Add category question answers if present
     if question_answers:
         embed.add_field(
-            name="Antworten",
+            name=R.feature.panel.answers,
             value=question_answers,
             inline=False
         )
@@ -311,11 +312,7 @@ async def create_panel_view(guild_id: int, interaction: discord.Interaction | No
         categories = db.tc.get_categories_for_guild(guild_id)
 
         if not categories:
-            return None, We(
-                "Keine Ticket-Kategorien gefunden!\n\n"
-                "Erstelle zuerst Kategorien mit `/category create`, "
-                "bevor du ein Panel erstellst."
-            )
+            return None, We(R.feature.panel.no_categories_configured_error)
 
         # Create the persistent panel view with dynamic dropdown menu
         panel_view = PanelView()
@@ -325,4 +322,4 @@ async def create_panel_view(guild_id: int, interaction: discord.Interaction | No
 
     except Exception as e:
         logger.error(f"Error creating panel view: {e}")
-        return None, Ce(f"Fehler beim Erstellen der Panel-Ansicht: {e}")
+        return None, Ce(R.feature.panel.panel_view_error % e)

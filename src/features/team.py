@@ -1,23 +1,28 @@
+"""
+Team management commands.
+"""
+import re
+import discord
 import datetime
+from src.res import role_select
 from src.utils import handle_error, logger, create_embed, error_embed, error_to_embed, get_log_channel, parse_duration, get_team_welcome_channel
 from src.error import Error, We
 from src.database import db
-import discord
-import re
-from src.res import C, R
+from src.constants import C
+from src.res import R, RD, RL, LateView, button, late
 from discord.ext import tasks
 from src.features.shared.list_display import ListDisplayView, create_list_embeds
 
 
-class ApplicationBannedView(discord.ui.View):
+class ApplicationBannedView(LateView):
     def __init__(self, user: discord.Member):
         super().__init__(timeout=None)
         self.user = user
 
-    @discord.ui.button(
+    @late(lambda: button(
         label=R.team_sperre_unban,
         style=discord.ButtonStyle.danger,
-        emoji=discord.PartialEmoji(name=R.team_sperre_unban_emoji))
+        emoji=discord.PartialEmoji(name=R.team_sperre_unban_emoji)))
     async def unban(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Unban the user from creating application tickets.
@@ -40,7 +45,7 @@ class ApplicationBannedView(discord.ui.View):
             f"User {self.user.name} ({self.user.id}) unbanned from creating application tickets", interaction)
 
 
-class RoleSelectView(discord.ui.View):
+class RoleSelectView(LateView):
     """
     View for selecting roles to display in the team list.
     """
@@ -49,11 +54,11 @@ class RoleSelectView(discord.ui.View):
         super().__init__(timeout=180)
         self.selected_roles: list[discord.Role] = []
 
-    @discord.ui.role_select(
+    @late(lambda: role_select(
         placeholder=R.team_list_role_select_placeholder,
         min_values=1,
         max_values=25,
-    )
+    ))
     async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction) -> None:
         """
         Callback for role selection dropdown.
@@ -65,10 +70,6 @@ class RoleSelectView(discord.ui.View):
         # Acknowledge the interaction to prevent "Interaction failed"
         await interaction.response.defer()
 
-    @discord.ui.button(
-        label=R.team_list_submit_button_label,
-        style=discord.ButtonStyle.primary,
-    )
     async def submit_callback(self, button, interaction: discord.Interaction) -> None:
         """
         Callback for submit button.
@@ -203,22 +204,33 @@ def setup_team_command(bot: discord.Bot) -> None:
         bot (discord.Bot): The Discord bot instance.
     """
     team = discord.SlashCommandGroup(
-        "team",
-        R.team_group_desc,
+        name=RD.command.team.name,
+        name_localizations=RL.command.team.name,
+        description=RD.command.team.desc,
+        description_localizations=RL.command.team.desc,
         default_member_permissions=discord.Permissions(administrator=True)
     )
 
-    @team.command(name="add", description=R.team_add_desc)
+    @team.command(
+        name=RD.command.team.add.name,
+        name_localizations=RL.command.team.add.name,
+        description=RD.command.team.add.desc,
+        description_localizations=RL.command.team.add.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "user",
-        description=R.team_add_user_desc,
+        name=RD.command.team.add.option.user,
+        name_localizations=RL.command.team.add.option.user,
+        description=RD.command.team.add.option.user_desc,
+        description_localizations=RL.command.team.add.option.user_desc,
         type=discord.SlashCommandOptionType.user,
         required=True
     )
     @discord.option(
-        "role",
-        description=R.team_add_role_desc,
+        name=RD.command.team.add.option.role,
+        name_localizations=RL.command.team.add.option.role,
+        description=RD.command.team.add.option.role_desc,
+        description_localizations=RL.command.team.add.option.role_desc,
         type=discord.SlashCommandOptionType.role,
         required=True
     )
@@ -253,17 +265,26 @@ def setup_team_command(bot: discord.Bot) -> None:
             await ctx.respond(embed=error_embed(R.error_occurred % e), ephemeral=True)
             raise e  # Re-raise the exception to log it
 
-    @team.command(name="remove", description=R.team_remove_desc)
+    @team.command(
+        name=RD.command.team.remove.name,
+        name_localizations=RL.command.team.remove.name,
+        description=RD.command.team.remove.desc,
+        description_localizations=RL.command.team.remove.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "user",
-        description=R.team_remove_user_desc,
+        name=RD.command.team.remove.option.user,
+        name_localizations=RL.command.team.remove.option.user,
+        description=RD.command.team.remove.option.user_desc,
+        description_localizations=RL.command.team.remove.option.user_desc,
         type=discord.SlashCommandOptionType.user,
         required=True
     )
     @discord.option(
-        "role",
-        description=R.team_remove_role_desc,
+        name=RD.command.team.remove.option.role,
+        name_localizations=RL.command.team.remove.option.role,
+        description=RD.command.team.remove.option.role_desc,
+        description_localizations=RL.command.team.remove.option.role_desc,
         type=discord.SlashCommandOptionType.role,
         required=True
     )
@@ -292,23 +313,34 @@ def setup_team_command(bot: discord.Bot) -> None:
             await ctx.respond(embed=error_embed(R.error_occurred % e), ephemeral=True)
             raise e  # Re-raise the exception to log it
 
-    @team.command(name="wechsel", description=R.team_wechsel_desc)
+    @team.command(
+        name=RD.command.team.wechsel.name,
+        name_localizations=RL.command.team.wechsel.name,
+        description=RD.command.team.wechsel.desc,
+        description_localizations=RL.command.team.wechsel.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "user",
-        description=R.team_wechsel_user_desc,
+        name=RD.command.team.wechsel.option.user,
+        name_localizations=RL.command.team.wechsel.option.user,
+        description=RD.command.team.wechsel.option.user_desc,
+        description_localizations=RL.command.team.wechsel.option.user_desc,
         type=discord.SlashCommandOptionType.user,
         required=True
     )
     @discord.option(
-        "von",
-        description=R.team_wechsel_from_role_desc,
+        name=RD.command.team.wechsel.option.from_role,
+        name_localizations=RL.command.team.wechsel.option.from_role,
+        description=RD.command.team.wechsel.option.from_role_desc,
+        description_localizations=RL.command.team.wechsel.option.from_role_desc,
         type=discord.SlashCommandOptionType.role,
         required=True
     )
     @discord.option(
-        "zu",
-        description=R.team_wechsel_to_role_desc,
+        name=RD.command.team.wechsel.option.to_role,
+        name_localizations=RL.command.team.wechsel.option.to_role,
+        description=RD.command.team.wechsel.option.to_role_desc,
+        description_localizations=RL.command.team.wechsel.option.to_role_desc,
         type=discord.SlashCommandOptionType.role,
         required=True
     )
@@ -344,7 +376,12 @@ def setup_team_command(bot: discord.Bot) -> None:
             await ctx.respond(embed=error_embed(R.error_occurred % e), ephemeral=True)
             raise e
 
-    @team.command(name="list", description=R.team_list_desc)
+    @team.command(
+        name=RD.command.team.list.name,
+        name_localizations=RL.command.team.list.name,
+        description=RD.command.team.list.desc,
+        description_localizations=RL.command.team.list.desc
+    )
     @discord.default_permissions(administrator=True)
     async def team_list(ctx: discord.ApplicationContext) -> None:
         """
@@ -355,17 +392,26 @@ def setup_team_command(bot: discord.Bot) -> None:
         view = RoleSelectView()
         await ctx.respond(embed=create_embed(R.team_list_select_roles_prompt), view=view, ephemeral=True)
 
-    @team.command(name="sperre", description=R.team_sperre_desc)
+    @team.command(
+        name=RD.command.team.sperre.name,
+        name_localizations=RL.command.team.sperre.name,
+        description=RD.command.team.sperre.desc,
+        description_localizations=RL.command.team.sperre.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "user",
-        description=R.team_sperre_user_desc,
+        name=RD.command.team.sperre.option.user,
+        name_localizations=RL.command.team.sperre.option.user,
+        description=RD.command.team.sperre.option.user_desc,
+        description_localizations=RL.command.team.sperre.option.user_desc,
         type=discord.SlashCommandOptionType.user,
         required=True
     )
     @discord.option(
-        "duration",
-        description=R.team_sperre_duration_desc,
+        name=RD.command.team.sperre.option.duration,
+        name_localizations=RL.command.team.sperre.option.duration,
+        description=RD.command.team.sperre.option.duration_desc,
+        description_localizations=RL.command.team.sperre.option.duration_desc,
         type=discord.SlashCommandOptionType.string,
         required=False,
         default=None
@@ -418,11 +464,18 @@ def setup_team_command(bot: discord.Bot) -> None:
         logger.info(
             f"User {user.name} ({user.id}) banned from creating application tickets", ctx.interaction)
 
-    @team.command(name="welcome", description=R.team_welcome_desc)
+    @team.command(
+        name=RD.command.team.welcome.name,
+        name_localizations=RL.command.team.welcome.name,
+        description=RD.command.team.welcome.desc,
+        description_localizations=RL.command.team.welcome.desc
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "channel",
-        description=R.team_welcome_channel_desc,
+        name=RD.command.team.welcome.option.channel,
+        name_localizations=RL.command.team.welcome.option.channel,
+        description=RD.command.team.welcome.option.channel_desc,
+        description_localizations=RL.command.team.welcome.option.channel_desc,
         type=discord.SlashCommandOptionType.channel,
         required=False,
         default=None,

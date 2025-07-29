@@ -2,25 +2,27 @@
 Setup button interface for the ticket menu.
 """
 import discord
-from src.res import R, C
+from src.res import R
+from src.constants import C
 from src.utils import create_embed, logger
 from src.database import db
 from src.features.setup.setup import (
     setup_tickets, setup_transcript, setup_logchannel,
     setup_timeout_logchannel, show_modroles
 )
+from src.res.utils import LateView, late, button, channel_select, role_select, select
 
 
-class SetupOptionView(discord.ui.View):
+class SetupOptionView(LateView):
     def __init__(self, option):
         super().__init__(timeout=300)
         self.option = option
 
-    @discord.ui.button(
+    @late(lambda: button(
         label=R.setup_view_value,
         style=discord.ButtonStyle.secondary,
         emoji="👁️"
-    )
+    ))
     async def view_value_callback(self, button, interaction: discord.Interaction):
         if self.option == "tickets":
             await setup_tickets(interaction)
@@ -35,11 +37,11 @@ class SetupOptionView(discord.ui.View):
 
         logger.info(f"Viewed setup option {self.option}", interaction)
 
-    @discord.ui.button(
+    @late(lambda: button(
         label=R.setup_set_value,
         style=discord.ButtonStyle.primary,
         emoji="✏️"
-    )
+    ))
     async def set_value_callback(self, button, interaction: discord.Interaction):
         if self.option == "tickets":
             await self._set_tickets(interaction)
@@ -55,14 +57,14 @@ class SetupOptionView(discord.ui.View):
         logger.info(f"Setting setup option {self.option}", interaction)
 
     async def _set_tickets(self, interaction: discord.Interaction):
-        class CategorySelectView(discord.ui.View):
+        class CategorySelectView(LateView):
             def __init__(self):
                 super().__init__(timeout=120)
 
-            @discord.ui.channel_select(
-                placeholder="Wähle eine Kategorie für Tickets",
+            @late(lambda: channel_select(
+                placeholder=R.setup_tickets_select_placeholder,
                 channel_types=[discord.ChannelType.category]
-            )
+            ))
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 category = select.values[0]
                 await setup_tickets(interaction, category)
@@ -70,21 +72,21 @@ class SetupOptionView(discord.ui.View):
 
         view = CategorySelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle eine Kategorie für Tickets:",
-                               title="Tickets Kategorie setzen"),
+            embed=create_embed(R.feature.setup.button.set_tickets.embed_desc,
+                               title=R.feature.setup.button.set_tickets.embed_title),
             view=view,
             ephemeral=True
         )
 
     async def _set_transcript(self, interaction: discord.Interaction):
-        class CategorySelectView(discord.ui.View):
+        class CategorySelectView(LateView):
             def __init__(self):
                 super().__init__(timeout=120)
 
-            @discord.ui.channel_select(
-                placeholder="Wähle eine Kategorie für Transcripts",
+            @late(lambda: channel_select(
+                placeholder=R.setup_transcript_select_placeholder,
                 channel_types=[discord.ChannelType.category]
-            )
+            ))
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 category = select.values[0]
                 await setup_transcript(interaction, category)
@@ -93,20 +95,20 @@ class SetupOptionView(discord.ui.View):
         view = CategorySelectView()
         await interaction.response.send_message(
             embed=create_embed(
-                "Wähle eine Kategorie für Transcripts:", title="Transcript Kategorie setzen"),
+                R.feature.setup.button.set_transcript.embed_desc, title=R.feature.setup.button.set_transcript.embed_title),
             view=view,
             ephemeral=True
         )
 
     async def _set_logchannel(self, interaction: discord.Interaction):
-        class ChannelSelectView(discord.ui.View):
+        class ChannelSelectView(LateView):
             def __init__(self):
                 super().__init__(timeout=120)
 
-            @discord.ui.channel_select(
-                placeholder="Wähle einen Log-Channel",
+            @late(lambda: channel_select(
+                placeholder=R.setup_logchannel_select_placeholder,
                 channel_types=[discord.ChannelType.text]
-            )
+            ))
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 channel = select.values[0]
                 await setup_logchannel(interaction, channel)
@@ -114,21 +116,21 @@ class SetupOptionView(discord.ui.View):
 
         view = ChannelSelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle einen Log-Channel:",
-                               title="Log Channel setzen"),
+            embed=create_embed(R.feature.setup.button.set_logchannel.embed_desc,
+                               title=R.feature.setup.button.set_logchannel.embed_title),
             view=view,
             ephemeral=True
         )
 
     async def _set_timeout_logchannel(self, interaction: discord.Interaction):
-        class ChannelSelectView(discord.ui.View):
+        class ChannelSelectView(LateView):
             def __init__(self):
                 super().__init__(timeout=120)
 
-            @discord.ui.channel_select(
-                placeholder="Wähle einen Timeout Log-Channel",
+            @late(lambda: channel_select(
+                placeholder=R.setup_timeout_logchannel_select_placeholder,
                 channel_types=[discord.ChannelType.text]
-            )
+            ))
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 channel = select.values[0]
                 await setup_timeout_logchannel(interaction, channel)
@@ -136,31 +138,31 @@ class SetupOptionView(discord.ui.View):
 
         view = ChannelSelectView()
         await interaction.response.send_message(
-            embed=create_embed("Wähle einen Timeout Log-Channel:",
-                               title="Timeout Log Channel setzen"),
+            embed=create_embed(R.feature.setup.button.set_timeout_logchannel.embed_desc,
+                               title=R.feature.setup.button.set_timeout_logchannel.embed_title),
             view=view,
             ephemeral=True
         )
 
     async def _set_modroles(self, interaction: discord.Interaction):
-        class ModRolesSelectView(discord.ui.View):
+        class ModRolesSelectView(LateView):
             def __init__(self):
                 super().__init__(timeout=120)
                 self.selected_roles = []
 
-            @discord.ui.role_select(
+            @late(lambda: role_select(
                 placeholder=R.setup_modroles_select_placeholder,
                 min_values=1,
                 max_values=25,
-            )
+            ))
             async def select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
                 self.selected_roles = select.values
                 await interaction.response.defer()
 
-            @discord.ui.button(
+            @late(lambda: button(
                 label=R.modroles_submit_button_label,
                 style=discord.ButtonStyle.primary,
-            )
+            ))
             async def submit_callback(self, button, interaction: discord.Interaction):
                 if not self.selected_roles:
                     await interaction.response.send_message(embed=create_embed(R.setup_modroles_none_selected, color=C.error_color), ephemeral=True)
@@ -187,60 +189,60 @@ class SetupOptionView(discord.ui.View):
         )
 
 
-class SetupSelectView(discord.ui.View):
+class SetupSelectView(LateView):
     def __init__(self):
         super().__init__(timeout=300)
 
-    @discord.ui.select(
-        placeholder="Wähle eine Setup-Option",
+    @late(lambda: select(
+        placeholder=R.setup_select_option_placeholder,
         options=[
             discord.SelectOption(
-                label="Tickets Kategorie",
-                description="Kategorie für Tickets setzen/anzeigen",
+                label=R.setup_option_tickets_label,
+                description=R.setup_option_tickets_desc,
                 value="tickets",
                 emoji="🎫"
             ),
             discord.SelectOption(
-                label="Transcript Kategorie",
-                description="Kategorie für Transcripts setzen/anzeigen",
+                label=R.setup_option_transcript_label,
+                description=R.setup_option_transcript_desc,
                 value="transcript",
                 emoji="📜"
             ),
             discord.SelectOption(
-                label="Log Channel",
-                description="Log Channel setzen/anzeigen",
+                label=R.setup_option_logchannel_label,
+                description=R.setup_option_logchannel_desc,
                 value="logchannel",
                 emoji="📝"
             ),
             discord.SelectOption(
-                label="Timeout Log Channel",
-                description="Timeout Log Channel setzen/anzeigen",
+                label=R.setup_option_timeout_logchannel_label,
+                description=R.setup_option_timeout_logchannel_desc,
                 value="timeout_logchannel",
                 emoji="⏰"
             ),
             discord.SelectOption(
-                label="Moderator Rollen",
-                description="Moderator Rollen setzen/anzeigen",
+                label=R.setup_option_modroles_label,
+                description=R.setup_option_modroles_desc,
                 value="modroles",
                 emoji="👮"
             )
         ]
-    )
+    ))
     async def setup_select_callback(self, select: discord.ui.Select, interaction: discord.Interaction):
         option = select.values[0]
 
         # Show the new interface with Set Value and View Value buttons
         option_names = {
-            "tickets": "Tickets Kategorie",
-            "transcript": "Transcript Kategorie",
-            "logchannel": "Log Channel",
-            "timeout_logchannel": "Timeout Log Channel",
-            "modroles": "Moderator Rollen"
+            "tickets": R.feature.setup.button.option_view.option_name_tickets,
+            "transcript": R.feature.setup.button.option_view.option_name_transcript,
+            "logchannel": R.feature.setup.button.option_view.option_name_logchannel,
+            "timeout_logchannel": R.feature.setup.button.option_view.option_name_timeout_logchannel,
+            "modroles": R.feature.setup.button.option_view.option_name_modroles
         }
 
         embed = create_embed(
-            f"Was möchtest du mit **{option_names[option]}** machen?",
-            title="Setup Option",
+            R.feature.setup.button.option_view.embed_desc % option_names[option],
+            title=R.feature.setup.button.option_view.embed_title,
             color=C.embed_color
         )
         view = SetupOptionView(option)
@@ -260,8 +262,8 @@ class SetupButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         embed = create_embed(
-            "Wähle eine Setup-Option aus dem Dropdown-Menü:",
-            title="Bot Setup",
+            R.feature.setup.button.select_view.embed_desc,
+            title=R.feature.setup.button.select_view.embed_title,
             color=C.embed_color
         )
         view = SetupSelectView()

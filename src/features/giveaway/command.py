@@ -2,7 +2,7 @@
 Giveaway slash command - separated from functionality.
 """
 import discord
-from src.res import R
+from src.res import R, RD, RL
 from src.features.giveaway.giveaway import create_giveaway, setup_giveaway_background_task
 
 
@@ -13,29 +13,42 @@ def setup_giveaway_command(bot: discord.Bot):
         bot (discord.Bot): The Discord bot instance.
     """
 
-    @bot.slash_command(name="giveaway", description=R.giveaway_desc)
+    @bot.slash_command(
+        name=RD.command.giveaway.name,
+        name_localizations=RL.command.giveaway.name,
+        description=RD.command.giveaway.desc,
+        description_localizations=RL.command.giveaway.desc,
+    )
     @discord.default_permissions(administrator=True)
     @discord.option(
-        "dauer",
-        description=R.giveaway_duration_desc,
+        name=RD.command.giveaway.option.duration,
+        name_localizations=RL.command.giveaway.option.duration,
+        description=RD.command.giveaway.option.duration_desc,
+        description_localizations=RL.command.giveaway.option.duration_desc,
         required=True
     )
     @discord.option(
-        "preis",
-        description=R.giveaway_prize_desc,
+        name=RD.command.giveaway.option.prize,
+        name_localizations=RL.command.giveaway.option.prize,
+        description=RD.command.giveaway.option.prize_desc,
+        description_localizations=RL.command.giveaway.option.prize_desc,
         required=True
     )
     @discord.option(
-        "gewinner",
-        description=R.giveaway_winners_desc,
+        name=RD.command.giveaway.option.winner_count,
+        name_localizations=RL.command.giveaway.option.winner_count,
+        description=RD.command.giveaway.option.winner_count_desc,
+        description_localizations=RL.command.giveaway.option.winner_count_desc,
         required=False,
         default=1,
         min_value=1,
         max_value=20
     )
     @discord.option(
-        "rolle",
-        description=R.giveaway_role_desc,
+        name=RD.command.giveaway.option.role,
+        name_localizations=RL.command.giveaway.option.role,
+        description=RD.command.giveaway.option.role_desc,
+        description_localizations=RL.command.giveaway.option.role_desc,
         required=False,
         default=None,
         type=discord.SlashCommandOptionType.role

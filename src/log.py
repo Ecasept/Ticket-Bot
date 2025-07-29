@@ -6,7 +6,7 @@ import datetime
 import traceback
 
 import discord
-from src.error import Ce, Error
+from src.error import Error
 
 # ANSI escape sequences for colored output
 

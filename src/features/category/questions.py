@@ -4,7 +4,9 @@ Handles category-specific questions and their collection during ticket creation.
 """
 import discord
 from typing import List, Tuple, Dict
-from src.res import R, C
+from src.res import R
+from src.res.utils import LateView, button, late
+from src.constants import C
 from src.utils import create_embed, logger, handle_error
 from src.database import db
 from src.error import Ce
@@ -21,7 +23,7 @@ class CategoryQuestionsModal(discord.ui.Modal):
             category: The ticket category object.
             questions: List of question tuples (id, question_text).
         """
-        super().__init__(title=f"Fragen: {category.name}")
+        super().__init__(title=R.feature.category.questions.modal.title % category.name)
         self.category = category
         self.questions = questions
         self.answers = {}
@@ -30,7 +32,7 @@ class CategoryQuestionsModal(discord.ui.Modal):
         # If there are more questions, we'll need to handle them differently
         for i, (question_id, question_text) in enumerate(questions[:5]):
             input_field = discord.ui.InputText(
-                label=f"Frage {i+1}",
+                label=R.feature.category.questions.modal.question_label % (i + 1),
                 placeholder=question_text,
                 required=True,
                 style=discord.InputTextStyle.long if len(
@@ -61,12 +63,12 @@ class CategoryQuestionsModal(discord.ui.Modal):
             str: Formatted answers for display in the ticket.
         """
         if not self.answers:
-            return "Keine Antworten erhalten."
+            return R.feature.category.questions.modal.no_answers
 
         formatted_lines = []
         for question_id, answer in self.answers.items():
             # Find the question text
-            question_text = "Unbekannte Frage"
+            question_text = R.feature.category.questions.modal.unknown_question
             for q_id, q_text in self.questions:
                 if q_id == question_id:
                     question_text = q_text
@@ -90,12 +92,13 @@ class QuestionAddModal(discord.ui.Modal):
     """Modal for adding a single question to a category."""
 
     def __init__(self, category):
-        super().__init__(title=f"Frage hinzufügen: {category.name}")
+        super().__init__(
+            title=R.feature.category.questions.add_modal.title % category.name)
         self.category = category
 
         self.question = discord.ui.InputText(
-            label="Frage",
-            placeholder="Gib deine Frage ein...",
+            label=R.feature.category.questions.add_modal.question_label,
+            placeholder=R.feature.category.questions.add_modal.question_placeholder,
             required=True,
             style=discord.InputTextStyle.long,
             max_length=500
@@ -112,7 +115,8 @@ class QuestionsReplaceModal(discord.ui.Modal):
     """Modal for replacing all questions for a category."""
 
     def __init__(self, category):
-        super().__init__(title=f"Fragen ersetzen: {category.name}")
+        super().__init__(
+            title=R.feature.category.questions.replace_modal.title % category.name)
         self.category = category
 
         # Get current questions to pre-fill
@@ -121,8 +125,8 @@ class QuestionsReplaceModal(discord.ui.Modal):
             [q[1] for q in current_questions]) if current_questions else ""
 
         self.questions = discord.ui.InputText(
-            label="Fragen (eine pro Zeile)",
-            placeholder="Frage 1\nFrage 2\nFrage 3\n...",
+            label=R.feature.category.questions.replace_modal.questions_label,
+            placeholder=R.feature.category.questions.replace_modal.questions_placeholder,
             required=False,
             style=discord.InputTextStyle.long,
             value=current_text,
@@ -136,14 +140,14 @@ class QuestionsReplaceModal(discord.ui.Modal):
         await interaction.response.defer()
 
 
-class CategoryQuestionEditView(discord.ui.View):
+class CategoryQuestionEditView(LateView):
     """View for editing questions for a category."""
 
     def __init__(self, category):
         super().__init__(timeout=300)
         self.category = category
 
-    @discord.ui.button(label="Frage hinzufügen", style=discord.ButtonStyle.primary, emoji="➕")
+    @late(lambda: button(label=R.category_question_add, style=discord.ButtonStyle.primary, emoji="➕"))
     async def add_question(self, button: discord.ui.Button, interaction: discord.Interaction):
         modal = QuestionAddModal(self.category)
         await interaction.response.send_modal(modal)
@@ -153,13 +157,14 @@ class CategoryQuestionEditView(discord.ui.View):
             db.tc.add_question(self.category.id, modal.question.value)
 
             embed = create_embed(
-                f"Frage zu '{self.category.name}' hinzugefügt: {modal.question.value}",
+                R.feature.category.questions.edit_view.add_success_desc % (
+                    self.category.name, modal.question.value),
                 color=C.success_color,
-                title="Frage hinzugefügt"
+                title=R.feature.category.questions.edit_view.add_success_title
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="Alle Fragen ersetzen", style=discord.ButtonStyle.secondary, emoji="🔄")
+    @late(lambda: button(label=R.category_questions_replace_all, style=discord.ButtonStyle.secondary, emoji="🔄"))
     async def replace_questions(self, button: discord.ui.Button, interaction: discord.Interaction):
         modal = QuestionsReplaceModal(self.category)
         await interaction.response.send_modal(modal)
@@ -175,20 +180,21 @@ class CategoryQuestionEditView(discord.ui.View):
             db.tc.set_questions(self.category.id, question_list)
 
             embed = create_embed(
-                f"Fragen für '{self.category.name}' aktualisiert ({len(question_list)} Fragen)",
+                R.feature.category.questions.edit_view.replace_success_desc % (
+                    self.category.name, len(question_list)),
                 color=C.success_color,
-                title="Fragen aktualisiert"
+                title=R.feature.category.questions.edit_view.replace_success_title
             )
             await interaction.followup.send(embed=embed, ephemeral=True)
 
-    @discord.ui.button(label="Alle Fragen löschen", style=discord.ButtonStyle.danger, emoji="🗑️")
+    @late(lambda: button(label=R.category_questions_delete_all, style=discord.ButtonStyle.danger, emoji="🗑️"))
     async def clear_questions(self, button: discord.ui.Button, interaction: discord.Interaction):
         db.tc.set_questions(self.category.id, [])
 
         embed = create_embed(
-            f"Alle Fragen für '{self.category.name}' wurden gelöscht",
+            R.feature.category.questions.edit_view.clear_success_desc % self.category.name,
             color=C.success_color,
-            title="Fragen gelöscht"
+            title=R.feature.category.questions.edit_view.clear_success_title
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -242,12 +248,12 @@ class CategoryQuestionsMultiModal:
     def get_formatted_answers(self) -> str:
         """Get formatted string of all answers."""
         if not self.all_answers:
-            return "Keine Antworten erhalten."
+            return R.feature.category.questions.modal.no_answers
 
         formatted_lines = []
         for question_id, answer in self.all_answers.items():
             # Find the question text
-            question_text = "Unbekannte Frage"
+            question_text = R.feature.category.questions.modal.unknown_question
             for q_id, q_text in self.questions:
                 if q_id == question_id:
                     question_text = q_text

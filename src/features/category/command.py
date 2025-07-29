@@ -3,6 +3,7 @@ Category management commands for ticket categories.
 Provides /category create, list, edit, and remove commands with button/selection based UI.
 """
 import discord
+from src.res import RD, RL
 from .create import handle_create_category
 from .edit import handle_edit_categories
 from .remove import handle_remove_category
@@ -15,12 +16,19 @@ def setup_category_command(bot: discord.Bot):
         bot (discord.Bot): The Discord bot instance.
     """
     category = discord.SlashCommandGroup(
-        "category",
-        "Verwalte benutzerdefinierte Ticket-Kategorien",
+        name=RD.command.category.name,
+        name_localizations=RL.command.category.name,
+        description=RD.command.category.desc,
+        description_localizations=RL.command.category.desc,
         default_member_permissions=discord.Permissions(administrator=True)
     )
 
-    @category.command(name="create", description="Erstelle eine neue Ticket-Kategorie")
+    @category.command(
+        name=RD.command.category.create.name,
+        name_localizations=RL.command.category.create.name,
+        description=RD.command.category.create.desc,
+        description_localizations=RL.command.category.create.desc
+    )
     @discord.default_permissions(administrator=True)
     async def category_create(ctx: discord.ApplicationContext):
         """
@@ -31,7 +39,12 @@ def setup_category_command(bot: discord.Bot):
         # Use shared handler that includes modal creation
         await handle_create_category(ctx.interaction)
 
-    @category.command(name="edit", description="Bearbeite eine existierende Ticket-Kategorie")
+    @category.command(
+        name=RD.command.category.edit.name,
+        name_localizations=RL.command.category.edit.name,
+        description=RD.command.category.edit.desc,
+        description_localizations=RL.command.category.edit.desc
+    )
     @discord.default_permissions(administrator=True)
     async def category_edit(ctx: discord.ApplicationContext):
         """
@@ -42,7 +55,12 @@ def setup_category_command(bot: discord.Bot):
         # Use shared handler from category.py
         await handle_edit_categories(ctx.interaction)
 
-    @category.command(name="remove", description="Entferne eine Ticket-Kategorie")
+    @category.command(
+        name=RD.command.category.remove.name,
+        name_localizations=RL.command.category.remove.name,
+        description=RD.command.category.remove.desc,
+        description_localizations=RL.command.category.remove.desc
+    )
     @discord.default_permissions(administrator=True)
     async def category_remove(ctx: discord.ApplicationContext):
         """

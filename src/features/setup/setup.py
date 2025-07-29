@@ -2,7 +2,8 @@
 Setup functionality module - core logic separated from command interface.
 """
 import discord
-from src.res import R, C
+from src.res import R
+from src.constants import C
 from src.utils import create_embed, handle_error, logger, error_embed, get_timeout_log_channel
 from src.database import db
 from src.error import We
@@ -17,7 +18,7 @@ async def setup_tickets(interaction: discord.Interaction, category: discord.Cate
     """
     if category is None:
         # Tell the user the current ticket category
-        cat = db.constant.get(C.ticket_category, interaction.guild.id)
+        cat = db.constant.get(C.DBKey.ticket_category, interaction.guild.id)
         if cat is None:
             await interaction.response.send_message(embed=create_embed(R.setup_no_ticket_category, color=C.warning_color, title=R.setup_title), ephemeral=True)
             logger.error(We(R.setup_no_ticket_category), interaction)
@@ -58,7 +59,8 @@ async def setup_transcript(interaction: discord.Interaction, category: discord.C
     """
     if category is None:
         # Tell the user the current transcript category
-        cat = db.constant.get(C.transcript_category, interaction.guild.id)
+        cat = db.constant.get(C.DBKey.transcript_category,
+                              interaction.guild.id)
         if cat is None:
             await interaction.response.send_message(embed=create_embed(R.setup_no_transcript_category, color=C.warning_color), ephemeral=True)
             logger.error(We(R.setup_no_transcript_category), interaction)
@@ -101,7 +103,8 @@ async def setup_logchannel(interaction: discord.Interaction, channel: discord.Te
     """
     if channel is None:
         # Tell the user the current log channel
-        log_channel_id = db.constant.get(C.log_channel, interaction.guild.id)
+        log_channel_id = db.constant.get(
+            C.DBKey.log_channel, interaction.guild.id)
         if log_channel_id is None:
             await interaction.response.send_message(embed=create_embed(R.setup_no_logchannel, color=C.warning_color, title=R.log_channel_title), ephemeral=True)
             logger.error(We(R.setup_no_logchannel), interaction)
@@ -169,7 +172,7 @@ async def show_modroles(interaction: discord.Interaction):
     Args:
         interaction (discord.Interaction): The interaction context.
     """
-    mod_role_ids = db.constant.get(C.mod_roles, interaction.guild.id)
+    mod_role_ids = db.constant.get(C.DBKey.mod_roles, interaction.guild.id)
     if mod_role_ids:
         role_ids = [int(rid) for rid in mod_role_ids.split(",") if rid]
         roles = [interaction.guild.get_role(rid) for rid in role_ids]

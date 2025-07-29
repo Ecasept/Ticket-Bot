@@ -9,7 +9,8 @@ from src.utils import create_embed, error_to_embed, get_category_name, get_membe
 from src.database import db
 from src.database.ticket import Ticket
 from src.utils import logger, format_date
-from src.res import C, R
+from src.constants import C
+from src.res import R
 from src.error import Ce, We
 
 

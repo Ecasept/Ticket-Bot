@@ -4,7 +4,8 @@ Shared utilities and functions for category management.
 import discord
 from typing import List, Dict, Optional
 from src.database.ticket_category import TicketCategory
-from src.res import R, C
+from src.res import R
+from src.constants import C
 from src.utils import create_embed
 from src.database import db
 
@@ -48,11 +49,12 @@ def create_category_embed(category, role_ids: List[int] = None, questions: List 
     """
     embed = discord.Embed(
         title=f"{category.emoji} {category.name}",
-        description=category.description,
+        description=category.description or R.category_field_no_description,
         color=C.embed_color
     )
 
-    embed.add_field(name="ID", value=str(category.id), inline=True)
+    embed.add_field(name=R.category_field_id,
+                    value=str(category.id), inline=True)
 
     # Role permissions
     if role_ids and guild:
@@ -60,27 +62,28 @@ def create_category_embed(category, role_ids: List[int] = None, questions: List 
         roles = [r for r in roles if r]  # Filter out None roles
         if roles:
             role_text = ", ".join([r.mention for r in roles])
-            embed.add_field(name="Berechtigung", value=role_text, inline=False)
+            embed.add_field(name=R.category_field_permission,
+                            value=role_text, inline=False)
         else:
-            embed.add_field(name="Berechtigung",
-                            value="Alle Benutzer", inline=False)
+            embed.add_field(name=R.category_field_permission,
+                            value=R.category_field_all_users, inline=False)
     else:
-        embed.add_field(name="Berechtigung",
-                        value="Alle Benutzer", inline=False)
+        embed.add_field(name=R.category_field_permission,
+                        value=R.category_field_all_users, inline=False)
 
     # Questions
     if questions:
         question_list = "\n".join(
             [f"{i+1}. {q[1]}" for i, q in enumerate(questions)])
         embed.add_field(
-            name=f"Fragen ({len(questions)})",
+            name=R.category_questions_count % len(questions),
             value=question_list[:1024] if len(
                 question_list) <= 1024 else question_list[:1021] + "...",
             inline=False
         )
     else:
         embed.add_field(
-            name="Fragen", value="Keine Fragen konfiguriert", inline=False)
+            name=R.category_questions, value=R.category_field_no_questions, inline=False)
 
     return embed
 
@@ -88,7 +91,9 @@ def create_category_embed(category, role_ids: List[int] = None, questions: List 
 class CategorySelectView(discord.ui.View):
     """Base view for selecting a category from a dropdown."""
 
-    def __init__(self, guild: discord.Guild, categories: list[TicketCategory], placeholder: str = "Kategorie wählen..."):
+    def __init__(self, guild: discord.Guild, categories: list[TicketCategory], placeholder: str = None):
+        if placeholder is None:
+            placeholder = R.category_select_default_placeholder
         super().__init__(timeout=300)
         self.categories = categories
 
@@ -105,7 +110,7 @@ class CategorySelectView(discord.ui.View):
             options.append(discord.SelectOption(
                 label=cat.name,
                 value=str(cat.id),
-                description=cat.description[:100] if cat.description else "Keine Beschreibung",
+                description=cat.description[:100] if cat.description else R.category_field_no_description,
                 emoji=emoji
             ))
         if options:

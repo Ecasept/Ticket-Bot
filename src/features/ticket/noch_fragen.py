@@ -4,11 +4,13 @@ from .closed import ClosedView, close_channel, close_ticket
 from src.database import db
 from src.utils import create_embed, logger, handle_error
 import datetime
-from src.res import C, R
+from src.constants import C
+from src.res import R
 from src.error import Ce, We
+from src.res.utils import LateView, late, button
 
 
-class NochFragenMessage(discord.ui.View):
+class NochFragenMessage(LateView):
     """
     View for handling the "noch fragen" (any more questions) message.
     """
@@ -30,7 +32,7 @@ class NochFragenMessage(discord.ui.View):
                              color=C.success_color, title=R.noch_fragen_title)
         return embed, view
 
-    @discord.ui.button(label=R.no_questions, style=discord.ButtonStyle.success, custom_id="noch_fragen_delete_ticket", emoji=discord.PartialEmoji(name=R.noch_fragen_delete_emoji))
+    @late(lambda: button(label=R.no_questions, style=discord.ButtonStyle.success, custom_id="noch_fragen_delete_ticket", emoji=discord.PartialEmoji(name=R.noch_fragen_delete_emoji)))
     async def no_questions_left(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Button callback to handle the noch fragen button click.
@@ -58,7 +60,7 @@ class NochFragenMessage(discord.ui.View):
         await interaction.edit_original_response(view=None)
         logger.info("closed ticket after user confirmation", interaction)
 
-    @discord.ui.button(label=R.no_questions_cancel, style=discord.ButtonStyle.primary, custom_id="noch_fragen_cancel", emoji=discord.PartialEmoji(name=R.noch_fragen_cancel_emoji))
+    @late(lambda: button(label=R.no_questions_cancel, style=discord.ButtonStyle.primary, custom_id="noch_fragen_cancel", emoji=discord.PartialEmoji(name=R.noch_fragen_cancel_emoji)))
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
         """
         Button callback to handle the cancel button click.
@@ -121,6 +123,7 @@ def setup_noch_fragen(bot: discord.Bot):
             if channel is None:
                 logger.error(We(f"Channel {id} not found, skipping deletion."))
                 continue  # Continue to next id if channel not found
+            R.init(channel.guild.id)
             err = await close_channel(channel)
             if err:
                 logger.error(err)
