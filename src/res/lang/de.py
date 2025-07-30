@@ -881,7 +881,7 @@ class ResDE:
 
             @dataclass
             class Language:
-                name: str = "language"
+                name: str = "sprache"
                 desc: str = "Ändert die Sprache des Bots für diesen Server."
 
                 @dataclass

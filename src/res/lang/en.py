@@ -751,7 +751,7 @@ class ResEN:
 
             @dataclass
             class Wechsel:
-                name: str = "wechsel"
+                name: str = "switch"
                 desc: str = "Switches the role of a user."
 
                 @dataclass
