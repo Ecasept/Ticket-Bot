@@ -8,12 +8,12 @@ import traceback
 import discord
 from src.error import Error
 import logging
-
-# ANSI escape sequences for colored output
+import os
 
 
 @dataclass
 class Col:
+    """ANSI escape sequences for colored output"""
     RED = "\033[31m"
     GREEN = "\033[32m"
     YELLOW = "\033[33m"
@@ -52,7 +52,28 @@ class FileManager:
             filename (str): Path to the file to manage.
         """
         self.filename = filename
-        self.file = open(self.filename, 'a')
+        self.open_file = None
+        self.open_filename = None
+
+        self._ensure_open()
+
+    def _open_location(self, path: str):
+        # Ensure that the directory exists
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+        # Open the file in append mode
+        return open(path, "a", encoding="utf-8")
+
+    def _ensure_open(self):
+        now = datetime.datetime.now()
+        date = now.strftime("%Y-%m-%d")
+        correct_filename = self.filename.replace("{date}", date)
+        if self.open_filename != correct_filename:
+            if self.open_file:
+                self.open_file.close()
+            self.open_file = self._open_location(correct_filename)
+            self.open_filename = correct_filename
 
     def write(self, message: str):
         """
@@ -60,13 +81,18 @@ class FileManager:
         Args:
             message (str): The message to write.
         """
-        self.file.write(message)
+
+        self._ensure_open()
+        self.open_file.write(message)
 
     def close(self):
         """
         Close the file.
         """
-        self.file.close()
+        if self.open_file:
+            self.open_file.close()
+            self.open_file = None
+            self.open_filename = None
 
 
 class Logger:
@@ -80,7 +106,6 @@ class Logger:
         Args:
             filename (str): Path to the log file.
         """
-        self.filename = filename
         self.min_level = min_level
         self.file_manager = FileManager(filename)
 
