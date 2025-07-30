@@ -162,6 +162,7 @@ class GiveawayButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        await R.init(interaction.guild_id)
         embed = create_embed(
             R.feature.giveaway.button.config_embed_desc,
             title=R.feature.giveaway.button.config_embed_title,

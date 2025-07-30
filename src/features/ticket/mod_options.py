@@ -75,6 +75,7 @@ class ModOptionsMessage(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered this action.
         """
+        await R.init(interaction.guild_id)
         await interaction.response.defer()
         await create_noch_fragen(interaction)
 
@@ -84,6 +85,7 @@ class ModOptionsMessage(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the assignment.
         """
+        await R.init(interaction.guild_id)
         await interaction.response.defer()
 
         new_assigned_id = str(interaction.user.id)
@@ -113,6 +115,7 @@ class ModOptionsMessage(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the unassignment.
         """
+        await R.init(interaction.guild_id)
         await interaction.response.defer(ephemeral=True)
 
         # Update ticket in database
@@ -138,7 +141,7 @@ class ModOptionsMessage(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the approval.
         """
-
+        await R.init(interaction.guild_id)
         # Get the user who submitted the application
         user, err = get_member(interaction.guild, self.user_id)
         if err:

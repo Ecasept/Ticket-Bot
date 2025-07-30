@@ -125,6 +125,7 @@ class TimeoutButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        await R.init(interaction.guild_id)
         embed = create_embed(
             R.timeout_interface_description,
             title=R.timeout_interface_title,

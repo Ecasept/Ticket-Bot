@@ -136,7 +136,7 @@ The bot uses a sophisticated, multi-layered system for handling strings and cons
 
 1.  **`R` (Runtime Resources)**: For use inside command handlers, views, and other runtime contexts where a `guild_id` is available. It dynamically provides strings in the guild's configured language.
 
-    - **Usage**: You **must** initialize it at the start of your async task (e.g., a command function). However this is **not needed for interactions**, as there is an `on_interaction` handler that does this automatically.
+    - **Usage**: You **must** initialize it at the start of your async task (e.g., a command function).
     - **Example**:
 
       ```python
@@ -147,6 +147,16 @@ The bot uses a sophisticated, multi-layered system for handling strings and cons
         # Now you can use R to access localized strings
         ping_command_name = R.command.ping.name
       ```
+
+    - There are multiple instances where R resources are typically used and need to be initialized:
+
+      - Slash command definitions
+        - Not needed when using `RD` and `RL` as shown below
+      - Slash command body
+        - Automatically done when using the correct subclassed bot object
+      - Button callback definitions and body
+        - Only automatically done when using `@late` decorator and `LateView` subclass (inherits from `InitView`)
+      - If manually adding an item with `self.add_item` and setting the callback, the callback **must** initialize `R` manually.
 
 2.  **`RD` (Default Resources)**: For use in places where a guild context is not available, such as in command decorators. It always returns strings in the bot's default language (German).
 

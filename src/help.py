@@ -5,13 +5,14 @@ import discord
 from src.utils import MODE, logger
 from src.constants import C
 from src.res import R, RD, RL
+from src.custom_bot import CustomBot
 
 
-def setup_help_command(bot: discord.Bot):
+def setup_help_command(bot: CustomBot):
     """
     Setup the help command for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
 
     @bot.slash_command(

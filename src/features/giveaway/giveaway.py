@@ -11,6 +11,8 @@ from src.database import db
 from src.error import Ce, We
 from discord.ext import tasks
 
+from src.custom_bot import CustomBot
+
 
 async def create_giveaway_embed(giveaway_data):
     """
@@ -115,11 +117,11 @@ async def create_giveaway(interaction: discord.Interaction, dauer: str, preis: s
     logger.info(f"Giveaway {message.id} started", interaction)
 
 
-async def end_giveaway(bot: discord.Bot, giveaway):
+async def end_giveaway(bot: CustomBot, giveaway):
     """
     End a giveaway and select winners.
     Args:
-        bot (discord.Bot): The bot instance.
+        bot (CustomBot): The bot instance.
         giveaway: The giveaway object from database.
     """
     try:
@@ -193,11 +195,11 @@ async def end_giveaway(bot: discord.Bot, giveaway):
         db.giveaway.update(giveaway.message_id, ended=True)
 
 
-def setup_giveaway_background_task(bot: discord.Bot):
+def setup_giveaway_background_task(bot: CustomBot):
     """
     Setup the background task that checks for ended giveaways.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
     @tasks.loop(seconds=C.giveaway_check_interval)
     async def check_ended_giveaways():

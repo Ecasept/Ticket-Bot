@@ -82,6 +82,7 @@ class PanelView(discord.ui.View):
         )
 
         async def callback(select_interaction: discord.Interaction):
+            await R.init(interaction.guild_id)
             category_id = int(select_interaction.data["values"][0])
             await self.handle_category_selection(select_interaction, category_id)
 

@@ -301,6 +301,7 @@ class SetupButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        await R.init(interaction.guild_id)
         embed = create_embed(
             R.feature.setup.button.select_view.embed_desc,
             title=R.feature.setup.button.select_view.embed_title,

@@ -8,12 +8,14 @@ from src.utils import create_embed, handle_error, logger
 from src.error import We, Ce
 from src.features.ticket.panel import create_panel_view
 
+from src.custom_bot import CustomBot
 
-def setup_panel_command(bot: discord.Bot):
+
+def setup_panel_command(bot: CustomBot):
     """
     Setup the panel command for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
 
     @bot.slash_command(

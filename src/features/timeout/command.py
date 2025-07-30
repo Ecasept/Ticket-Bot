@@ -4,13 +4,14 @@ Timeout slash command - separated from functionality.
 import discord
 from src.res import R, RD, RL
 from src.features.timeout.timeout import timeout_user
+from src.custom_bot import CustomBot
 
 
-def setup_timeout_command(bot: discord.Bot):
+def setup_timeout_command(bot: CustomBot):
     """
     Setup the timeout command for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
 
     @bot.slash_command(

@@ -12,12 +12,14 @@ from src.features.setup.setup import (
     setup_timeout_logchannel, setup_language
 )
 
+from src.custom_bot import CustomBot
 
-def setup_setup_command(bot: discord.Bot):
+
+def setup_setup_command(bot: CustomBot):
     """
     Setup the setup command group for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
     setup = discord.SlashCommandGroup(
         name=RD.command.setup.name,
@@ -146,7 +148,8 @@ def setup_setup_command(bot: discord.Bot):
                     return
                 # Save selected roles as comma-separated IDs
                 role_ids = [str(role.id) for role in self.selected_roles]
-                db.constant.set(C.DBKey.mod_roles, ",".join(role_ids), ctx.guild.id)
+                db.constant.set(C.DBKey.mod_roles,
+                                ",".join(role_ids), ctx.guild.id)
                 roles_mentions = ", ".join(
                     [role.mention for role in self.selected_roles])
                 await interaction.response.edit_message(

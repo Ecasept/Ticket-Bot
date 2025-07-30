@@ -2,6 +2,7 @@
 Category removal functionality.
 Handles deletion of ticket categories with confirmation dialogs.
 """
+from typing import override
 import discord
 from src.res import R
 from src.res.utils import late, button, LateView
@@ -75,8 +76,10 @@ class CategoryRemoveSelectView(CategorySelectView):
         super().__init__(interaction.guild, categories,
                          placeholder=R.category_select_placeholder)
 
+    @override
     async def select_callback(self, interaction: discord.Interaction):
         """Handle category selection for removal."""
+        await super().select_callback(interaction)
         selected_category_id = int(self.children[0].values[0])
         category = db.tc.get_category(selected_category_id)
 

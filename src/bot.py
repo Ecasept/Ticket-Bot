@@ -3,6 +3,8 @@ Main entry point for the Discord bot. Handles bot events, command registration, 
 """
 import discord
 
+from .custom_bot import CustomBot
+
 from .features.ticket_menu.ticket_menu import TicketMenuView
 from .features.ticket.noch_fragen import NochFragenMessage, setup_noch_fragen
 from .features.ticket.close_request import TicketCloseRequestView
@@ -30,14 +32,9 @@ intents.members = True
 intents.presences = True
 
 
-class CustomBot(discord.Bot):
-    async def on_interaction(self, interaction: discord.Interaction):
-        # Initialize resources for the guild
-        await R.init(interaction.guild_id)
-        return await super().on_interaction(interaction)
-
-
 bot = CustomBot(intents=intents)
+
+# bot.connect()
 
 
 @bot.event

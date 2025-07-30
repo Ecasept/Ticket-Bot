@@ -44,6 +44,7 @@ class CategoryCreateModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         """Handle the modal submission."""
+        await R.init(interaction.guild_id)
         await interaction.response.defer()
 
 

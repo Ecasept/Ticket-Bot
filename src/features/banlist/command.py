@@ -1,6 +1,7 @@
 """
 This module contains the commands for the banlist feature.
 """
+from src.custom_bot import CustomBot
 import discord
 from src.database import db
 from src.error import Error, We
@@ -39,7 +40,7 @@ async def update_banlist(interaction: discord.Interaction):
     logger.info("Banlist updated", interaction)
 
 
-def setup_banlist_command(bot: discord.Bot):
+def setup_banlist_command(bot: CustomBot):
     """
     Sets up the banlist command group.
     """

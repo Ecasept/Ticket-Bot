@@ -27,6 +27,7 @@ class CategoryButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         """Handle category button click."""
+        await R.init(interaction.guild_id)
         # Show category management menu
         view = CategoryManagementView()
         embed = create_embed(

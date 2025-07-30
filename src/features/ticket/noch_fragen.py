@@ -1,3 +1,4 @@
+from src.custom_bot import CustomBot
 import discord
 from discord.ext import tasks
 from .closed import ClosedView, close_channel, close_ticket
@@ -105,11 +106,11 @@ async def create_noch_fragen(interaction: discord.Interaction):
     logger.info("noch fragen message sent", interaction)
 
 
-def setup_noch_fragen(bot: discord.Bot):
+def setup_noch_fragen(bot: CustomBot):
     """
     Setup the automatic ticket closing task for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
     @tasks.loop(minutes=5)
     async def delete_noch_fragen():

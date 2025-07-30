@@ -1,10 +1,12 @@
 import asyncio
+import dataclasses
 import threading
 from typing import Annotated, Type
 from src.constants import C
 from enum import Enum
 from .lang.de import ResDE
-from .utils import logger
+from .lang.en import ResEN
+from .log_helper import logger
 
 task_locales: dict[int, str] = {}
 tglock = threading.Lock()
@@ -13,7 +15,7 @@ tglock = threading.Lock()
 # https://discord.com/developers/docs/reference#locales
 locale_mapping = {
     "de": ResDE,
-    # "en-US": ResEN,
+    "en-US": ResEN,
 }
 
 lang_info = [
@@ -21,6 +23,11 @@ lang_info = [
         "code": "de",
         "native_name": "Deutsch",
         "emoji": "🇩🇪",
+    },
+    {
+        "code": "en-US",
+        "native_name": "English",
+        "emoji": "🇺🇸",
     }
 ]
 
@@ -43,6 +50,22 @@ class LocaleDictionary(dict):
                                      for lang_code, res_class in self.items()})
         else:
             return super().__getattr__(item)
+
+
+class LocaleObject(object):
+    def __init__(self, obj: object, path: str):
+        self.obj = obj
+        self.path = path
+
+    def __getattr__(self, item):
+        attr = getattr(self.obj, item)
+        if dataclasses.is_dataclass(attr):
+            # If this is a further subgroup
+            return LocaleObject(attr, f"{self.path}.{item}")
+        else:
+            # If we reached the end, log the attribute access
+            logger().debug(f"Accessing resource '{self.path}.{item}'")
+            return attr
 
 
 class Resources:
@@ -132,8 +155,6 @@ class Resources:
             logger().error(Ce("Cannot access resources outside of an asyncio task. ", title="a"))
             _id = 0
 
-        logger().debug(f"Accessing resource '{item}' for task {_id}")
-
         # Get the locale for this task
         with tglock:
             locale = task_locales.get(_id, DEFAULT_LANG)
@@ -142,7 +163,8 @@ class Resources:
         res_class = locale_mapping.get(locale, locale_mapping[DEFAULT_LANG])
 
         # Return the attribute from the resource class
-        return getattr(res_class, item)
+        lo = LocaleObject(res_class, "R")
+        return getattr(lo, item)
 
 
 class TResource(ResDE):

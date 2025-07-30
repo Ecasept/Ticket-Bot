@@ -5,12 +5,14 @@ import discord
 from src.res import R, RD, RL
 from src.features.giveaway.giveaway import create_giveaway, setup_giveaway_background_task
 
+from src.custom_bot import CustomBot
 
-def setup_giveaway_command(bot: discord.Bot):
+
+def setup_giveaway_command(bot: CustomBot):
     """
     Setup the giveaway command for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
 
     @bot.slash_command(

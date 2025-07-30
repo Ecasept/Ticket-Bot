@@ -56,7 +56,10 @@ class Logger:
         Returns:
             str: Formatted string of the frame.
         """
-        filename = frame.filename.split("/")[-1].replace(".py", "")
+
+        # Turn "/bla/src/a/b.py" to "a.b:123:func_name"
+        filename = frame.filename.split(
+            "src/")[-1].replace("/", ".").replace(".py", "")
         lno = frame.lineno
         func = frame.name
         return f"{filename}:{lno}:{func}"
@@ -78,6 +81,8 @@ class Logger:
             if frame.name == "handle_error":
                 continue
             if frame.filename.endswith("error.py"):
+                continue
+            if frame.filename.endswith("res.py"):
                 continue
             formatted_stack.append(self._format_frame(frame))
         return formatted_stack

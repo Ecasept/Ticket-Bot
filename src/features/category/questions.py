@@ -32,7 +32,8 @@ class CategoryQuestionsModal(discord.ui.Modal):
         # If there are more questions, we'll need to handle them differently
         for i, (question_id, question_text) in enumerate(questions[:5]):
             input_field = discord.ui.InputText(
-                label=R.feature.category.questions.modal.question_label % (i + 1),
+                label=R.feature.category.questions.modal.question_label % (
+                    i + 1),
                 placeholder=question_text,
                 required=True,
                 style=discord.InputTextStyle.long if len(
@@ -46,6 +47,7 @@ class CategoryQuestionsModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         """Handle the modal submission."""
+        await R.init(interaction.guild_id)
         # Collect answers from all input fields
         for item in self.children:
             if isinstance(item, discord.ui.InputText) and item.custom_id.startswith("question_"):
@@ -108,6 +110,7 @@ class QuestionAddModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         """Handle the modal submission."""
+        await R.init(interaction.guild_id)
         await interaction.response.defer()
 
 
@@ -137,6 +140,7 @@ class QuestionsReplaceModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         """Handle the modal submission."""
+        await R.init(interaction.guild_id)
         await interaction.response.defer()
 
 

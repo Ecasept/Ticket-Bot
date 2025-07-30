@@ -6,12 +6,14 @@ from src.res import R, RD, RL
 from src.utils import logger
 from src.features.ticket_menu.ticket_menu import send_ticket_menu
 
+from src.custom_bot import CustomBot
 
-def setup_ticket_command(bot: discord.Bot):
+
+def setup_ticket_command(bot: CustomBot):
     """
     Setup the main ticket command for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
 
     @bot.slash_command(

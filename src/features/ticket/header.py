@@ -20,6 +20,8 @@ class HeaderView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
 
+        logger.debug("New header view created")
+
         close_button = discord.ui.Button(
             label=R.close_ticket, style=discord.ButtonStyle.danger, custom_id="close_ticket",
             emoji=discord.PartialEmoji(name=R.close_emoji))
@@ -38,6 +40,7 @@ class HeaderView(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the close action.
         """
+        await R.init(interaction.guild_id)
         cid = str(interaction.channel.id)
         ticket = db.ticket.get(cid)
         if not ticket:
@@ -74,6 +77,8 @@ class HeaderView(discord.ui.View):
         Args:
             interaction (discord.Interaction): The interaction that triggered the mod options.
         """
+        await R.init(interaction.guild_id)
+        logger.debug("Opening mod options", interaction)
         embed, view = await ModOptionsMessage.create(
             interaction,
         )

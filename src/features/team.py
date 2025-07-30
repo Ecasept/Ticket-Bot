@@ -1,6 +1,7 @@
 """
 Team management commands.
 """
+from src.custom_bot import CustomBot
 import re
 import discord
 import datetime
@@ -201,11 +202,11 @@ class TeamListMessage:
         return embeds_or_err, view
 
 
-def setup_team_command(bot: discord.Bot) -> None:
+def setup_team_command(bot: CustomBot) -> None:
     """
     Setup team management commands for the bot.
     Args:
-        bot (discord.Bot): The Discord bot instance.
+        bot (CustomBot): The Discord bot instance.
     """
     team = discord.SlashCommandGroup(
         name=RD.command.team.name,
@@ -393,7 +394,7 @@ def setup_team_command(bot: discord.Bot) -> None:
         Args:
             ctx (discord.ApplicationContext): The command context.
         """
-        view = RoleSelectView()
+        view = RoleSelectView.create(ctx.interaction)
         await ctx.respond(embed=create_embed(R.team_list_select_roles_prompt), view=view, ephemeral=True)
 
     @team.command(
@@ -430,7 +431,7 @@ def setup_team_command(bot: discord.Bot) -> None:
         # Check if the user is already banned
         if db.ab.is_user_banned(user.id, ctx.guild.id):
 
-            view = ApplicationBannedView(user)
+            view = ApplicationBannedView.create(ctx.interaction, user)
             await ctx.respond(embed=create_embed(R.team_sperre_already_banned % user.mention, color=C.warning_color), view=view, ephemeral=True)
             logger.info(
                 f"User {user.name} ({user.id}) is already banned from creating application tickets", ctx.interaction)
@@ -487,7 +488,8 @@ def setup_team_command(bot: discord.Bot) -> None:
     )
     async def team_welcome(ctx: discord.ApplicationContext, channel: discord.TextChannel = None):
         if channel:
-            db.constant.set(C.DBKey.welcome_channel_id, channel.id, ctx.guild.id)
+            db.constant.set(C.DBKey.welcome_channel_id,
+                            channel.id, ctx.guild.id)
             await ctx.respond(embed=create_embed(R.team_welcome_channel_set % channel.mention, color=C.success_color), ephemeral=True)
             logger.info(
                 f"Welcome channel set to {channel.name} ({channel.id})", ctx.interaction)

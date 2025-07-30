@@ -83,5 +83,9 @@ class ListDisplayView(discord.ui.View):
             emoji=discord.PartialEmoji(name="🔄"),
             custom_id=custom_id
         )
-        self.update_button.callback = self.update_callback
+        self.update_button.callback = self.update
         self.add_item(self.update_button)
+
+    async def update(self, interaction: discord.Interaction):
+        await R.init(interaction.guild_id)
+        await self.update_callback(interaction)

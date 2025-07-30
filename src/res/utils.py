@@ -2,15 +2,8 @@ from typing import Callable
 import discord
 from discord.ui.select import MISSING
 
-utils_module = None
-
-
-def logger():
-    """Use the logger through a dynamic import to avoid circular imports."""
-    global utils_module
-    if utils_module is None:
-        import src.utils as utils_module
-    return utils_module.logger
+from .res import R
+from .log_helper import logger
 
 
 def with_callback_factory(item):
@@ -19,9 +12,10 @@ def with_callback_factory(item):
     """
     def with_callback(callback: Callable[[discord.ui.Item, discord.Interaction], None]) -> discord.ui.Item:
         """Adds a callback to the item and returns it the item"""
-        def callback_wrapper(interaction: discord.Interaction):
+        async def callback_wrapper(interaction: discord.Interaction):
             """A wrapper so that the callback receives both the item and the interaction."""
-            return callback(item, interaction)
+            await R.init(interaction.guild_id)
+            return await callback(item, interaction)
         item.callback = callback_wrapper
         return item
     return with_callback
@@ -146,8 +140,24 @@ type ItemCallbackCreator = Callable[[Callback], discord.ui.Button]
 type LateItemCallbackCreator = Callable[..., ItemCallbackCreator]
 
 
-class Late():
-    def __init__(self):
+class InitView(discord.ui.View):
+    """
+    This view should be used in all views that require access to the resources.
+    """
+    @classmethod
+    async def create(cls, interaction: discord.Interaction, *args, **kwargs):
+        """
+        Initialize the view with the interaction's guild ID.
+        This is necessary to ensure that the resources are loaded correctly.
+        """
+        # Actually not necessary:
+        # await R.init(interaction.guild_id)
+        return cls(*args, **kwargs)
+
+
+class LateView(InitView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         for name in dir(self):
             if name.startswith("__"):
                 continue
@@ -160,16 +170,6 @@ class Late():
                     func, "__late_item_callback_creator")()
                 button = button_callback_creator(func)
                 self.add_item(button)
-
-
-class LateView(discord.ui.View, Late):
-    """
-    Shortcut class so you don't need to call super twice in a view.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        Late.__init__(self)
 
 
 def late(creator: LateItemCallbackCreator):

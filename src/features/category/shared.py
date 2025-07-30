@@ -123,4 +123,4 @@ class CategorySelectView(discord.ui.View):
 
     async def select_callback(self, interaction: discord.Interaction):
         """Override this method in subclasses."""
-        pass
+        await R.init(interaction.guild_id)

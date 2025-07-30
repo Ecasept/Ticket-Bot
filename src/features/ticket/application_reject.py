@@ -27,6 +27,7 @@ class ApplicationRejectModal(discord.ui.Modal):
         Args:
             interaction (discord.Interaction): The interaction from the modal submission.
         """
+        await R.init(interaction.guild_id)
         # Get the user who submitted the application
         user, err = get_member(interaction.guild, self.user_id)
         if err:

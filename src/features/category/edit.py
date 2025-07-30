@@ -2,6 +2,7 @@
 Category editing functionality.
 Handles editing existing ticket categories including basic info, roles, and questions.
 """
+from typing import override
 import discord
 from src.database.ticket_category import TicketCategory
 from src.res import R
@@ -51,6 +52,7 @@ class CategoryEditModal(discord.ui.Modal):
 
     async def callback(self, interaction: discord.Interaction):
         """Handle the modal submission."""
+        await R.init(interaction.guild_id)
         await interaction.response.defer()
 
 
@@ -61,7 +63,9 @@ class CategoryEditSelectView(CategorySelectView):
         super().__init__(interaction.guild, categories,
                          R.feature.category.edit.select.placeholder)
 
+    @override
     async def select_callback(self, interaction: discord.Interaction):
+        await super().select_callback(interaction)
         category_id = int(interaction.data["values"][0])
         category = db.tc.get_category(category_id)
 
