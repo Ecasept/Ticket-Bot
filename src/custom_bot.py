@@ -16,7 +16,6 @@ class CustomBot(discord.Bot):
             async def wrapper(ctx: discord.ApplicationContext, *args, **kwargs):
                 """The same as the decorated function, but with additional initialization."""
                 await R.init(ctx.guild_id)
-                logger.debug(f"Args: {args}, Kwargs: {kwargs}", ctx)
                 return await func(ctx, *args, **kwargs)
             return parent_slash_command(*cmd_args, **cmd_kwargs)(wrapper)
         return function_receiver
@@ -34,7 +33,6 @@ class CustomSlashCommandGroup(discord.SlashCommandGroup):
             async def wrapper(ctx: discord.ApplicationContext, *args, **kwargs):
                 """The same as the decorated function, but with additional initialization."""
                 await R.init(ctx.guild_id)
-                logger.debug(f"Args: {args}, Kwargs: {kwargs}", ctx)
                 return await func(ctx, *args, **kwargs)
             return parent_command(*cmd_args, **cmd_kwargs)(wrapper)
         return function_receiver

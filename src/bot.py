@@ -74,9 +74,6 @@ async def on_ready():
     description_localizations=RL.command.ping.desc
 )
 async def ping(ctx: discord.ApplicationContext):
-    import asyncio
-    await asyncio.sleep(3)
-
     """
     Simple ping command to test bot responsiveness.
     Args:

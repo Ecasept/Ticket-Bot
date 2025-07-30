@@ -213,9 +213,6 @@ def setup_setup_command(bot: CustomBot):
         choices=[item["code"] for item in lang_info]
     )
     async def setup_language_command(ctx: discord.ApplicationContext, language):
-        logger.debug(
-            RL.command.setup.language.option.language_desc
-        )
         await setup_language(ctx.interaction, language)
 
     bot.add_application_command(setup)
