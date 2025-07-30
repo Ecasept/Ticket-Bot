@@ -16,7 +16,8 @@ from urllib.parse import urlparse
 
 dotenv.load_dotenv()
 
-logger = Logger("bot.log", logging.INFO)
+DEV = os.getenv("DEV", "false").lower() == "true"
+logger = Logger("bot.log", logging.DEBUG if DEV else logging.INFO)
 TOKEN = os.getenv("DISCORD_TOKEN")
 MODE = "all"  # os.getenv("MODE")
 
