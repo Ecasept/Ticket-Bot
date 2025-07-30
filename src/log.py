@@ -44,6 +44,31 @@ level_names = {
 }
 
 
+class FileManager:
+    def __init__(self, filename: str):
+        """
+        Initialize the FileManager with a file path.
+        Args:
+            filename (str): Path to the file to manage.
+        """
+        self.filename = filename
+        self.file = open(self.filename, 'a')
+
+    def write(self, message: str):
+        """
+        Write a message to the file.
+        Args:
+            message (str): The message to write.
+        """
+        self.file.write(message)
+
+    def close(self):
+        """
+        Close the file.
+        """
+        self.file.close()
+
+
 class Logger:
     """
     Logger class for writing log messages to a file and printing them to stdout.
@@ -57,6 +82,13 @@ class Logger:
         """
         self.filename = filename
         self.min_level = min_level
+        self.file_manager = FileManager(filename)
+
+    def close(self):
+        """
+        Close the file manager.
+        """
+        self.file_manager.close()
 
     def _format_frame(self, frame: traceback.FrameSummary) -> str:
         """
@@ -162,8 +194,7 @@ class Logger:
 
         print(msg_colored, end='')
 
-        with open(self.filename, 'a') as file:
-            file.write(msg)
+        self.file_manager.write(msg)
 
     def _log_str(self, level: str, message: str, interaction: discord.Interaction | None) -> None:
         """

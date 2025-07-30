@@ -112,3 +112,4 @@ finally:
     db.close()
     logger.info("Bot has been shut down.")
     logger.info("------")
+    logger.close()
