@@ -23,6 +23,7 @@ def setup_timeout_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="user",
         name=RD.command.timeout.option.user,
         name_localizations=RL.command.timeout.option.user,
         description=RD.command.timeout.option.user_desc,
@@ -31,6 +32,7 @@ def setup_timeout_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="duration",
         name=RD.command.timeout.option.duration,
         name_localizations=RL.command.timeout.option.duration,
         description=RD.command.timeout.option.duration_desc,
@@ -39,6 +41,7 @@ def setup_timeout_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="reason",
         name=RD.command.timeout.option.reason,
         name_localizations=RL.command.timeout.option.reason,
         description=RD.command.timeout.option.reason_desc,

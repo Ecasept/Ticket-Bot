@@ -52,13 +52,21 @@ class LocaleDictionary(dict):
             return super().__getattr__(item)
 
 
+UNIQUE = object()
+
+
 class LocaleObject(object):
     def __init__(self, obj: object, path: str):
         self.obj = obj
         self.path = path
 
     def __getattr__(self, item):
-        attr = getattr(self.obj, item)
+        attr = getattr(self.obj, item, UNIQUE)
+        if attr is UNIQUE:
+            # If the attribute does not exist, return a placeholder
+            logger().warning(
+                f"Resource '{self.path}.{item}' not found, returning LocaleUnknownString")
+            return LocaleUnknownString(f"{self.path}.{item}")
         if dataclasses.is_dataclass(attr):
             # If this is a further subgroup
             return LocaleObject(attr, f"{self.path}.{item}")
@@ -66,6 +74,25 @@ class LocaleObject(object):
             # If we reached the end, log the attribute access
             logger().debug(f"Accessing resource '{self.path}.{item}'")
             return attr
+
+
+class LocaleUnknownString(str):
+    """
+    This class is used to represent a path with no associated resource string.
+    """
+
+    def __init__(self, path: str):
+        self.path = path
+
+    def __getattr__(self, item):
+        self.path += f".{item}"
+        return self
+
+    def __str__(self):
+        return self.path
+
+    def __repr__(self):
+        return f"LocaleUnknownString({self.path})"
 
 
 class Resources:

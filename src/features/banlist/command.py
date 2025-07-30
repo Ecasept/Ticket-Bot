@@ -1,7 +1,7 @@
 """
 This module contains the commands for the banlist feature.
 """
-from src.custom_bot import CustomBot
+from src.custom_bot import CustomBot, CustomSlashCommandGroup
 import discord
 from src.database import db
 from src.error import Error, We
@@ -44,7 +44,7 @@ def setup_banlist_command(bot: CustomBot):
     """
     Sets up the banlist command group.
     """
-    banlist = discord.SlashCommandGroup(
+    banlist = CustomSlashCommandGroup(
         name=RD.command.banlist.name,
         name_localizations=RL.command.banlist.name,
         description=RD.command.banlist.desc,
@@ -80,6 +80,7 @@ def setup_banlist_command(bot: CustomBot):
         description_localizations=RL.command.banlist.add.desc
     )
     @discord.option(
+        parameter_name="name",
         name=RD.command.banlist.add.option.name,
         name_localizations=RL.command.banlist.add.option.name,
         description=RD.command.banlist.add.option.name_desc,
@@ -87,6 +88,7 @@ def setup_banlist_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="reason",
         name=RD.command.banlist.add.option.reason,
         name_localizations=RL.command.banlist.add.option.reason,
         description=RD.command.banlist.add.option.reason_desc,
@@ -94,6 +96,7 @@ def setup_banlist_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="banned_by",
         name=RD.command.banlist.add.option.banned_by,
         name_localizations=RL.command.banlist.add.option.banned_by,
         description=RD.command.banlist.add.option.banned_by_desc,
@@ -101,6 +104,7 @@ def setup_banlist_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="length",
         name=RD.command.banlist.add.option.length,
         name_localizations=RL.command.banlist.add.option.length,
         description=RD.command.banlist.add.option.length_desc,
@@ -108,6 +112,7 @@ def setup_banlist_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="image_url",
         name=RD.command.banlist.add.option.image_url,
         name_localizations=RL.command.banlist.add.option.image_url,
         description=RD.command.banlist.add.option.image_desc,
@@ -139,6 +144,7 @@ def setup_banlist_command(bot: CustomBot):
         description_localizations=RL.command.banlist.remove.desc
     )
     @discord.option(
+        parameter_name="name",
         name=RD.command.banlist.remove.option.name,
         name_localizations=RL.command.banlist.remove.option.name,
         description=RD.command.banlist.remove.option.name_desc,
@@ -164,6 +170,7 @@ def setup_banlist_command(bot: CustomBot):
         description_localizations=RL.command.banlist.showimg.desc
     )
     @discord.option(
+        parameter_name="name",
         name=RD.command.banlist.showimg.option.name,
         name_localizations=RL.command.banlist.showimg.option.name,
         description=RD.command.banlist.showimg.option.name_desc,

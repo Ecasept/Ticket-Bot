@@ -8,7 +8,7 @@ from .create import handle_create_category
 from .edit import handle_edit_categories
 from .remove import handle_remove_category
 
-from src.custom_bot import CustomBot
+from src.custom_bot import CustomBot, CustomSlashCommandGroup
 
 
 def setup_category_command(bot: CustomBot):
@@ -17,7 +17,7 @@ def setup_category_command(bot: CustomBot):
     Args:
         bot (CustomBot): The Discord bot instance.
     """
-    category = discord.SlashCommandGroup(
+    category = CustomSlashCommandGroup(
         name=RD.command.category.name,
         name_localizations=RL.command.category.name,
         description=RD.command.category.desc,

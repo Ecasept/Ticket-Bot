@@ -1,7 +1,7 @@
 """
 Team management commands.
 """
-from src.custom_bot import CustomBot
+from src.custom_bot import CustomBot, CustomSlashCommandGroup
 import re
 import discord
 import datetime
@@ -208,7 +208,7 @@ def setup_team_command(bot: CustomBot) -> None:
     Args:
         bot (CustomBot): The Discord bot instance.
     """
-    team = discord.SlashCommandGroup(
+    team = CustomSlashCommandGroup(
         name=RD.command.team.name,
         name_localizations=RL.command.team.name,
         description=RD.command.team.desc,
@@ -224,6 +224,7 @@ def setup_team_command(bot: CustomBot) -> None:
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="user",
         name=RD.command.team.add.option.user,
         name_localizations=RL.command.team.add.option.user,
         description=RD.command.team.add.option.user_desc,
@@ -232,6 +233,7 @@ def setup_team_command(bot: CustomBot) -> None:
         required=True
     )
     @discord.option(
+        parameter_name="role",
         name=RD.command.team.add.option.role,
         name_localizations=RL.command.team.add.option.role,
         description=RD.command.team.add.option.role_desc,
@@ -278,6 +280,7 @@ def setup_team_command(bot: CustomBot) -> None:
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="user",
         name=RD.command.team.remove.option.user,
         name_localizations=RL.command.team.remove.option.user,
         description=RD.command.team.remove.option.user_desc,
@@ -286,6 +289,7 @@ def setup_team_command(bot: CustomBot) -> None:
         required=True
     )
     @discord.option(
+        parameter_name="role",
         name=RD.command.team.remove.option.role,
         name_localizations=RL.command.team.remove.option.role,
         description=RD.command.team.remove.option.role_desc,
@@ -326,6 +330,7 @@ def setup_team_command(bot: CustomBot) -> None:
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="user",
         name=RD.command.team.wechsel.option.user,
         name_localizations=RL.command.team.wechsel.option.user,
         description=RD.command.team.wechsel.option.user_desc,
@@ -334,6 +339,7 @@ def setup_team_command(bot: CustomBot) -> None:
         required=True
     )
     @discord.option(
+        parameter_name="from_role",
         name=RD.command.team.wechsel.option.from_role,
         name_localizations=RL.command.team.wechsel.option.from_role,
         description=RD.command.team.wechsel.option.from_role_desc,
@@ -342,6 +348,7 @@ def setup_team_command(bot: CustomBot) -> None:
         required=True
     )
     @discord.option(
+        parameter_name="to_role",
         name=RD.command.team.wechsel.option.to_role,
         name_localizations=RL.command.team.wechsel.option.to_role,
         description=RD.command.team.wechsel.option.to_role_desc,
@@ -405,6 +412,7 @@ def setup_team_command(bot: CustomBot) -> None:
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="user",
         name=RD.command.team.sperre.option.user,
         name_localizations=RL.command.team.sperre.option.user,
         description=RD.command.team.sperre.option.user_desc,
@@ -413,6 +421,7 @@ def setup_team_command(bot: CustomBot) -> None:
         required=True
     )
     @discord.option(
+        parameter_name="duration",
         name=RD.command.team.sperre.option.duration,
         name_localizations=RL.command.team.sperre.option.duration,
         description=RD.command.team.sperre.option.duration_desc,
@@ -477,6 +486,7 @@ def setup_team_command(bot: CustomBot) -> None:
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="channel",
         name=RD.command.team.welcome.option.channel,
         name_localizations=RL.command.team.welcome.option.channel,
         description=RD.command.team.welcome.option.channel_desc,

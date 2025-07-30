@@ -12,7 +12,7 @@ from src.features.setup.setup import (
     setup_timeout_logchannel, setup_language
 )
 
-from src.custom_bot import CustomBot
+from src.custom_bot import CustomBot, CustomSlashCommandGroup
 
 
 def setup_setup_command(bot: CustomBot):
@@ -21,7 +21,7 @@ def setup_setup_command(bot: CustomBot):
     Args:
         bot (CustomBot): The Discord bot instance.
     """
-    setup = discord.SlashCommandGroup(
+    setup = CustomSlashCommandGroup(
         name=RD.command.setup.name,
         name_localizations=RL.command.setup.name,
         description=RD.command.setup.desc,
@@ -37,6 +37,7 @@ def setup_setup_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="category",
         name=RD.command.setup.tickets.option.category,
         name_localizations=RL.command.setup.tickets.option.category,
         description=RD.command.setup.tickets.option.category_desc,
@@ -57,6 +58,7 @@ def setup_setup_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="category",
         name=RD.command.setup.transcript.option.category,
         name_localizations=RL.command.setup.transcript.option.category,
         description=RD.command.setup.transcript.option.category_desc,
@@ -77,6 +79,7 @@ def setup_setup_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="channel",
         name=RD.command.setup.logchannel.option.channel,
         name_localizations=RL.command.setup.logchannel.option.channel,
         description=RD.command.setup.logchannel.option.channel_desc,
@@ -97,6 +100,7 @@ def setup_setup_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="channel",
         name=RD.command.setup.timeoutlogchannel.option.channel,
         name_localizations=RL.command.setup.timeoutlogchannel.option.channel,
         description=RD.command.setup.timeoutlogchannel.option.channel_desc,
@@ -198,15 +202,20 @@ def setup_setup_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="language",
         name=RD.command.setup.language.option.language,
         name_localizations=RL.command.setup.language.option.language,
         description=RD.command.setup.language.option.language_desc,
         description_localizations=RL.command.setup.language.option.language_desc,
         required=False,
         default=None,
+        type=discord.SlashCommandOptionType.string,
         choices=[item["code"] for item in lang_info]
     )
-    async def setup_language_command(ctx: discord.ApplicationContext, language: str = None):
+    async def setup_language_command(ctx: discord.ApplicationContext, language):
+        logger.debug(
+            RL.command.setup.language.option.language_desc
+        )
         await setup_language(ctx.interaction, language)
 
     bot.add_application_command(setup)

@@ -23,6 +23,7 @@ def setup_giveaway_command(bot: CustomBot):
     )
     @discord.default_permissions(administrator=True)
     @discord.option(
+        parameter_name="dauer",
         name=RD.command.giveaway.option.duration,
         name_localizations=RL.command.giveaway.option.duration,
         description=RD.command.giveaway.option.duration_desc,
@@ -30,6 +31,7 @@ def setup_giveaway_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="preis",
         name=RD.command.giveaway.option.prize,
         name_localizations=RL.command.giveaway.option.prize,
         description=RD.command.giveaway.option.prize_desc,
@@ -37,6 +39,7 @@ def setup_giveaway_command(bot: CustomBot):
         required=True
     )
     @discord.option(
+        parameter_name="gewinner",
         name=RD.command.giveaway.option.winner_count,
         name_localizations=RL.command.giveaway.option.winner_count,
         description=RD.command.giveaway.option.winner_count_desc,
@@ -47,6 +50,7 @@ def setup_giveaway_command(bot: CustomBot):
         max_value=20
     )
     @discord.option(
+        parameter_name="rolle",
         name=RD.command.giveaway.option.role,
         name_localizations=RL.command.giveaway.option.role,
         description=RD.command.giveaway.option.role_desc,

@@ -68,6 +68,8 @@ def setup_help_command(bot: CustomBot):
                 R.command.setup.modroles.desc,
                 f"- `/{R.command.setup.name} {R.command.setup.timeoutlogchannel.name}` - " +
                 R.command.setup.timeoutlogchannel.desc,
+                f"- `/{R.command.setup.name} {R.command.setup.language.option.language}` - " +
+                R.command.setup.language.desc,
             ]
 
             embed.add_field(
