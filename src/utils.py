@@ -2,6 +2,7 @@
 Utility functions and constants for the Discord bot, including role/category helpers and environment loading.
 """
 import datetime
+import logging
 import re
 import discord
 import dotenv
@@ -15,7 +16,7 @@ from urllib.parse import urlparse
 
 dotenv.load_dotenv()
 
-logger = Logger("bot.log")
+logger = Logger("bot.log", logging.INFO)
 TOKEN = os.getenv("DISCORD_TOKEN")
 MODE = "all"  # os.getenv("MODE")
 

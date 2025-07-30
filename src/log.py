@@ -7,6 +7,7 @@ import traceback
 
 import discord
 from src.error import Error
+import logging
 
 # ANSI escape sequences for colored output
 
@@ -35,18 +36,27 @@ class Col:
         ORANGE = "\033[48;5;208m"
 
 
+level_names = {
+    logging.DEBUG: "DEBUG",
+    logging.INFO: "INFO",
+    logging.WARNING: "WARNING",
+    logging.ERROR: "ERROR",
+}
+
+
 class Logger:
     """
     Logger class for writing log messages to a file and printing them to stdout.
     """
 
-    def __init__(self, filename: str):
+    def __init__(self, filename: str, min_level: int):
         """
         Initialize the Logger.
         Args:
             filename (str): Path to the log file.
         """
         self.filename = filename
+        self.min_level = min_level
 
     def _format_frame(self, frame: traceback.FrameSummary) -> str:
         """
@@ -107,16 +117,21 @@ class Logger:
             return f" {{{user_name}/{user_id} in {guild_name}/{guild_id} #{channel_name}/{channel_id}}}"
         return ""
 
-    def _log(self, level: str, message: str, interaction: discord.Interaction | None, stack: traceback.StackSummary, extended_traceback: bool = False) -> None:
+    def _log(self, level: int, message: str, interaction: discord.Interaction | None, stack: traceback.StackSummary, extended_traceback: bool = False) -> None:
         """
         Core logging method that formats and outputs log messages.
         Args:
-            level (str): The log level (DEBUG, INFO, WARNING, ERROR).
+            level (int): The log level (e.g., logging.DEBUG, logging.INFO).
             message (str): The message to log.
             interaction (discord.Interaction | None): Optional interaction context.
             stack (traceback.StackSummary): The stack trace information.
             extended_traceback (bool): Whether to include full traceback. Defaults to False.
         """
+
+        if level < self.min_level:
+            return
+        level = level_names.get(level, "UNKNOWN")
+
         formatted_stack = self._get_formatted_stack(stack)
         location = formatted_stack[-1] if formatted_stack else "unknown"
         interaction_info = self._get_interaction_info(interaction)
@@ -168,7 +183,7 @@ class Logger:
             message (str): The debug message to log.
             interaction (discord.Interaction | None): Optional interaction context.
         """
-        self._log_str("DEBUG", message, interaction)
+        self._log_str(logging.DEBUG, message, interaction)
 
     def info(self, message: str, interaction: discord.Interaction | None = None):
         """
@@ -177,7 +192,7 @@ class Logger:
             message (str): The info message to log.
             interaction (discord.Interaction | None): Optional interaction context.
         """
-        self._log_str("INFO", message, interaction)
+        self._log_str(logging.INFO, message, interaction)
 
     def warning(self, message: str, interaction: discord.Interaction | None = None):
         """
@@ -186,7 +201,7 @@ class Logger:
             message (str): The warning message to log.
             interaction (discord.Interaction | None): Optional interaction context.
         """
-        self._log_str("WARNING", message, interaction)
+        self._log_str(logging.WARNING, message, interaction)
 
     def error(self, error: Error, interaction: discord.Interaction | None = None):
         """
@@ -195,5 +210,5 @@ class Logger:
             error (Error): The error object to log.
             interaction (discord.Interaction | None): Optional interaction context.
         """
-        self._log("ERROR", error.message, interaction,
+        self._log(logging.ERROR, error.message, interaction,
                   error.stack, error.show_traceback)
