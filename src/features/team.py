@@ -401,7 +401,7 @@ def setup_team_command(bot: CustomBot) -> None:
         Args:
             ctx (discord.ApplicationContext): The command context.
         """
-        view = RoleSelectView.create(ctx.interaction)
+        view = await RoleSelectView.create(ctx.interaction)
         await ctx.respond(embed=create_embed(R.team_list_select_roles_prompt), view=view, ephemeral=True)
 
     @team.command(
