@@ -693,6 +693,7 @@ class ResEN:
             welcome_message: str = "Welcome %s! %s"
             no_categories_configured_error: str = "No ticket categories found!\n\nPlease create categories with `/category create` before creating a panel."
             panel_view_error: str = "Error creating panel view: %s"
+            invalid_image_url: str = "Please provide a valid image URL (http/https)."
         panel = Panel()
     feature = Feature()
 
@@ -902,6 +903,12 @@ class ResEN:
         class Createpanel:
             name: str = "createpanel"
             desc: str = "Create a message with a button to create a ticket."
+
+            @dataclass
+            class Option:
+                image_url: str = "image"
+                image_url_desc: str = "Optional image URL shown above the ticket selector."
+            option = Option()
         createpanel = Createpanel()
 
         @dataclass

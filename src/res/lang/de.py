@@ -693,6 +693,7 @@ class ResDE:
             welcome_message: str = "Willkommen %s! %s"
             no_categories_configured_error: str = "Keine Ticket-Kategorien gefunden!\n\nErstelle zuerst Kategorien mit `/category create`, bevor du ein Panel erstellst."
             panel_view_error: str = "Fehler beim Erstellen der Panel-Ansicht: %s"
+            invalid_image_url: str = "Bitte gib eine gültige Bild-URL an (http/https)."
         panel = Panel()
     feature = Feature()
 
@@ -902,6 +903,12 @@ class ResDE:
         class Createpanel:
             name: str = "createpanel"
             desc: str = "Erstelle eine Nachricht mit einem Knopf um ein Ticket zu erstellen."
+
+            @dataclass
+            class Option:
+                image_url: str = "bild"
+                image_url_desc: str = "Optionale Bild-URL oberhalb der Kategorieauswahl."
+            option = Option()
         createpanel = Createpanel()
 
         @dataclass
